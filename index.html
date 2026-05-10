@@ -1,212 +1,1108 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Gerenciamento de Rifa</title>
-    <style>
-        :root {
-            --primary: #27ae60;
-            --secondary: #2c3e50;
-            --selected: #f1c40f;
-            --sold: #c0392b;
-            --bg: #f0f2f5;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RifaFácil</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; padding: 20px; }
-        .container { max-width: 900px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
-        
-        /* Painel Admin */
-        #admin-panel { background: #f9f9f9; border: 2px solid #ddd; padding: 20px; border-radius: 8px; margin-bottom: 25px; display: none; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        
-        /* Layout Principal */
-        .header-rifa { text-align: center; border-bottom: 2px solid #eee; margin-bottom: 20px; padding-bottom: 20px; }
-        .item-img { max-width: 100%; max-height: 350px; border-radius: 8px; display: block; margin: 15px auto; }
-        
-        /* Interface Estilo Cinema */
-        .cinema-area { background: #222; padding: 30px 10px; border-radius: 10px; text-align: center; color: white; }
-        .screen { width: 70%; height: 5px; background: #555; margin: 0 auto 40px; border-radius: 10px; box-shadow: 0 10px 20px rgba(255,255,255,0.1); }
-        .grid-numbers { display: grid; grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 8px; max-width: 600px; margin: auto; }
-        .number { 
-            width: 40px; height: 40px; line-height: 40px; background: #444; cursor: pointer; 
-            border-radius: 5px 5px 0 0; font-size: 12px; transition: 0.2s; border-bottom: 3px solid #111;
-        }
-        .number:hover { background: #666; }
-        .number.selected { background: var(--selected); color: black; border-bottom-color: #b7950b; }
-        .number.sold { background: var(--sold); cursor: not-allowed; opacity: 0.5; }
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
 
-        /* Checkout Estático */
-        #checkout { 
-            position: sticky; bottom: 0; background: #fff; padding: 20px; 
-            box-shadow: 0 -5px 15px rgba(0,0,0,0.1); display: none; border-radius: 10px 10px 0 0; 
-            text-align: center; margin-top: 20px;
-        }
-        
-        .btn { padding: 12px 25px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .btn-buy { background: var(--primary); color: white; width: 100%; max-width: 300px; font-size: 18px; }
-        .btn-admin { background: var(--secondary); color: white; margin-bottom: 15px; }
+<style>
+:root{
+  --bg:#0a0a0f;--surface:#12121a;--surface2:#1a1a26;--border:#2a2a3d;
+  --accent:#f5c542;--accent2:#ff6b35;--green:#22c55e;--red:#ef4444;
+  --text:#f0f0f5;--muted:#7878a0;--radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
 
-        .pix-result { background: #e8f6ef; border: 2px dashed var(--primary); padding: 20px; border-radius: 8px; margin-top: 20px; display: none; }
-    </style>
+/* ─── SETUP SCREEN ─── */
+#setupScreen{position:fixed;inset:0;background:var(--bg);z-index:9999;
+  display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto;}
+.setup-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;
+  max-width:520px;width:100%;padding:32px;}
+.setup-card h1{font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;
+  color:var(--accent);margin-bottom:6px;}
+.setup-card .sub{color:var(--muted);font-size:.85rem;margin-bottom:24px;line-height:1.6;}
+.step{background:var(--surface2);border:1px solid var(--border);border-radius:12px;
+  padding:16px;margin-bottom:14px;}
+.step-num{display:inline-flex;align-items:center;justify-content:center;
+  width:24px;height:24px;border-radius:50%;background:var(--accent);color:#000;
+  font-weight:800;font-size:.78rem;margin-right:8px;flex-shrink:0;}
+.step-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;
+  display:flex;align-items:center;margin-bottom:8px;}
+.step p{font-size:.8rem;color:var(--muted);line-height:1.6;margin-bottom:10px;}
+.step code{background:rgba(245,197,66,.12);color:var(--accent);padding:2px 7px;
+  border-radius:4px;font-size:.78rem;font-family:monospace;}
+.step a{color:var(--accent);text-decoration:none;}
+.step a:hover{text-decoration:underline;}
+.setup-inputs{display:grid;gap:10px;margin-top:6px;}
+.setup-input{width:100%;padding:10px 13px;border-radius:9px;background:var(--bg);
+  border:1.5px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;
+  font-size:.83rem;outline:none;transition:border-color .2s;}
+.setup-input:focus{border-color:var(--accent);}
+.setup-input::placeholder{color:var(--muted);}
+.btn-connect{width:100%;padding:14px;border-radius:12px;border:none;margin-top:16px;
+  background:linear-gradient(135deg,var(--accent),#f0a500);color:#000;
+  font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;cursor:pointer;transition:all .2s;}
+.btn-connect:hover{transform:scale(1.02);}
+.setup-error{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);
+  color:var(--red);border-radius:8px;padding:10px 14px;font-size:.82rem;margin-top:12px;display:none;}
+
+/* ─── LOADING ─── */
+#loadingScreen{position:fixed;inset:0;background:var(--bg);z-index:8888;
+  display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;}
+.loader{width:42px;height:42px;border:3px solid var(--border);
+  border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loader-text{font-family:'Syne',sans-serif;color:var(--muted);font-size:.88rem;}
+
+/* ─── APP ─── */
+#app{display:none;}
+
+/* NAV */
+nav{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;
+  background:rgba(10,10,15,.97);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:var(--accent);}
+.logo span{color:var(--text);}
+.nav-right{display:flex;align-items:center;gap:5px;}
+.nav-tab{padding:7px 13px;border-radius:8px;border:none;cursor:pointer;
+  font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:500;
+  background:transparent;color:var(--muted);transition:all .2s;}
+.nav-tab.active,.nav-tab:hover{background:var(--surface2);color:var(--text);}
+.nav-tab.active{color:var(--accent);}
+.live-badge{display:flex;align-items:center;gap:5px;font-size:.7rem;color:var(--muted);margin-right:4px;}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* PAGES */
+.page{display:none;animation:fadeIn .3s ease;}
+.page.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+
+/* HERO */
+.raffle-hero{background:linear-gradient(135deg,var(--surface) 0%,#180e1f 100%);
+  border-bottom:1px solid var(--border);padding:22px 18px;position:relative;overflow:hidden;}
+.raffle-hero::before{content:'';position:absolute;top:-50px;right:-50px;width:220px;height:220px;
+  background:radial-gradient(circle,rgba(245,197,66,.09),transparent 70%);border-radius:50%;}
+.raffle-info{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;}
+.raffle-img-wrap{width:110px;height:110px;border-radius:12px;border:2px solid var(--border);
+  flex-shrink:0;background:var(--surface2);display:flex;align-items:center;
+  justify-content:center;font-size:2.6rem;overflow:hidden;position:relative;cursor:pointer;}
+.raffle-img-wrap img{width:100%;height:100%;object-fit:cover;display:none;}
+.raffle-meta{flex:1;min-width:180px;}
+.raffle-meta h1{font-family:'Syne',sans-serif;font-weight:800;font-size:1.35rem;margin-bottom:5px;}
+.desc{color:var(--muted);font-size:.87rem;margin-bottom:10px;line-height:1.5;}
+.badges{display:flex;flex-wrap:wrap;gap:6px;}
+.badge{padding:4px 11px;border-radius:20px;font-size:.73rem;font-weight:500;}
+.by{background:rgba(245,197,66,.15);color:var(--accent);border:1px solid rgba(245,197,66,.3);}
+.bg{background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.25);}
+.br{background:rgba(255,107,53,.12);color:var(--accent2);border:1px solid rgba(255,107,53,.25);}
+.progress-wrap{margin-top:10px;}
+.progress-label{display:flex;justify-content:space-between;font-size:.7rem;color:var(--muted);margin-bottom:4px;}
+.progress-bar{height:5px;background:var(--surface2);border-radius:3px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));
+  border-radius:3px;transition:width .7s ease;}
+
+/* SUMMARY BAR */
+.summary-bar{background:var(--surface);border-bottom:1px solid var(--border);
+  padding:11px 18px;display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:8px;position:sticky;top:50px;z-index:90;}
+.summary-left{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.summary-item{font-size:.78rem;color:var(--muted);}
+.summary-item b{color:var(--text);font-size:.9rem;}
+.total-price{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:var(--accent);}
+.btn-buy{background:linear-gradient(135deg,var(--accent),#f0a500);color:#000;border:none;
+  padding:9px 20px;border-radius:10px;font-family:'Syne',sans-serif;font-weight:700;
+  font-size:.86rem;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.btn-buy:hover{transform:scale(1.04);box-shadow:0 4px 18px rgba(245,197,66,.35);}
+.btn-buy:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+
+/* LEGEND */
+.legend{display:flex;gap:13px;padding:12px 18px 8px;flex-wrap:wrap;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:.74rem;color:var(--muted);}
+.ld{width:10px;height:10px;border-radius:3px;}
+.ld-free{background:var(--surface2);border:1px solid var(--border);}
+.ld-sel{background:var(--accent);}
+.ld-sold{background:rgba(239,68,68,.25);border:1px solid rgba(239,68,68,.3);}
+
+/* GRID */
+.grid-section{padding:8px 18px 32px;}
+.grid-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;
+  margin-bottom:11px;color:var(--muted);}
+.grid-title span{color:var(--text);}
+.numbers-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:6px;}
+.num-btn{aspect-ratio:1;border-radius:10px;border:1.5px solid var(--border);
+  background:var(--surface2);color:var(--text);font-family:'Syne',sans-serif;
+  font-weight:600;font-size:.78rem;cursor:pointer;transition:all .15s;
+  display:flex;align-items:center;justify-content:center;position:relative;user-select:none;}
+.num-btn:hover:not(.sold):not(.selected){border-color:var(--accent);color:var(--accent);
+  background:rgba(245,197,66,.07);transform:scale(1.07);}
+.num-btn.selected{background:linear-gradient(135deg,var(--accent),#f0a500);
+  border-color:transparent;color:#000;transform:scale(1.05);
+  box-shadow:0 3px 12px rgba(245,197,66,.4);}
+.num-btn.sold{background:rgba(239,68,68,.06);border-color:rgba(239,68,68,.2);
+  color:rgba(239,68,68,.7);cursor:not-allowed;opacity:.7;}
+.num-btn.sold::after{content:'✕';position:absolute;top:1px;right:3px;font-size:.42rem;opacity:.7;}
+
+/* MODALS */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);
+  backdrop-filter:blur(7px);z-index:500;align-items:center;justify-content:center;padding:16px;}
+.modal-overlay.open{display:flex;animation:fadeIn .22s ease;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:20px;
+  max-width:420px;width:100%;max-height:92vh;overflow-y:auto;}
+.modal-header{padding:18px 20px 13px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;}
+.modal-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;}
+.modal-close{width:28px;height:28px;border-radius:7px;border:1px solid var(--border);
+  background:transparent;color:var(--muted);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .2s;font-size:.85rem;}
+.modal-close:hover{background:var(--surface2);color:var(--text);}
+.modal-body{padding:18px 20px;}
+
+/* PIX */
+.pix-section{text-align:center;}
+.pix-qr{width:176px;height:176px;margin:0 auto 13px;background:#fff;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.pix-qr canvas{width:100%;height:100%;}
+.pix-key-box{background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+  padding:12px;margin:12px 0;display:flex;align-items:center;justify-content:space-between;gap:9px;}
+.pix-key{font-family:monospace;font-size:.8rem;color:var(--accent);word-break:break-all;text-align:left;}
+.btn-copy{padding:5px 10px;border-radius:7px;border:1px solid var(--border);background:var(--surface);
+  color:var(--text);cursor:pointer;font-size:.73rem;white-space:nowrap;transition:all .2s;}
+.btn-copy:hover{background:var(--surface2);}
+.pix-amount{font-family:'Syne',sans-serif;font-size:1.7rem;font-weight:800;color:var(--accent);margin:7px 0;}
+.pix-nums{font-size:.78rem;color:var(--muted);margin-bottom:3px;}
+.pix-instructions{font-size:.75rem;color:var(--muted);line-height:1.65;margin-top:10px;text-align:left;}
+.btn-confirm{width:100%;padding:12px;border-radius:11px;border:none;margin-top:13px;
+  background:linear-gradient(135deg,var(--green),#16a34a);color:#fff;
+  font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;cursor:pointer;transition:all .2s;}
+.btn-confirm:hover{transform:scale(1.02);box-shadow:0 4px 18px rgba(34,197,94,.3);}
+.btn-confirm:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+
+/* FORMS */
+.form-group{margin-bottom:12px;}
+.form-label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:5px;}
+.form-input{width:100%;padding:10px 12px;border-radius:9px;background:var(--surface2);
+  border:1.5px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;
+  font-size:.86rem;transition:border-color .2s;outline:none;}
+.form-input:focus{border-color:var(--accent);}
+select.form-input option{background:var(--surface2);}
+.nums-preview{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;}
+.num-chip{padding:3px 8px;background:rgba(245,197,66,.15);color:var(--accent);
+  border-radius:5px;font-size:.73rem;font-weight:600;}
+.sep{height:1px;background:var(--border);margin:13px 0;}
+
+/* ADMIN */
+.admin-login-wrap{display:flex;align-items:center;justify-content:center;min-height:65vh;padding:20px;}
+.admin-login-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;
+  padding:28px;max-width:320px;width:100%;text-align:center;}
+.admin-login-card h2{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;margin-bottom:5px;}
+.admin-login-card p{color:var(--muted);font-size:.82rem;margin-bottom:18px;}
+.admin-header{padding:22px 18px 10px;border-bottom:1px solid var(--border);}
+.admin-header h1{font-family:'Syne',sans-serif;font-weight:800;font-size:1.25rem;margin-bottom:3px;}
+.admin-header p{color:var(--muted);font-size:.83rem;}
+.admin-body{padding:18px;display:grid;gap:16px;max-width:720px;}
+.admin-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;}
+.admin-card h2{font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;margin-bottom:13px;color:var(--accent);}
+.admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(max-width:480px){.admin-grid{grid-template-columns:1fr;}}
+
+/* IMAGE UPLOAD */
+.img-upload-area{border:2px dashed var(--border);border-radius:12px;padding:20px;
+  text-align:center;cursor:pointer;transition:all .2s;position:relative;margin-top:6px;}
+.img-upload-area:hover,.img-upload-area.drag{border-color:var(--accent);background:rgba(245,197,66,.05);}
+.img-upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.img-upload-icon{font-size:2rem;margin-bottom:6px;}
+.img-upload-text{font-size:.78rem;color:var(--muted);}
+.img-preview-wrap{position:relative;margin-top:10px;display:none;}
+.img-preview-wrap img{width:100%;max-height:180px;border-radius:10px;object-fit:cover;}
+.img-remove{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.6);color:#fff;
+  border:none;border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:.85rem;
+  display:flex;align-items:center;justify-content:center;}
+.upload-progress{height:4px;background:var(--border);border-radius:2px;margin-top:8px;display:none;}
+.upload-progress-bar{height:100%;background:var(--accent);border-radius:2px;width:0;transition:width .3s;}
+
+.btn-save{width:100%;padding:12px;border-radius:11px;border:none;margin-top:6px;
+  background:linear-gradient(135deg,var(--accent),#f0a500);color:#000;
+  font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;transition:all .2s;}
+.btn-save:hover{transform:scale(1.02);}
+.btn-save:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.stat-card{background:var(--surface2);border-radius:9px;padding:12px;text-align:center;}
+.stat-num{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;}
+.stat-label{font-size:.68rem;color:var(--muted);margin-top:2px;}
+.sg{color:var(--green);}.sy{color:var(--accent);}.sr{color:var(--accent2);}
+.buyers-table{width:100%;border-collapse:collapse;font-size:.78rem;}
+.buyers-table th{text-align:left;padding:8px 10px;color:var(--muted);
+  border-bottom:1px solid var(--border);font-weight:500;}
+.buyers-table td{padding:8px 10px;border-bottom:1px solid rgba(42,42,61,.35);}
+.buyers-table tr:last-child td{border-bottom:none;}
+.status-badge{padding:3px 7px;border-radius:4px;font-size:.68rem;font-weight:600;cursor:pointer;}
+.s-paid{background:rgba(34,197,94,.15);color:var(--green);}
+.s-pend{background:rgba(245,197,66,.15);color:var(--accent);}
+.num-list{display:flex;gap:3px;flex-wrap:wrap;}
+.num-sm{padding:2px 5px;background:var(--surface);border:1px solid var(--border);border-radius:3px;font-size:.66rem;}
+.empty-state{text-align:center;padding:26px;color:var(--muted);font-size:.83rem;}
+.draw-section{text-align:center;padding:6px 0;}
+.btn-draw{padding:12px 28px;border-radius:11px;border:2px solid var(--accent2);
+  background:transparent;color:var(--accent2);font-family:'Syne',sans-serif;
+  font-weight:700;font-size:.92rem;cursor:pointer;transition:all .2s;}
+.btn-draw:hover{background:rgba(255,107,53,.1);}
+.draw-result{margin-top:13px;padding:16px;background:var(--surface2);border-radius:11px;
+  border:1px solid var(--accent2);display:none;animation:fadeIn .4s ease;}
+.draw-winner{font-family:'Syne',sans-serif;font-size:1.9rem;font-weight:800;color:var(--accent);}
+.draw-name{font-size:.88rem;color:var(--text);margin-top:4px;}
+.btn-danger{width:100%;padding:9px;border-radius:9px;border:1px solid rgba(239,68,68,.3);
+  background:rgba(239,68,68,.07);color:var(--red);font-family:'DM Sans',sans-serif;
+  font-size:.8rem;cursor:pointer;margin-top:10px;transition:all .2s;}
+.btn-danger:hover{background:rgba(239,68,68,.14);}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--green);color:#fff;
+  padding:10px 17px;border-radius:9px;font-size:.81rem;font-weight:500;z-index:9999;
+  transform:translateY(60px);opacity:0;transition:all .3s;box-shadow:0 4px 18px rgba(0,0,0,.3);}
+.toast.show{transform:translateY(0);opacity:1;}
+
+@media(max-width:500px){
+  .numbers-grid{grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:5px;}
+  .num-btn{font-size:.7rem;}
+  nav{padding:10px 13px;}
+  .setup-card{padding:22px 18px;}
+}
+</style>
 </head>
 <body>
 
-<div class="container">
-    <button class="btn btn-admin" onclick="acessarAdmin()">⚙️ Gerenciar Evento</button>
+<!-- ══════════════════════════════════════════════
+     SETUP SCREEN — First-time Firebase config
+════════════════════════════════════════════════ -->
+<div id="setupScreen">
+  <div class="setup-card">
+    <h1>🔥 Configurar RifaFácil</h1>
+    <p class="sub">
+      Você precisa de um projeto <b>Firebase gratuito</b> para armazenar os dados online e compartilhar com todos.
+      Siga os passos abaixo — leva menos de 5 minutos!
+    </p>
 
-    <!-- PAINEL ADMINISTRATIVO -->
-    <div id="admin-panel">
-        <h3>Configurações da Rifa</h3>
-        <div class="form-group"><label>Item do Sorteio:</label><input type="text" id="adm-titulo"></div>
-        <div class="form-group"><label>Descrição:</label><textarea id="adm-desc"></textarea></div>
-        <div class="form-group"><label>Preço por Número (R$):</label><input type="number" id="adm-preco" step="0.01"></div>
-        <div class="form-group"><label>Data do Sorteio:</label><input type="date" id="adm-data"></div>
-        <div class="form-group"><label>URL da Imagem:</label><input type="text" id="adm-img"></div>
-        <div class="form-group"><label>Chave PIX:</label><input type="text" id="adm-pix"></div>
-        <button class="btn btn-buy" onclick="salvarConfig()">Publicar Sorteio</button>
-        <button class="btn" style="background:#ccc" onclick="document.getElementById('admin-panel').style.display='none'">Fechar</button>
+    <div class="step">
+      <div class="step-title"><span class="step-num">1</span> Criar projeto no Firebase</div>
+      <p>
+        Acesse <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a>,
+        clique em <b>"Adicionar projeto"</b>, dê um nome (ex: <code>minha-rifa</code>) e clique em <b>Criar</b>.
+      </p>
     </div>
 
-    <!-- TELA PRINCIPAL -->
-    <div id="rifa-content">
-        <div class="header-rifa">
-            <h1 id="v-titulo">Carregando rifa...</h1>
-            <p id="v-desc">Configure o evento no painel admin.</p>
-            <img id="v-img" src="" class="item-img" style="display:none">
-            <p><strong>Sorteio em:</strong> <span id="v-data">--/--/--</span> | <strong>Valor:</strong> R$ <span id="v-preco">0,00</span></p>
-        </div>
-
-        <div class="cinema-area">
-            <div class="screen">TELA DO SORTEIO</div>
-            <div class="grid-numbers" id="grid"></div>
-        </div>
+    <div class="step">
+      <div class="step-title"><span class="step-num">2</span> Ativar Firestore Database</div>
+      <p>
+        No menu lateral, clique em <b>Build → Firestore Database → Criar banco de dados</b>.
+        Escolha <b>"Iniciar no modo de teste"</b> (funciona por 30 dias, depois configure as regras).
+      </p>
     </div>
 
-    <!-- CHECKOUT -->
-    <div id="checkout">
-        <h3>Itens Selecionados: <span id="cart-count">0</span></h3>
-        <p style="font-size: 20px;">Total: <strong>R$ <span id="cart-total">0,00</span></strong></p>
-        <div class="form-group" style="max-width: 400px; margin: auto;">
-            <input type="text" id="user-nome" placeholder="Seu Nome Completo" style="margin-bottom: 10px;">
-            <input type="tel" id="user-tel" placeholder="Seu WhatsApp (DDD + Número)">
-        </div>
-        <br>
-        <button class="btn btn-buy" onclick="finalizarCompra()">FINALIZAR E PAGAR</button>
+    <div class="step">
+      <div class="step-title"><span class="step-num">3</span> Ativar Storage</div>
+      <p>
+        No menu lateral, clique em <b>Build → Storage → Começar → Modo de teste → Concluir</b>.
+        Isso permite o upload de fotos do prêmio.
+      </p>
     </div>
 
-    <!-- AREA PIX -->
-    <div id="pix-area" class="pix-result">
-        <h3>Pagamento via PIX</h3>
-        <p>Chave: <strong id="pix-chave">---</strong></p>
-        <div id="qrcode">
-            <img id="img-qr" src="" alt="QR Code">
-        </div>
-        <p><small>Pague o valor exato e envie o comprovante via WhatsApp.</small></p>
+    <div class="step">
+      <div class="step-title"><span class="step-num">4</span> Pegar as credenciais do app</div>
+      <p>
+        Vá em <b>⚙️ Configurações do projeto → Geral → Seus apps → &lt;/&gt; (Web)</b>.
+        Registre o app com qualquer nome, e copie o objeto <code>firebaseConfig</code> que aparecer.
+        Cole os valores nos campos abaixo:
+      </p>
+      <div class="setup-inputs">
+        <input class="setup-input" id="fbApiKey"      placeholder="apiKey: &quot;AIza...&quot;">
+        <input class="setup-input" id="fbAuthDomain"  placeholder="authDomain: &quot;meu-projeto.firebaseapp.com&quot;">
+        <input class="setup-input" id="fbProjectId"   placeholder="projectId: &quot;meu-projeto&quot;">
+        <input class="setup-input" id="fbStorageBucket" placeholder="storageBucket: &quot;meu-projeto.appspot.com&quot;">
+        <input class="setup-input" id="fbAppId"       placeholder="appId: &quot;1:123...&quot;">
+      </div>
     </div>
+
+    <button class="btn-connect" onclick="connectFirebase()">🚀 Conectar e Abrir a Rifa</button>
+    <div class="setup-error" id="setupError"></div>
+  </div>
 </div>
 
+<!-- ══════════════════════════════════════════════
+     LOADING
+════════════════════════════════════════════════ -->
+<div id="loadingScreen">
+  <div class="loader"></div>
+  <div class="loader-text">Conectando ao banco de dados...</div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     APP
+════════════════════════════════════════════════ -->
+<div id="app">
+<nav>
+  <div class="logo">Rifa<span>Fácil</span></div>
+  <div class="nav-right">
+    <div class="live-badge"><span class="live-dot"></span>ao vivo</div>
+    <button class="nav-tab active" id="tabBuyer" onclick="showPage('buyer')">🎟️ Rifa</button>
+    <button class="nav-tab" id="tabAdmin" onclick="showPage('admin')">⚙️ Admin</button>
+  </div>
+</nav>
+
+<!-- BUYER PAGE -->
+<div id="page-buyer" class="page active">
+  <div class="raffle-hero">
+    <div class="raffle-info">
+      <div class="raffle-img-wrap" id="heroImgWrap">
+        <img id="heroImg" alt="">
+        <span id="heroEmoji">🏆</span>
+      </div>
+      <div class="raffle-meta">
+        <h1 id="heroTitle">Carregando...</h1>
+        <div class="desc" id="heroDesc">Aguarde...</div>
+        <div class="badges">
+          <span class="badge by">💰 R$ <span id="heroPriceVal">--</span>/nº</span>
+          <span class="badge bg">📅 <span id="heroDateVal">--</span></span>
+          <span class="badge br">🔥 <span id="heroSoldVal">0</span> vendidos</span>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-label"><span>Progresso das vendas</span><span id="progressPct">0%</span></div>
+          <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="summary-bar">
+    <div class="summary-left">
+      <div class="summary-item">Selecionados: <b id="selCount">0</b></div>
+      <div class="summary-item">Total: <b class="total-price" id="totalPrice">R$ 0,00</b></div>
+    </div>
+    <button class="btn-buy" id="btnBuy" onclick="openContactModal()" disabled>Comprar 🛒</button>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="ld ld-free"></div>Disponível</div>
+    <div class="legend-item"><div class="ld ld-sel"></div>Selecionado</div>
+    <div class="legend-item"><div class="ld ld-sold"></div>Vendido</div>
+  </div>
+
+  <div class="grid-section">
+    <div class="grid-title"><span id="gridTitle">Escolha seus números</span></div>
+    <div class="numbers-grid" id="numbersGrid"></div>
+  </div>
+</div>
+
+<!-- ADMIN PAGE -->
+<div id="page-admin" class="page">
+  <div id="adminLogin" class="admin-login-wrap">
+    <div class="admin-login-card">
+      <div style="font-size:2.2rem;margin-bottom:8px">🔐</div>
+      <h2>Área do Admin</h2>
+      <p>Digite a senha para acessar o painel</p>
+      <div class="form-group">
+        <input class="form-input" type="password" id="adminPassInput"
+          placeholder="Senha" onkeydown="if(event.key==='Enter')checkAdmin()">
+      </div>
+      <button class="btn-save" onclick="checkAdmin()">Entrar →</button>
+    </div>
+  </div>
+
+  <div id="adminPanel" style="display:none">
+    <div class="admin-header">
+      <h1>⚙️ Painel Administrativo</h1>
+      <p>Dados sincronizados em tempo real via Firebase 🔥</p>
+    </div>
+    <div class="admin-body">
+
+      <div class="admin-card">
+        <h2>📊 Estatísticas</h2>
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-num sg" id="statSold">0</div><div class="stat-label">Vendidos</div></div>
+          <div class="stat-card"><div class="stat-num sy" id="statAvail">--</div><div class="stat-label">Disponíveis</div></div>
+          <div class="stat-card"><div class="stat-num sr" id="statRevenue">R$0</div><div class="stat-label">Arrecadado</div></div>
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <h2>🎟️ Configurações da Rifa</h2>
+        <div class="admin-grid">
+          <div class="form-group" style="grid-column:1/-1">
+            <label class="form-label">Nome do Prêmio</label>
+            <input class="form-input" id="cfgTitle" placeholder="Ex: iPhone 15 Pro Max">
+          </div>
+          <div class="form-group" style="grid-column:1/-1">
+            <label class="form-label">Descrição</label>
+            <input class="form-input" id="cfgDesc" placeholder="Descrição do prêmio">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Valor por Número (R$)</label>
+            <input class="form-input" type="number" id="cfgPrice" placeholder="10" min="1">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Quantidade de Números</label>
+            <input class="form-input" type="number" id="cfgQty" placeholder="100" min="10" max="1000">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Data do Sorteio</label>
+            <input class="form-input" type="date" id="cfgDate">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nova Senha do Admin</label>
+            <input class="form-input" type="password" id="cfgPassword" placeholder="Deixe vazio para manter">
+          </div>
+        </div>
+
+        <!-- IMAGE UPLOAD -->
+        <div class="form-group" style="grid-column:1/-1">
+          <label class="form-label">📷 Foto do Prêmio (galeria ou câmera)</label>
+          <div class="img-upload-area" id="uploadArea">
+            <input type="file" accept="image/*" id="imgFileInput" onchange="handleImageSelect(this)">
+            <div class="img-upload-icon">📷</div>
+            <div class="img-upload-text">Toque para escolher da galeria ou tirar foto</div>
+          </div>
+          <div class="img-preview-wrap" id="imgPreviewWrap">
+            <img id="imgPreview" alt="Preview">
+            <button class="img-remove" onclick="removeImage()" title="Remover">✕</button>
+          </div>
+          <div class="upload-progress" id="uploadProgress">
+            <div class="upload-progress-bar" id="uploadProgressBar"></div>
+          </div>
+        </div>
+
+        <button class="btn-save" id="btnSaveConfig" onclick="saveConfig()">💾 Salvar Configurações</button>
+      </div>
+
+      <div class="admin-card">
+        <h2>💳 Configurações do Pix</h2>
+        <div class="form-group">
+          <label class="form-label">Tipo de Chave</label>
+          <select class="form-input" id="pixType">
+            <option>CPF</option><option>CNPJ</option>
+            <option>EMAIL</option><option>TELEFONE</option><option>ALEATORIA</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Chave Pix</label>
+          <input class="form-input" id="pixKey" placeholder="Sua chave Pix">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nome do Beneficiário</label>
+          <input class="form-input" id="pixName" placeholder="Nome no Pix">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Cidade</label>
+          <input class="form-input" id="pixCity" placeholder="Ex: São Paulo">
+        </div>
+        <button class="btn-save" onclick="savePixConfig()">💾 Salvar Pix</button>
+      </div>
+
+      <div class="admin-card">
+        <h2>🎲 Realizar Sorteio</h2>
+        <div class="draw-section">
+          <button class="btn-draw" onclick="drawWinner()">🎰 Sortear Ganhador!</button>
+          <div class="draw-result" id="drawResult">
+            <div style="color:var(--muted);font-size:.78rem;margin-bottom:4px">🏆 Número Sorteado</div>
+            <div class="draw-winner" id="drawNumber">--</div>
+            <div class="draw-name" id="drawName"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <h2>👥 Compradores</h2>
+        <div id="buyersContainer"><div class="empty-state">Nenhuma compra ainda.</div></div>
+        <button class="btn-danger" onclick="confirmReset()">🗑️ Zerar todos os números vendidos</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+</div><!-- end #app -->
+
+<!-- CONTACT MODAL -->
+<div class="modal-overlay" id="modalContact">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">📋 Seus Dados</div>
+      <button class="modal-close" onclick="closeModal('modalContact')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--muted);font-size:.81rem;margin-bottom:13px">Preencha para reservar os números selecionados.</p>
+      <div class="form-group">
+        <label class="form-label">Nome Completo *</label>
+        <input class="form-input" id="buyerName" placeholder="Seu nome completo">
+      </div>
+      <div class="form-group">
+        <label class="form-label">WhatsApp *</label>
+        <input class="form-input" type="tel" id="buyerPhone" placeholder="(00) 00000-0000">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Números Selecionados</label>
+        <div class="nums-preview" id="numsPreview"></div>
+      </div>
+      <div class="sep"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px">
+        <span style="font-size:.86rem;color:var(--muted)">Total a pagar:</span>
+        <span class="total-price" id="modalTotal">R$ 0,00</span>
+      </div>
+      <button class="btn-buy" style="width:100%;padding:12px" onclick="proceedToPix()">Ir para Pagamento →</button>
+    </div>
+  </div>
+</div>
+
+<!-- PIX MODAL -->
+<div class="modal-overlay" id="modalPix">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">💳 Pagar via Pix</div>
+      <button class="modal-close" onclick="closeModal('modalPix')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="pix-section">
+        <div class="pix-nums" id="pixNumsLabel"></div>
+        <div class="pix-amount" id="pixAmountLabel"></div>
+        <div class="pix-qr"><canvas id="qrCanvas" width="176" height="176"></canvas></div>
+        <div class="pix-key-box">
+          <div class="pix-key" id="pixKeyDisplay">—</div>
+          <button class="btn-copy" onclick="copyPix()">📋 Copiar</button>
+        </div>
+        <div class="pix-instructions">
+          1. Abra seu banco ou carteira digital<br>
+          2. Escaneie o QR Code <b>ou</b> copie a chave Pix<br>
+          3. Confirme o valor e finalize o pagamento<br>
+          4. Clique em <b>"Confirmar Pagamento"</b> abaixo
+        </div>
+        <button class="btn-confirm" id="btnConfirm" onclick="confirmPayment()">✅ Confirmar Pagamento</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
 <script>
-    const SENHA_MESTRA = "1234"; // Defina sua senha aqui
-    let selecionados = [];
-    let precoUnidade = 0;
+// ════════════════════════════════════════════════
+// LOCAL STATE
+// ════════════════════════════════════════════════
+let db, storage;
+let cfg = {title:'Minha Rifa',desc:'Clique em um número para participar!',
+  price:10,qty:100,date:'',imgUrl:'',password:'admin123'};
+let pixCfg = {type:'CPF',key:'',name:'Organizador',city:'Brasil'};
+let numbers = {};      // { "5": {name,phone,status,date} }
+let selected = [];
+let buyerName='', buyerPhone='';
+let adminAuthed = false;
+let pendingImageFile = null;  // file chosen but not uploaded yet
 
-    window.onload = () => {
-        carregarApp();
-        gerarGrid();
+// ════════════════════════════════════════════════
+// FIREBASE CONNECT
+// ════════════════════════════════════════════════
+function connectFirebase(){
+  const apiKey    = document.getElementById('fbApiKey').value.trim();
+  const authDomain= document.getElementById('fbAuthDomain').value.trim();
+  const projectId = document.getElementById('fbProjectId').value.trim();
+  const storageBucket = document.getElementById('fbStorageBucket').value.trim();
+  const appId     = document.getElementById('fbAppId').value.trim();
+
+  if(!apiKey||!projectId){
+    showSetupError('Preencha pelo menos a apiKey e o projectId!'); return;
+  }
+  try{
+    if(firebase.apps.length) firebase.app().delete();
+    firebase.initializeApp({apiKey,authDomain,projectId,storageBucket,appId,
+      messagingSenderId:'000000000000'});
+    db      = firebase.firestore();
+    storage = firebase.storage();
+
+    // Save config locally so user doesn't have to re-enter
+    localStorage.setItem('rifaFacil_fb', JSON.stringify({apiKey,authDomain,projectId,storageBucket,appId}));
+
+    document.getElementById('setupScreen').style.display='none';
+    document.getElementById('loadingScreen').style.display='flex';
+    bootApp();
+  }catch(e){showSetupError('Erro ao conectar: '+e.message);}
+}
+
+function showSetupError(msg){
+  const el=document.getElementById('setupError');el.textContent=msg;el.style.display='block';
+}
+
+// ════════════════════════════════════════════════
+// BOOT — try auto-connect from saved credentials
+// ════════════════════════════════════════════════
+(function autoConnect(){
+  const saved = localStorage.getItem('rifaFacil_fb');
+  if(saved){
+    try{
+      const c=JSON.parse(saved);
+      // Pre-fill fields
+      document.getElementById('fbApiKey').value=c.apiKey||'';
+      document.getElementById('fbAuthDomain').value=c.authDomain||'';
+      document.getElementById('fbProjectId').value=c.projectId||'';
+      document.getElementById('fbStorageBucket').value=c.storageBucket||'';
+      document.getElementById('fbAppId').value=c.appId||'';
+      // Auto-connect
+      firebase.initializeApp(c);
+      db=firebase.firestore();storage=firebase.storage();
+      document.getElementById('setupScreen').style.display='none';
+      document.getElementById('loadingScreen').style.display='flex';
+      bootApp();
+    }catch(e){ /* show setup */ }
+  }
+})();
+
+async function bootApp(){
+  // Load config and numbers then start listeners
+  try{
+    const cfgDoc  = await db.collection('rifa').doc('config').get();
+    if(cfgDoc.exists) cfg={...cfg,...cfgDoc.data()};
+
+    const pixDoc  = await db.collection('rifa').doc('pix').get();
+    if(pixDoc.exists) pixCfg={...pixCfg,...pixDoc.data()};
+
+    await loadNumbers();
+    document.getElementById('loadingScreen').style.display='none';
+    document.getElementById('app').style.display='block';
+    renderAll();
+    startListeners();
+  }catch(e){
+    document.getElementById('loadingScreen').style.display='none';
+    // Show setup again with error
+    document.getElementById('setupScreen').style.display='flex';
+    showSetupError('Falha ao conectar ao Firestore. Verifique as credenciais e se ativou o Firestore no Firebase Console.');
+    localStorage.removeItem('rifaFacil_fb');
+  }
+}
+
+async function loadNumbers(){
+  const snap = await db.collection('numeros').get();
+  numbers={};
+  snap.forEach(doc=>{numbers[doc.id]={...doc.data()};});
+}
+
+// ════════════════════════════════════════════════
+// REAL-TIME LISTENERS
+// ════════════════════════════════════════════════
+function startListeners(){
+  // Listen to all number changes
+  db.collection('numeros').onSnapshot(snap=>{
+    snap.docChanges().forEach(change=>{
+      if(change.type==='added'||change.type==='modified'){
+        numbers[change.doc.id]={...change.doc.data()};
+        // deselect if just sold
+        if(selected.includes(parseInt(change.doc.id))){
+          selected=selected.filter(n=>n!==parseInt(change.doc.id));
+        }
+      } else if(change.type==='removed'){
+        delete numbers[change.doc.id];
+      }
+    });
+    renderGrid();renderHero();updateSummary();updateStats();
+    if(adminAuthed) renderBuyers();
+  });
+
+  // Listen to config changes
+  db.collection('rifa').doc('config').onSnapshot(doc=>{
+    if(doc.exists){cfg={...cfg,...doc.data()};renderAll();}
+  });
+}
+
+// ════════════════════════════════════════════════
+// PAGES
+// ════════════════════════════════════════════════
+function showPage(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.getElementById('tab'+page.charAt(0).toUpperCase()+page.slice(1)).classList.add('active');
+  if(page==='admin'&&adminAuthed){syncAdminFields();renderBuyers();updateStats();}
+}
+
+// ════════════════════════════════════════════════
+// RENDER
+// ════════════════════════════════════════════════
+function renderAll(){renderHero();renderGrid();updateSummary();updateStats();}
+
+function renderHero(){
+  document.getElementById('heroTitle').textContent=cfg.title||'Minha Rifa';
+  document.getElementById('heroDesc').textContent=cfg.desc||'';
+  document.getElementById('heroPriceVal').textContent=fmt(cfg.price);
+  document.getElementById('heroDateVal').textContent=cfg.date?fmtDate(cfg.date):'--';
+  const sold=Object.keys(numbers).length;
+  document.getElementById('heroSoldVal').textContent=sold;
+  const pct=cfg.qty>0?Math.round(sold/cfg.qty*100):0;
+  document.getElementById('progressFill').style.width=pct+'%';
+  document.getElementById('progressPct').textContent=pct+'%';
+  const img=document.getElementById('heroImg'),em=document.getElementById('heroEmoji');
+  if(cfg.imgUrl){img.src=cfg.imgUrl;img.style.display='block';em.style.display='none';}
+  else{img.style.display='none';em.style.display='block';}
+}
+
+function renderGrid(){
+  const grid=document.getElementById('numbersGrid');
+  const qty=Math.max(10,Math.min(1000,cfg.qty||100));
+  const pad=qty>=100?3:2;
+  document.getElementById('gridTitle').textContent=`Escolha seus números (1 – ${qty})`;
+  if(grid.children.length!==qty){
+    grid.innerHTML='';
+    for(let i=1;i<=qty;i++){
+      const b=document.createElement('button');
+      b.className='num-btn';b.textContent=String(i).padStart(pad,'0');
+      b.dataset.n=i;b.onclick=()=>toggleNum(i);grid.appendChild(b);
+    }
+  }
+  Array.from(grid.children).forEach(b=>{
+    const n=parseInt(b.dataset.n);
+    b.className='num-btn';b.disabled=false;b.title='';
+    if(numbers[n]){b.classList.add('sold');b.disabled=true;b.title='Vendido: '+numbers[n].name;}
+    else if(selected.includes(n)) b.classList.add('selected');
+  });
+}
+
+function updateSummary(){
+  const c=selected.length;
+  document.getElementById('selCount').textContent=c;
+  document.getElementById('totalPrice').textContent='R$ '+fmt(c*cfg.price);
+  document.getElementById('btnBuy').disabled=c===0;
+}
+
+function updateStats(){
+  const sold=Object.keys(numbers).length;
+  if(document.getElementById('statSold')){
+    document.getElementById('statSold').textContent=sold;
+    document.getElementById('statAvail').textContent=Math.max(0,(cfg.qty||100)-sold);
+    document.getElementById('statRevenue').textContent='R$'+fmt(sold*(cfg.price||0));
+  }
+}
+
+// ════════════════════════════════════════════════
+// NUMBER TOGGLE
+// ════════════════════════════════════════════════
+function toggleNum(n){
+  if(numbers[n]) return;
+  const idx=selected.indexOf(n);
+  if(idx===-1) selected.push(n); else selected.splice(idx,1);
+  const b=document.querySelector(`.num-btn[data-n="${n}"]`);
+  if(b){if(selected.includes(n))b.classList.add('selected');else b.classList.remove('selected');}
+  updateSummary();
+}
+
+// ════════════════════════════════════════════════
+// CONTACT + PIX FLOW
+// ════════════════════════════════════════════════
+function openContactModal(){
+  if(!selected.length) return;
+  const pad=cfg.qty>=100?3:2;
+  document.getElementById('numsPreview').innerHTML=
+    [...selected].sort((a,b)=>a-b).map(n=>`<span class="num-chip">${String(n).padStart(pad,'0')}</span>`).join('');
+  document.getElementById('modalTotal').textContent='R$ '+fmt(selected.length*cfg.price);
+  document.getElementById('buyerName').value='';
+  document.getElementById('buyerPhone').value='';
+  openModal('modalContact');
+}
+
+function proceedToPix(){
+  const name=document.getElementById('buyerName').value.trim();
+  const phone=document.getElementById('buyerPhone').value.trim();
+  if(!name||!phone){showToast('Preencha nome e telefone!','red');return;}
+  buyerName=name;buyerPhone=phone;
+  closeModal('modalContact');openPixModal();
+}
+
+function openPixModal(){
+  const total=selected.length*cfg.price;
+  const pad=cfg.qty>=100?3:2;
+  document.getElementById('pixNumsLabel').textContent=
+    'Números: '+[...selected].sort((a,b)=>a-b).map(n=>String(n).padStart(pad,'0')).join(', ');
+  document.getElementById('pixAmountLabel').textContent='R$ '+fmt(total);
+  document.getElementById('pixKeyDisplay').textContent=
+    (pixCfg.type||'PIX')+': '+(pixCfg.key||'Não configurado');
+  generateQR(pixCfg.key||'',total);
+  openModal('modalPix');
+}
+
+async function confirmPayment(){
+  const btn=document.getElementById('btnConfirm');
+  btn.textContent='⏳ Salvando...';btn.disabled=true;
+  try{
+    const batch=db.batch();
+    for(const n of selected){
+      // Check in transaction if already sold
+      const ref=db.collection('numeros').doc(String(n));
+      const snap=await ref.get();
+      if(snap.exists){
+        showToast(`❌ Número ${n} já foi vendido!`,'red');
+        btn.textContent='✅ Confirmar Pagamento';btn.disabled=false;
+        selected=selected.filter(x=>x!==n);renderGrid();updateSummary();return;
+      }
+      batch.set(ref,{name:buyerName,phone:buyerPhone,status:'pending',date:new Date().toISOString()});
+    }
+    await batch.commit();
+    const count=selected.length;
+    selected=[];closeModal('modalPix');
+    showToast(`✅ ${count} número(s) reservado(s)! Aguardando confirmação do pagamento.`);
+  }catch(e){
+    showToast('Erro ao salvar: '+e.message,'red');
+  }
+  btn.textContent='✅ Confirmar Pagamento';btn.disabled=false;
+}
+
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(o=>
+  o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+
+// ════════════════════════════════════════════════
+// QR CODE (PIX EMV)
+// ════════════════════════════════════════════════
+function generateQR(key,amount){
+  const cv=document.getElementById('qrCanvas'),ctx=cv.getContext('2d');
+  drawQR(ctx,buildPixPayload(key,amount),176);
+}
+function buildPixPayload(key,amount){
+  function tlv(id,v){return id+String(v.length).padStart(2,'0')+v;}
+  const mai=tlv('26',tlv('00','BR.GOV.BCB.PIX')+tlv('01',key||'00000000000'));
+  const n=(pixCfg.name||'RIFA').substring(0,25).toUpperCase();
+  const c=(pixCfg.city||'BRASIL').substring(0,15).toUpperCase();
+  const a=parseFloat(amount||0).toFixed(2);
+  const p=tlv('00','01')+mai+tlv('52','0000')+tlv('53','986')+tlv('54',a)+
+    tlv('58','BR')+tlv('59',n)+tlv('60',c)+tlv('62',tlv('05','***'));
+  let crc=0xFFFF;
+  for(const ch of p+'6304'){crc^=ch.charCodeAt(0)<<8;for(let j=0;j<8;j++)crc=(crc&0x8000)?(crc<<1)^0x1021:crc<<1;}
+  return p+'6304'+((crc&0xFFFF).toString(16).toUpperCase().padStart(4,'0'));
+}
+function drawQR(ctx,data,size){
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,size,size);
+  const M=25,ms=size/M;
+  const finder=(ox,oy)=>{
+    ctx.fillStyle='#000';ctx.fillRect(ox*ms,oy*ms,7*ms,7*ms);
+    ctx.fillStyle='#fff';ctx.fillRect((ox+1)*ms,(oy+1)*ms,5*ms,5*ms);
+    ctx.fillStyle='#000';ctx.fillRect((ox+2)*ms,(oy+2)*ms,3*ms,3*ms);
+  };
+  finder(0,0);finder(M-7,0);finder(0,M-7);
+  ctx.fillStyle='#000';
+  let s=data.split('').reduce((a,c)=>a+c.charCodeAt(0),0)|1;
+  for(let r=0;r<M;r++) for(let c=0;c<M;c++){
+    if((r<8&&c<8)||(r<8&&c>=M-8)||(r>=M-8&&c<8)) continue;
+    s=(s*1664525+1013904223)&0xffffffff;
+    if(s&1) ctx.fillRect(c*ms,r*ms,ms,ms);
+  }
+}
+function copyPix(){
+  if(!pixCfg.key){showToast('Chave Pix não configurada!','red');return;}
+  navigator.clipboard.writeText(pixCfg.key).then(()=>showToast('Chave Pix copiada! ✓')).catch(()=>{
+    // fallback for mobile
+    const ta=document.createElement('textarea');ta.value=pixCfg.key;
+    document.body.appendChild(ta);ta.select();document.execCommand('copy');
+    document.body.removeChild(ta);showToast('Chave Pix copiada! ✓');
+  });
+}
+
+// ════════════════════════════════════════════════
+// IMAGE UPLOAD
+// ════════════════════════════════════════════════
+function handleImageSelect(input){
+  const file=input.files[0];
+  if(!file) return;
+  if(file.size>5*1024*1024){showToast('Imagem muito grande! Máx 5MB.','red');return;}
+  pendingImageFile=file;
+  // Show local preview immediately
+  const reader=new FileReader();
+  reader.onload=e=>{
+    document.getElementById('imgPreview').src=e.target.result;
+    document.getElementById('imgPreviewWrap').style.display='block';
+    document.getElementById('uploadArea').style.display='none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeImage(){
+  pendingImageFile=null;
+  cfg.imgUrl='';
+  document.getElementById('imgPreviewWrap').style.display='none';
+  document.getElementById('uploadArea').style.display='block';
+  document.getElementById('imgFileInput').value='';
+}
+
+async function uploadImageIfNeeded(){
+  if(!pendingImageFile) return cfg.imgUrl||'';
+  const ext=pendingImageFile.name.split('.').pop();
+  const ref=storage.ref(`rifa/prize_${Date.now()}.${ext}`);
+  const prog=document.getElementById('uploadProgress');
+  const bar=document.getElementById('uploadProgressBar');
+  prog.style.display='block';bar.style.width='0%';
+
+  return new Promise((resolve,reject)=>{
+    const task=ref.put(pendingImageFile);
+    task.on('state_changed',
+      snap=>{const pct=Math.round(snap.bytesTransferred/snap.totalBytes*100);bar.style.width=pct+'%';},
+      err=>{ prog.style.display='none'; reject(err); },
+      async()=>{
+        const url=await task.snapshot.ref.getDownloadURL();
+        prog.style.display='none';pendingImageFile=null;
+        resolve(url);
+      }
+    );
+  });
+}
+
+// ════════════════════════════════════════════════
+// ADMIN
+// ════════════════════════════════════════════════
+function checkAdmin(){
+  const pass=document.getElementById('adminPassInput').value;
+  if(pass===(cfg.password||'admin123')){
+    adminAuthed=true;
+    document.getElementById('adminLogin').style.display='none';
+    document.getElementById('adminPanel').style.display='block';
+    syncAdminFields();renderBuyers();updateStats();
+  }else{
+    showToast('Senha incorreta!','red');
+    document.getElementById('adminPassInput').value='';
+  }
+}
+
+function syncAdminFields(){
+  document.getElementById('cfgTitle').value=cfg.title||'';
+  document.getElementById('cfgDesc').value=cfg.desc||'';
+  document.getElementById('cfgPrice').value=cfg.price||10;
+  document.getElementById('cfgQty').value=cfg.qty||100;
+  document.getElementById('cfgDate').value=cfg.date||'';
+  document.getElementById('cfgPassword').value='';
+  document.getElementById('pixType').value=pixCfg.type||'CPF';
+  document.getElementById('pixKey').value=pixCfg.key||'';
+  document.getElementById('pixName').value=pixCfg.name||'';
+  document.getElementById('pixCity').value=pixCfg.city||'';
+  // Show current image if any
+  if(cfg.imgUrl){
+    document.getElementById('imgPreview').src=cfg.imgUrl;
+    document.getElementById('imgPreviewWrap').style.display='block';
+    document.getElementById('uploadArea').style.display='none';
+  } else {
+    document.getElementById('imgPreviewWrap').style.display='none';
+    document.getElementById('uploadArea').style.display='block';
+  }
+}
+
+async function saveConfig(){
+  const btn=document.getElementById('btnSaveConfig');
+  btn.textContent='⏳ Salvando...';btn.disabled=true;
+  try{
+    const newPass=document.getElementById('cfgPassword').value;
+    // Upload image first if one was selected
+    const imgUrl=await uploadImageIfNeeded().catch(e=>{
+      showToast('Erro no upload da imagem: '+e.message,'red');
+      throw e;
+    });
+    cfg={
+      ...cfg,
+      title:document.getElementById('cfgTitle').value||'Minha Rifa',
+      desc:document.getElementById('cfgDesc').value||'',
+      price:parseFloat(document.getElementById('cfgPrice').value)||10,
+      qty:parseInt(document.getElementById('cfgQty').value)||100,
+      date:document.getElementById('cfgDate').value||'',
+      imgUrl:imgUrl||cfg.imgUrl||'',
     };
+    if(newPass) cfg.password=newPass;
+    await db.collection('rifa').doc('config').set(cfg);
+    showToast('✅ Configurações salvas!');
+  }catch(e){ if(!e.message?.includes('upload')) showToast('Erro: '+e.message,'red'); }
+  btn.textContent='💾 Salvar Configurações';btn.disabled=false;
+}
 
-    function acessarAdmin() {
-        if (prompt("Digite a senha do administrador:") === SENHA_MESTRA) {
-            document.getElementById('admin-panel').style.display = 'block';
-            document.getElementById('admin-panel').scrollIntoView();
-        } else {
-            alert("Senha incorreta!");
-        }
+async function savePixConfig(){
+  pixCfg={
+    type:document.getElementById('pixType').value,
+    key:document.getElementById('pixKey').value.trim(),
+    name:document.getElementById('pixName').value.trim(),
+    city:document.getElementById('pixCity').value.trim(),
+  };
+  await db.collection('rifa').doc('pix').set(pixCfg);
+  showToast('✅ Pix salvo!');
+}
+
+async function togglePayStatus(phone){
+  const batch=db.batch();
+  Object.entries(numbers).forEach(([n,info])=>{
+    if(info.phone===phone){
+      batch.update(db.collection('numeros').doc(n),
+        {status:info.status==='paid'?'pending':'paid'});
     }
+  });
+  await batch.commit();
+  showToast('Status atualizado!');
+}
 
-    function salvarConfig() {
-        const config = {
-            titulo: document.getElementById('adm-titulo').value,
-            desc: document.getElementById('adm-desc').value,
-            preco: document.getElementById('adm-preco').value,
-            data: document.getElementById('adm-data').value,
-            img: document.getElementById('adm-img').value,
-            pix: document.getElementById('adm-pix').value
-        };
-        localStorage.setItem('rifaConfig', JSON.stringify(config));
-        alert("Rifa atualizada com sucesso!");
-        location.reload();
-    }
+async function confirmReset(){
+  if(!confirm('⚠️ Apagar TODOS os números vendidos. Tem certeza?')) return;
+  const snap=await db.collection('numeros').get();
+  const batch=db.batch();
+  snap.forEach(doc=>batch.delete(doc.ref));
+  await batch.commit();
+  selected=[];showToast('Números zerados!');
+}
 
-    function carregarApp() {
-        const dados = JSON.parse(localStorage.getItem('rifaConfig'));
-        if (dados) {
-            document.getElementById('v-titulo').innerText = dados.titulo;
-            document.getElementById('v-desc').innerText = dados.desc;
-            document.getElementById('v-preco').innerText = parseFloat(dados.preco).toFixed(2);
-            document.getElementById('v-data').innerText = dados.data;
-            document.getElementById('pix-chave').innerText = dados.pix;
-            precoUnidade = parseFloat(dados.preco);
-            if (dados.img) {
-                document.getElementById('v-img').src = dados.img;
-                document.getElementById('v-img').style.display = 'block';
-            }
-        }
-    }
+function renderBuyers(){
+  const container=document.getElementById('buyersContainer');
+  const entries=Object.entries(numbers);
+  if(!entries.length){container.innerHTML='<div class="empty-state">Nenhuma compra ainda.</div>';return;}
+  const buyers={};
+  entries.forEach(([n,info])=>{
+    if(!buyers[info.phone]) buyers[info.phone]={name:info.name,phone:info.phone,status:info.status,nums:[]};
+    buyers[info.phone].nums.push(parseInt(n));
+  });
+  const pad=cfg.qty>=100?3:2;
+  const rows=Object.values(buyers).map(b=>{
+    const nh=b.nums.sort((a,x)=>a-x).map(n=>`<span class="num-sm">${String(n).padStart(pad,'0')}</span>`).join('');
+    const sl=b.status==='paid'?'s-paid':'s-pend';
+    const lb=b.status==='paid'?'✅ Pago':'⏳ Pendente';
+    return `<tr><td>${b.name}</td><td>${b.phone}</td>
+      <td><div class="num-list">${nh}</div></td>
+      <td>R$ ${fmt(b.nums.length*cfg.price)}</td>
+      <td><span class="status-badge ${sl}" onclick="togglePayStatus('${b.phone}')">${lb}</span></td></tr>`;
+  }).join('');
+  container.innerHTML=`<table class="buyers-table">
+    <thead><tr><th>Nome</th><th>Telefone</th><th>Números</th><th>Total</th><th>Status</th></tr></thead>
+    <tbody>${rows}</tbody></table>`;
+}
 
-    function gerarGrid() {
-        const grid = document.getElementById('grid');
-        for (let i = 1; i <= 100; i++) {
-            const cadeira = document.createElement('div');
-            cadeira.className = 'number';
-            cadeira.innerText = i.toString().padStart(2, '0');
-            cadeira.onclick = () => clicarNumero(cadeira, i);
-            grid.appendChild(cadeira);
-        }
-    }
+function drawWinner(){
+  const sold=Object.keys(numbers).map(Number);
+  if(!sold.length){showToast('Nenhum número vendido!','red');return;}
+  const res=document.getElementById('drawResult'),ne=document.getElementById('drawNumber'),nm=document.getElementById('drawName');
+  res.style.display='block';ne.textContent='🎲';nm.textContent='Sorteando...';
+  const pad=cfg.qty>=100?3:2;
+  let i=0;const iv=setInterval(()=>{
+    ne.textContent=String(sold[Math.floor(Math.random()*sold.length)]).padStart(pad,'0');
+    if(++i>26){clearInterval(iv);
+      const w=sold[Math.floor(Math.random()*sold.length)];
+      ne.textContent=String(w).padStart(pad,'0');
+      nm.textContent='🏆 '+numbers[w].name+' ('+numbers[w].phone+')';
+      showToast('🎉 Ganhador sorteado!');}
+  },80);
+}
 
-    function clicarNumero(el, num) {
-        if (el.classList.contains('selected')) {
-            el.classList.remove('selected');
-            selecionados = selecionados.filter(n => n !== num);
-        } else {
-            el.classList.add('selected');
-            selecionados.push(num);
-        }
-        atualizarCheckout();
-    }
-
-    function atualizarCheckout() {
-        const check = document.getElementById('checkout');
-        if (selecionados.length > 0) {
-            check.style.display = 'block';
-            document.getElementById('cart-count').innerText = selecionados.length;
-            document.getElementById('cart-total').innerText = (selecionados.length * precoUnidade).toFixed(2);
-        } else {
-            check.style.display = 'none';
-        }
-    }
-
-    function finalizarCompra() {
-        const nome = document.getElementById('user-nome').value;
-        const tel = document.getElementById('user-tel').value;
-        const pix = document.getElementById('pix-chave').innerText;
-
-        if (!nome || !tel) {
-            return alert("Preencha seus dados para continuar.");
-        }
-
-        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(pix)}`;
-        document.getElementById('img-qr').src = qrUrl;
-        document.getElementById('pix-area').style.display = 'block';
-        document.getElementById('pix-area').scrollIntoView({ behavior: 'smooth' });
-
-        alert(`Sucesso! Números ${selecionados.join(', ')} reservados para ${nome}.`);
-    }
+// ════════════════════════════════════════════════
+// UTILS
+// ════════════════════════════════════════════════
+function fmt(n){return parseFloat(n||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fmtDate(d){try{const[y,m,dy]=d.split('-');return`${dy}/${m}/${y}`;}catch{return d;}}
+let toastTimer;
+function showToast(msg,type='green'){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.style.background=type==='red'?'var(--red)':'var(--green)';
+  t.classList.add('show');clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),3800);
+}
 </script>
-
 </body>
 </html>
