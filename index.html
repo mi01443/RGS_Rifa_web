@@ -3,391 +3,251 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RifaFácil — Sistema de Sorteio</title>
+<title>RifaFácil</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0a0a0f;
-    --surface: #12121a;
-    --surface2: #1a1a26;
-    --border: #2a2a3d;
-    --accent: #f5c542;
-    --accent2: #ff6b35;
-    --green: #22c55e;
-    --red: #ef4444;
-    --text: #f0f0f5;
-    --muted: #7878a0;
-    --radius: 14px;
-    --card: #16162060;
-  }
-  *{box-sizing:border-box;margin:0;padding:0;}
-  html{scroll-behavior:smooth;}
-  body{
-    font-family:'DM Sans',sans-serif;
-    background:var(--bg);
-    color:var(--text);
-    min-height:100vh;
-    overflow-x:hidden;
-  }
-  /* NAV */
-  nav{
-    display:flex;align-items:center;justify-content:space-between;
-    padding:16px 24px;
-    background:rgba(10,10,15,0.95);
-    backdrop-filter:blur(12px);
-    border-bottom:1px solid var(--border);
-    position:sticky;top:0;z-index:100;
-  }
-  .logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;color:var(--accent);}
-  .logo span{color:var(--text);}
-  .nav-tabs{display:flex;gap:4px;}
-  .nav-tab{
-    padding:8px 16px;border-radius:8px;border:none;cursor:pointer;
-    font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:500;
-    background:transparent;color:var(--muted);transition:all .2s;
-  }
-  .nav-tab.active,.nav-tab:hover{background:var(--surface2);color:var(--text);}
-  .nav-tab.active{color:var(--accent);}
+:root{
+  --bg:#0a0a0f;--surface:#12121a;--surface2:#1a1a26;--border:#2a2a3d;
+  --accent:#f5c542;--accent2:#ff6b35;--green:#22c55e;--red:#ef4444;
+  --text:#f0f0f5;--muted:#7878a0;--radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
 
-  /* PAGES */
-  .page{display:none;animation:fadeIn .3s ease;}
-  .page.active{display:block;}
-  @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+nav{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;
+  background:rgba(10,10,15,.97);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.25rem;color:var(--accent);}
+.logo span{color:var(--text);}
+.nav-right{display:flex;align-items:center;gap:6px;}
+.nav-tab{padding:7px 14px;border-radius:8px;border:none;cursor:pointer;
+  font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:500;
+  background:transparent;color:var(--muted);transition:all .2s;}
+.nav-tab.active,.nav-tab:hover{background:var(--surface2);color:var(--text);}
+.nav-tab.active{color:var(--accent);}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;margin-right:4px;}
+.sync-dot.loading{background:var(--accent);animation:blink 1s infinite;}
+.sync-dot.error{background:var(--red);}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.sync-label{font-size:.7rem;color:var(--muted);}
 
-  /* HERO / RAFFLE CARD */
-  .raffle-hero{
-    background:linear-gradient(135deg,var(--surface) 0%,#1a1020 100%);
-    border-bottom:1px solid var(--border);
-    padding:28px 24px;
-    position:relative;overflow:hidden;
-  }
-  .raffle-hero::before{
-    content:'';position:absolute;top:-40px;right:-40px;
-    width:220px;height:220px;
-    background:radial-gradient(circle,rgba(245,197,66,.12) 0%,transparent 70%);
-    border-radius:50%;
-  }
-  .raffle-info{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;}
-  .raffle-img{
-    width:120px;height:120px;border-radius:12px;
-    object-fit:cover;border:2px solid var(--border);
-    flex-shrink:0;background:var(--surface2);
-    display:flex;align-items:center;justify-content:center;
-    font-size:3rem;overflow:hidden;
-  }
-  .raffle-img img{width:100%;height:100%;object-fit:cover;}
-  .raffle-meta{flex:1;min-width:200px;}
-  .raffle-meta h1{font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;margin-bottom:6px;}
-  .raffle-meta .desc{color:var(--muted);font-size:.9rem;margin-bottom:12px;line-height:1.5;}
-  .badges{display:flex;flex-wrap:wrap;gap:8px;}
-  .badge{
-    padding:5px 12px;border-radius:20px;font-size:.78rem;font-weight:500;
-    display:flex;align-items:center;gap:5px;
-  }
-  .badge-yellow{background:rgba(245,197,66,.15);color:var(--accent);border:1px solid rgba(245,197,66,.3);}
-  .badge-green{background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.25);}
-  .badge-red{background:rgba(255,107,53,.12);color:var(--accent2);border:1px solid rgba(255,107,53,.25);}
+.page{display:none;animation:fadeIn .3s ease;}
+.page.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-  /* SUMMARY BAR */
-  .summary-bar{
-    background:var(--surface);border-bottom:1px solid var(--border);
-    padding:14px 24px;
-    display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
-    position:sticky;top:57px;z-index:90;
-  }
-  .summary-left{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
-  .summary-item{font-size:.82rem;color:var(--muted);}
-  .summary-item b{color:var(--text);font-size:.95rem;}
-  .total-price{font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;color:var(--accent);}
-  .btn-buy{
-    background:linear-gradient(135deg,var(--accent),#f0a500);
-    color:#000;border:none;padding:10px 22px;border-radius:10px;
-    font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;
-    cursor:pointer;transition:all .2s;white-space:nowrap;
-  }
-  .btn-buy:hover{transform:scale(1.04);box-shadow:0 4px 20px rgba(245,197,66,.4);}
-  .btn-buy:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+.raffle-hero{background:linear-gradient(135deg,var(--surface) 0%,#1a1020 100%);
+  border-bottom:1px solid var(--border);padding:24px 20px;position:relative;overflow:hidden;}
+.raffle-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:200px;height:200px;
+  background:radial-gradient(circle,rgba(245,197,66,.1) 0%,transparent 70%);border-radius:50%;}
+.raffle-info{display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap;}
+.raffle-img{width:110px;height:110px;border-radius:12px;border:2px solid var(--border);
+  flex-shrink:0;background:var(--surface2);display:flex;align-items:center;
+  justify-content:center;font-size:2.8rem;overflow:hidden;}
+.raffle-img img{width:100%;height:100%;object-fit:cover;display:none;}
+.raffle-meta{flex:1;min-width:190px;}
+.raffle-meta h1{font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;margin-bottom:5px;}
+.raffle-meta .desc{color:var(--muted);font-size:.88rem;margin-bottom:10px;line-height:1.5;}
+.badges{display:flex;flex-wrap:wrap;gap:7px;}
+.badge{padding:4px 11px;border-radius:20px;font-size:.75rem;font-weight:500;}
+.badge-y{background:rgba(245,197,66,.15);color:var(--accent);border:1px solid rgba(245,197,66,.3);}
+.badge-g{background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.25);}
+.badge-r{background:rgba(255,107,53,.12);color:var(--accent2);border:1px solid rgba(255,107,53,.25);}
+.progress-wrap{margin-top:10px;}
+.progress-label{display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted);margin-bottom:4px;}
+.progress-bar{height:5px;background:var(--surface2);border-radius:3px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px;transition:width .6s ease;}
 
-  /* GRID */
-  .grid-section{padding:24px;}
-  .grid-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin-bottom:16px;color:var(--muted);}
-  .grid-title span{color:var(--text);}
-  .numbers-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(56px,1fr));
-    gap:8px;
-  }
-  .num-btn{
-    aspect-ratio:1;border-radius:10px;border:1.5px solid var(--border);
-    background:var(--surface2);color:var(--text);
-    font-family:'Syne',sans-serif;font-weight:600;font-size:.82rem;
-    cursor:pointer;transition:all .18s;
-    display:flex;align-items:center;justify-content:center;
-    position:relative;
-  }
-  .num-btn:hover:not(.sold):not(.selected){
-    border-color:var(--accent);color:var(--accent);
-    background:rgba(245,197,66,.08);transform:scale(1.07);
-  }
-  .num-btn.selected{
-    background:linear-gradient(135deg,var(--accent),#f0a500);
-    border-color:var(--accent);color:#000;
-    transform:scale(1.05);
-    box-shadow:0 4px 14px rgba(245,197,66,.35);
-  }
-  .num-btn.sold{
-    background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.25);
-    color:var(--red);cursor:not-allowed;opacity:.6;
-    text-decoration:line-through;
-  }
-  .num-btn.sold::after{
-    content:'✕';position:absolute;top:2px;right:4px;font-size:.5rem;
-  }
+.summary-bar{background:var(--surface);border-bottom:1px solid var(--border);
+  padding:12px 20px;display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:8px;position:sticky;top:53px;z-index:90;}
+.summary-left{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.summary-item{font-size:.8rem;color:var(--muted);}
+.summary-item b{color:var(--text);font-size:.92rem;}
+.total-price{font-family:'Syne',sans-serif;font-weight:700;font-size:1.05rem;color:var(--accent);}
+.btn-buy{background:linear-gradient(135deg,var(--accent),#f0a500);color:#000;border:none;
+  padding:9px 20px;border-radius:10px;font-family:'Syne',sans-serif;font-weight:700;
+  font-size:.88rem;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.btn-buy:hover{transform:scale(1.04);box-shadow:0 4px 18px rgba(245,197,66,.4);}
+.btn-buy:disabled{opacity:.4;cursor:not-allowed;transform:none;}
 
-  /* LEGEND */
-  .legend{display:flex;gap:16px;padding:0 24px 20px;flex-wrap:wrap;}
-  .legend-item{display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--muted);}
-  .legend-dot{width:12px;height:12px;border-radius:3px;}
-  .dot-free{background:var(--surface2);border:1px solid var(--border);}
-  .dot-sel{background:var(--accent);}
-  .dot-sold{background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.3);}
+.legend{display:flex;gap:14px;padding:14px 20px 10px;flex-wrap:wrap;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:.76rem;color:var(--muted);}
+.legend-dot{width:11px;height:11px;border-radius:3px;}
+.dot-free{background:var(--surface2);border:1px solid var(--border);}
+.dot-sel{background:var(--accent);}
+.dot-sold{background:rgba(239,68,68,.25);border:1px solid rgba(239,68,68,.3);}
 
-  /* MODAL */
-  .modal-overlay{
-    display:none;position:fixed;inset:0;
-    background:rgba(0,0,0,.7);backdrop-filter:blur(6px);
-    z-index:200;align-items:center;justify-content:center;padding:20px;
-  }
-  .modal-overlay.open{display:flex;animation:fadeIn .25s ease;}
-  .modal{
-    background:var(--surface);border:1px solid var(--border);
-    border-radius:20px;max-width:440px;width:100%;
-    max-height:90vh;overflow-y:auto;
-    animation:slideUp .3s ease;
-  }
-  @keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
-  .modal-header{
-    padding:22px 24px 16px;border-bottom:1px solid var(--border);
-    display:flex;align-items:center;justify-content:space-between;
-  }
-  .modal-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;}
-  .modal-close{
-    width:32px;height:32px;border-radius:8px;border:1px solid var(--border);
-    background:transparent;color:var(--muted);cursor:pointer;font-size:1rem;
-    display:flex;align-items:center;justify-content:center;transition:all .2s;
-  }
-  .modal-close:hover{background:var(--surface2);color:var(--text);}
-  .modal-body{padding:22px 24px;}
+.grid-section{padding:8px 20px 30px;}
+.grid-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.92rem;margin-bottom:12px;color:var(--muted);}
+.grid-title span{color:var(--text);}
+.numbers-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(54px,1fr));gap:7px;}
+.num-btn{aspect-ratio:1;border-radius:10px;border:1.5px solid var(--border);
+  background:var(--surface2);color:var(--text);font-family:'Syne',sans-serif;
+  font-weight:600;font-size:.8rem;cursor:pointer;transition:all .16s;
+  display:flex;align-items:center;justify-content:center;position:relative;user-select:none;}
+.num-btn:hover:not(.sold):not(.selected){border-color:var(--accent);color:var(--accent);
+  background:rgba(245,197,66,.08);transform:scale(1.06);}
+.num-btn.selected{background:linear-gradient(135deg,var(--accent),#f0a500);
+  border-color:var(--accent);color:#000;transform:scale(1.04);
+  box-shadow:0 3px 12px rgba(245,197,66,.35);}
+.num-btn.sold{background:rgba(239,68,68,.07);border-color:rgba(239,68,68,.2);
+  color:var(--red);cursor:not-allowed;opacity:.65;}
+.num-btn.sold::after{content:'✕';position:absolute;top:1px;right:3px;font-size:.45rem;}
 
-  /* PIX */
-  .pix-section{text-align:center;}
-  .pix-qr{
-    width:180px;height:180px;margin:0 auto 16px;
-    background:white;border-radius:12px;
-    display:flex;align-items:center;justify-content:center;
-    position:relative;overflow:hidden;
-  }
-  .pix-qr canvas{width:100%;height:100%;}
-  .pix-key-box{
-    background:var(--surface2);border:1px solid var(--border);
-    border-radius:10px;padding:14px;margin:16px 0;
-    display:flex;align-items:center;justify-content:space-between;gap:10px;
-  }
-  .pix-key{font-family:monospace;font-size:.85rem;color:var(--accent);word-break:break-all;text-align:left;}
-  .btn-copy{
-    padding:6px 12px;border-radius:8px;border:1px solid var(--border);
-    background:var(--surface);color:var(--text);cursor:pointer;font-size:.78rem;
-    white-space:nowrap;transition:all .2s;
-  }
-  .btn-copy:hover{background:var(--surface2);}
-  .pix-amount{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:var(--accent);margin:10px 0;}
-  .pix-nums{font-size:.82rem;color:var(--muted);margin-bottom:6px;}
-  .pix-instructions{font-size:.78rem;color:var(--muted);line-height:1.6;margin-top:12px;}
-  .btn-confirm{
-    width:100%;padding:13px;border-radius:12px;border:none;margin-top:16px;
-    background:linear-gradient(135deg,var(--green),#16a34a);
-    color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;
-    cursor:pointer;transition:all .2s;
-  }
-  .btn-confirm:hover{transform:scale(1.02);box-shadow:0 4px 20px rgba(34,197,94,.3);}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);
+  backdrop-filter:blur(6px);z-index:200;align-items:center;justify-content:center;padding:16px;}
+.modal-overlay.open{display:flex;animation:fadeIn .22s ease;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:20px;
+  max-width:430px;width:100%;max-height:92vh;overflow-y:auto;}
+.modal-header{padding:20px 22px 14px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;}
+.modal-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1.05rem;}
+.modal-close{width:30px;height:30px;border-radius:7px;border:1px solid var(--border);
+  background:transparent;color:var(--muted);cursor:pointer;font-size:.9rem;
+  display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.modal-close:hover{background:var(--surface2);color:var(--text);}
+.modal-body{padding:20px 22px;}
 
-  /* CONTACT FORM in modal */
-  .form-group{margin-bottom:14px;}
-  .form-label{display:block;font-size:.82rem;color:var(--muted);margin-bottom:6px;}
-  .form-input{
-    width:100%;padding:11px 14px;border-radius:10px;
-    background:var(--surface2);border:1.5px solid var(--border);
-    color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;
-    transition:border-color .2s;outline:none;
-  }
-  .form-input:focus{border-color:var(--accent);}
-  .nums-preview{
-    display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;
-  }
-  .num-chip{
-    padding:4px 10px;background:rgba(245,197,66,.15);
-    color:var(--accent);border-radius:6px;font-size:.78rem;font-weight:600;
-  }
+.pix-section{text-align:center;}
+.pix-qr{width:180px;height:180px;margin:0 auto 14px;background:#fff;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.pix-qr canvas{width:100%;height:100%;}
+.pix-key-box{background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+  padding:13px;margin:14px 0;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.pix-key{font-family:monospace;font-size:.82rem;color:var(--accent);word-break:break-all;text-align:left;}
+.btn-copy{padding:5px 11px;border-radius:7px;border:1px solid var(--border);background:var(--surface);
+  color:var(--text);cursor:pointer;font-size:.75rem;white-space:nowrap;transition:all .2s;}
+.btn-copy:hover{background:var(--surface2);}
+.pix-amount{font-family:'Syne',sans-serif;font-size:1.75rem;font-weight:800;color:var(--accent);margin:8px 0;}
+.pix-nums{font-size:.8rem;color:var(--muted);margin-bottom:4px;}
+.pix-instructions{font-size:.76rem;color:var(--muted);line-height:1.65;margin-top:12px;text-align:left;}
+.btn-confirm{width:100%;padding:12px;border-radius:11px;border:none;margin-top:14px;
+  background:linear-gradient(135deg,var(--green),#16a34a);color:#fff;
+  font-family:'Syne',sans-serif;font-weight:700;font-size:.92rem;cursor:pointer;transition:all .2s;}
+.btn-confirm:hover{transform:scale(1.02);box-shadow:0 4px 18px rgba(34,197,94,.3);}
+.btn-confirm:disabled{opacity:.5;cursor:not-allowed;transform:none;}
 
-  /* ADMIN PAGE */
-  .admin-header{
-    padding:28px 24px 10px;
-    border-bottom:1px solid var(--border);
-  }
-  .admin-header h1{font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;margin-bottom:4px;}
-  .admin-header p{color:var(--muted);font-size:.88rem;}
-  .admin-body{padding:24px;display:grid;gap:20px;max-width:760px;}
-  .admin-card{
-    background:var(--surface);border:1px solid var(--border);
-    border-radius:var(--radius);padding:22px;
-  }
-  .admin-card h2{font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;margin-bottom:16px;color:var(--accent);}
-  .admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-  @media(max-width:480px){.admin-grid{grid-template-columns:1fr;}}
-  .form-input[type=file]{padding:8px;}
-  .img-preview{
-    width:100%;max-height:160px;border-radius:10px;object-fit:cover;margin-top:10px;
-    display:none;
-  }
-  .btn-save{
-    width:100%;padding:13px;border-radius:12px;border:none;margin-top:4px;
-    background:linear-gradient(135deg,var(--accent),#f0a500);
-    color:#000;font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;
-    cursor:pointer;transition:all .2s;
-  }
-  .btn-save:hover{transform:scale(1.02);}
-  .pix-config{display:flex;flex-direction:column;gap:12px;}
-  .toggle-row{display:flex;align-items:center;justify-content:space-between;}
-  .toggle-label{font-size:.88rem;color:var(--text);}
-  .toggle{
-    width:44px;height:24px;border-radius:12px;background:var(--border);
-    position:relative;cursor:pointer;transition:background .2s;border:none;
-    outline:none;
-  }
-  .toggle::after{
-    content:'';position:absolute;top:3px;left:3px;
-    width:18px;height:18px;border-radius:50%;background:#fff;
-    transition:transform .2s;
-  }
-  .toggle.on{background:var(--green);}
-  .toggle.on::after{transform:translateX(20px);}
+.form-group{margin-bottom:13px;}
+.form-label{display:block;font-size:.8rem;color:var(--muted);margin-bottom:5px;}
+.form-input{width:100%;padding:10px 13px;border-radius:9px;background:var(--surface2);
+  border:1.5px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;
+  font-size:.88rem;transition:border-color .2s;outline:none;}
+.form-input:focus{border-color:var(--accent);}
+select.form-input option{background:var(--surface2);}
+.nums-preview{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px;}
+.num-chip{padding:3px 9px;background:rgba(245,197,66,.15);color:var(--accent);
+  border-radius:5px;font-size:.75rem;font-weight:600;}
+.separator{height:1px;background:var(--border);margin:14px 0;}
 
-  /* STATS */
-  .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
-  .stat-card{
-    background:var(--surface2);border-radius:10px;padding:14px;text-align:center;
-  }
-  .stat-num{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;}
-  .stat-label{font-size:.72rem;color:var(--muted);margin-top:2px;}
-  .stat-green{color:var(--green);}
-  .stat-yellow{color:var(--accent);}
-  .stat-red{color:var(--red);}
+.admin-header{padding:24px 20px 10px;border-bottom:1px solid var(--border);}
+.admin-header h1{font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;margin-bottom:3px;}
+.admin-header p{color:var(--muted);font-size:.85rem;}
+.admin-body{padding:20px;display:grid;gap:18px;max-width:740px;}
+.admin-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;}
+.admin-card h2{font-family:'Syne',sans-serif;font-weight:700;font-size:.92rem;margin-bottom:14px;color:var(--accent);}
+.admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+@media(max-width:480px){.admin-grid{grid-template-columns:1fr;}}
+.btn-save{width:100%;padding:12px;border-radius:11px;border:none;margin-top:6px;
+  background:linear-gradient(135deg,var(--accent),#f0a500);color:#000;
+  font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;cursor:pointer;transition:all .2s;}
+.btn-save:hover{transform:scale(1.02);}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;}
+.stat-card{background:var(--surface2);border-radius:9px;padding:13px;text-align:center;}
+.stat-num{font-family:'Syne',sans-serif;font-size:1.35rem;font-weight:800;}
+.stat-label{font-size:.7rem;color:var(--muted);margin-top:2px;}
+.stat-green{color:var(--green);}.stat-yellow{color:var(--accent);}.stat-red{color:var(--accent2);}
+.buyers-table{width:100%;border-collapse:collapse;font-size:.8rem;}
+.buyers-table th{text-align:left;padding:9px 11px;color:var(--muted);border-bottom:1px solid var(--border);font-weight:500;}
+.buyers-table td{padding:9px 11px;border-bottom:1px solid rgba(42,42,61,.4);}
+.buyers-table tr:last-child td{border-bottom:none;}
+.status-badge{padding:3px 8px;border-radius:4px;font-size:.7rem;font-weight:600;cursor:pointer;}
+.status-paid{background:rgba(34,197,94,.15);color:var(--green);}
+.status-pending{background:rgba(245,197,66,.15);color:var(--accent);}
+.num-list{display:flex;gap:3px;flex-wrap:wrap;}
+.num-sm{padding:2px 5px;background:var(--surface);border:1px solid var(--border);border-radius:3px;font-size:.68rem;}
+.empty-state{text-align:center;padding:28px;color:var(--muted);font-size:.85rem;}
+.draw-section{text-align:center;padding:8px 0;}
+.btn-draw{padding:13px 30px;border-radius:11px;border:2px solid var(--accent2);
+  background:transparent;color:var(--accent2);font-family:'Syne',sans-serif;
+  font-weight:700;font-size:.95rem;cursor:pointer;transition:all .2s;}
+.btn-draw:hover{background:rgba(255,107,53,.1);}
+.draw-result{margin-top:14px;padding:18px;background:var(--surface2);border-radius:11px;
+  border:1px solid var(--accent2);display:none;animation:fadeIn .4s ease;}
+.draw-winner{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--accent);}
+.draw-name{font-size:.9rem;color:var(--text);margin-top:4px;}
+.btn-danger{width:100%;padding:10px;border-radius:9px;border:1px solid rgba(239,68,68,.3);
+  background:rgba(239,68,68,.08);color:var(--red);font-family:'DM Sans',sans-serif;
+  font-size:.82rem;cursor:pointer;margin-top:12px;transition:all .2s;}
+.btn-danger:hover{background:rgba(239,68,68,.15);}
 
-  /* BUYERS TABLE */
-  .buyers-table{width:100%;border-collapse:collapse;font-size:.82rem;}
-  .buyers-table th{
-    text-align:left;padding:10px 12px;color:var(--muted);
-    border-bottom:1px solid var(--border);font-weight:500;
-  }
-  .buyers-table td{padding:10px 12px;border-bottom:1px solid rgba(42,42,61,.5);}
-  .buyers-table tr:last-child td{border-bottom:none;}
-  .status-badge{
-    padding:3px 8px;border-radius:4px;font-size:.72rem;font-weight:600;
-  }
-  .status-paid{background:rgba(34,197,94,.15);color:var(--green);}
-  .status-pending{background:rgba(245,197,66,.15);color:var(--accent);}
-  .num-list{display:flex;gap:4px;flex-wrap:wrap;}
-  .num-sm{
-    padding:2px 6px;background:var(--surface);border:1px solid var(--border);
-    border-radius:4px;font-size:.7rem;
-  }
-  .empty-state{text-align:center;padding:30px;color:var(--muted);font-size:.88rem;}
+#loadingScreen{position:fixed;inset:0;background:var(--bg);z-index:999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
+.loader{width:42px;height:42px;border:3px solid var(--border);
+  border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.loader-text{font-family:'Syne',sans-serif;color:var(--muted);font-size:.88rem;}
 
-  /* DRAW BUTTON */
-  .draw-section{text-align:center;padding:10px 0;}
-  .btn-draw{
-    padding:14px 32px;border-radius:12px;border:2px solid var(--accent2);
-    background:transparent;color:var(--accent2);
-    font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;
-    cursor:pointer;transition:all .2s;
-  }
-  .btn-draw:hover{background:rgba(255,107,53,.1);}
-  .draw-result{
-    margin-top:16px;padding:20px;background:var(--surface2);border-radius:12px;
-    border:1px solid var(--accent2);display:none;animation:fadeIn .4s ease;
-  }
-  .draw-winner{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--accent);}
-  .draw-name{font-size:.95rem;color:var(--text);margin-top:4px;}
+.admin-login{display:flex;flex-direction:column;align-items:center;
+  justify-content:center;min-height:60vh;padding:20px;}
+.admin-login-card{background:var(--surface);border:1px solid var(--border);
+  border-radius:20px;padding:30px;max-width:340px;width:100%;text-align:center;}
+.admin-login-card h2{font-family:'Syne',sans-serif;font-weight:800;font-size:1.15rem;margin-bottom:5px;}
+.admin-login-card p{color:var(--muted);font-size:.83rem;margin-bottom:18px;}
 
-  /* TOAST */
-  .toast{
-    position:fixed;bottom:24px;right:24px;
-    background:var(--green);color:#fff;
-    padding:12px 20px;border-radius:10px;font-size:.85rem;font-weight:500;
-    z-index:999;transform:translateY(60px);opacity:0;transition:all .3s;
-    box-shadow:0 4px 20px rgba(34,197,94,.4);
-  }
-  .toast.show{transform:translateY(0);opacity:1;}
+.toast{position:fixed;bottom:22px;right:22px;background:var(--green);color:#fff;
+  padding:11px 18px;border-radius:9px;font-size:.83rem;font-weight:500;z-index:9999;
+  transform:translateY(60px);opacity:0;transition:all .3s;box-shadow:0 4px 18px rgba(0,0,0,.3);}
+.toast.show{transform:translateY(0);opacity:1;}
 
-  /* RESPONSIVE */
-  @media(max-width:500px){
-    .numbers-grid{grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:6px;}
-    .num-btn{font-size:.75rem;}
-    nav{padding:12px 16px;}
-    .raffle-hero{padding:20px 16px;}
-    .grid-section{padding:16px;}
-    .summary-bar{padding:12px 16px;}
-  }
-  .separator{height:1px;background:var(--border);margin:16px 0;}
-
-  /* Progress bar */
-  .progress-wrap{margin-top:10px;}
-  .progress-label{display:flex;justify-content:space-between;font-size:.75rem;color:var(--muted);margin-bottom:5px;}
-  .progress-bar{height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;}
-  .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px;transition:width .5s ease;}
+@media(max-width:500px){
+  .numbers-grid{grid-template-columns:repeat(auto-fill,minmax(46px,1fr));gap:5px;}
+  .num-btn{font-size:.72rem;}
+  nav{padding:10px 14px;}
+}
 </style>
 </head>
 <body>
 
-<!-- NAV -->
+<div id="loadingScreen">
+  <div class="loader"></div>
+  <div class="loader-text">Carregando dados da rifa...</div>
+</div>
+
 <nav>
   <div class="logo">Rifa<span>Fácil</span></div>
-  <div class="nav-tabs">
-    <button class="nav-tab active" onclick="showPage('buyer')">🎟️ Comprar</button>
-    <button class="nav-tab" onclick="showPage('admin')">⚙️ Admin</button>
+  <div class="nav-right">
+    <span class="sync-dot" id="syncDot"></span>
+    <span class="sync-label" id="syncLabel">Ao vivo</span>
+    &nbsp;
+    <button class="nav-tab active" id="tabBuyer" onclick="showPage('buyer')">🎟️ Rifa</button>
+    <button class="nav-tab" id="tabAdmin" onclick="showPage('admin')">⚙️ Admin</button>
   </div>
 </nav>
 
-<!-- ===== BUYER PAGE ===== -->
+<!-- BUYER PAGE -->
 <div id="page-buyer" class="page active">
-
-  <!-- RAFFLE HERO -->
   <div class="raffle-hero">
     <div class="raffle-info">
       <div class="raffle-img" id="heroImgWrap">
-        <img id="heroImg" src="" alt="" style="display:none">
-        <span id="heroEmoji">🏆</span>
+        <img id="heroImg" alt=""><span id="heroEmoji">🏆</span>
       </div>
       <div class="raffle-meta">
-        <h1 id="heroTitle">Configure sua Rifa</h1>
-        <div class="desc" id="heroDesc">Acesse o painel Admin para configurar as informações da rifa.</div>
+        <h1 id="heroTitle">Carregando...</h1>
+        <div class="desc" id="heroDesc">Aguarde...</div>
         <div class="badges">
-          <span class="badge badge-yellow">💰 R$ <span id="heroPriceVal">--</span> por número</span>
-          <span class="badge badge-green">📅 <span id="heroDateVal">--</span></span>
-          <span class="badge badge-red">🔥 <span id="heroSoldVal">0</span> vendidos</span>
+          <span class="badge badge-y">💰 R$ <span id="heroPriceVal">--</span>/nº</span>
+          <span class="badge badge-g">📅 <span id="heroDateVal">--</span></span>
+          <span class="badge badge-r">🔥 <span id="heroSoldVal">0</span> vendidos</span>
         </div>
         <div class="progress-wrap">
-          <div class="progress-label">
-            <span>Progresso</span>
-            <span id="progressPct">0%</span>
-          </div>
+          <div class="progress-label"><span>Progresso</span><span id="progressPct">0%</span></div>
           <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- SUMMARY BAR -->
   <div class="summary-bar">
     <div class="summary-left">
       <div class="summary-item">Selecionados: <b id="selCount">0</b></div>
@@ -396,83 +256,91 @@
     <button class="btn-buy" id="btnBuy" onclick="openContactModal()" disabled>Comprar 🛒</button>
   </div>
 
-  <!-- LEGEND -->
   <div class="legend">
     <div class="legend-item"><div class="legend-dot dot-free"></div>Disponível</div>
     <div class="legend-item"><div class="legend-dot dot-sel"></div>Selecionado</div>
     <div class="legend-item"><div class="legend-dot dot-sold"></div>Vendido</div>
   </div>
 
-  <!-- NUMBERS GRID -->
   <div class="grid-section">
     <div class="grid-title"><span id="gridTitle">Escolha seus números</span></div>
     <div class="numbers-grid" id="numbersGrid"></div>
   </div>
 </div>
 
-<!-- ===== ADMIN PAGE ===== -->
+<!-- ADMIN PAGE -->
 <div id="page-admin" class="page">
-  <div class="admin-header">
-    <h1>⚙️ Painel Administrativo</h1>
-    <p>Configure e gerencie sua rifa</p>
+  <div id="adminLogin" class="admin-login">
+    <div class="admin-login-card">
+      <div style="font-size:2.5rem;margin-bottom:10px">🔐</div>
+      <h2>Área do Administrador</h2>
+      <p>Digite a senha para acessar o painel de controle</p>
+      <div class="form-group">
+        <input class="form-input" type="password" id="adminPassInput"
+          placeholder="Senha admin" onkeydown="if(event.key==='Enter')checkAdmin()">
+      </div>
+      <button class="btn-save" onclick="checkAdmin()">Entrar →</button>
+    </div>
   </div>
-  <div class="admin-body">
 
-    <!-- STATS -->
-    <div class="admin-card">
-      <h2>📊 Estatísticas</h2>
-      <div class="stats-grid">
-        <div class="stat-card"><div class="stat-num stat-green" id="statSold">0</div><div class="stat-label">Vendidos</div></div>
-        <div class="stat-card"><div class="stat-num stat-yellow" id="statAvail">100</div><div class="stat-label">Disponíveis</div></div>
-        <div class="stat-card"><div class="stat-num stat-red" id="statRevenue">R$0</div><div class="stat-label">Arrecadado</div></div>
-      </div>
+  <div id="adminPanel" style="display:none">
+    <div class="admin-header">
+      <h1>⚙️ Painel Administrativo</h1>
+      <p>Todas as mudanças são sincronizadas em tempo real para todos os usuários</p>
     </div>
+    <div class="admin-body">
 
-    <!-- RAFFLE SETTINGS -->
-    <div class="admin-card">
-      <h2>🎟️ Configurações da Rifa</h2>
-      <div class="admin-grid">
-        <div class="form-group" style="grid-column:1/-1">
-          <label class="form-label">Nome do Item / Prêmio</label>
-          <input class="form-input" type="text" id="cfgTitle" placeholder="Ex: iPhone 15 Pro Max" value="Configure sua Rifa">
-        </div>
-        <div class="form-group" style="grid-column:1/-1">
-          <label class="form-label">Descrição</label>
-          <input class="form-input" type="text" id="cfgDesc" placeholder="Descrição do prêmio" value="Acesse o painel Admin para configurar as informações da rifa.">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Valor por Número (R$)</label>
-          <input class="form-input" type="number" id="cfgPrice" placeholder="10.00" value="10" min="1">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Quantidade de Números</label>
-          <input class="form-input" type="number" id="cfgQty" placeholder="100" value="100" min="10" max="1000">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Data do Sorteio</label>
-          <input class="form-input" type="date" id="cfgDate">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Foto do Prêmio</label>
-          <input class="form-input" type="file" accept="image/*" id="cfgImg" onchange="previewImg(this)">
-          <img class="img-preview" id="imgPreview" alt="Preview">
+      <div class="admin-card">
+        <h2>📊 Estatísticas em Tempo Real</h2>
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-num stat-green" id="statSold">0</div><div class="stat-label">Vendidos</div></div>
+          <div class="stat-card"><div class="stat-num stat-yellow" id="statAvail">--</div><div class="stat-label">Disponíveis</div></div>
+          <div class="stat-card"><div class="stat-num stat-red" id="statRevenue">R$0</div><div class="stat-label">Arrecadado</div></div>
         </div>
       </div>
-      <button class="btn-save" onclick="saveConfig()">💾 Salvar Configurações</button>
-    </div>
 
-    <!-- PIX SETTINGS -->
-    <div class="admin-card">
-      <h2>💳 Configurações do Pix</h2>
-      <div class="pix-config">
+      <div class="admin-card">
+        <h2>🎟️ Configurações da Rifa</h2>
+        <div class="admin-grid">
+          <div class="form-group" style="grid-column:1/-1">
+            <label class="form-label">Nome do Prêmio</label>
+            <input class="form-input" type="text" id="cfgTitle" placeholder="Ex: iPhone 15 Pro Max">
+          </div>
+          <div class="form-group" style="grid-column:1/-1">
+            <label class="form-label">Descrição</label>
+            <input class="form-input" type="text" id="cfgDesc" placeholder="Descrição do prêmio">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Valor por Número (R$)</label>
+            <input class="form-input" type="number" id="cfgPrice" placeholder="10" min="1">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Qtd de Números</label>
+            <input class="form-input" type="number" id="cfgQty" placeholder="100" min="10" max="1000">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Data do Sorteio</label>
+            <input class="form-input" type="date" id="cfgDate">
+          </div>
+          <div class="form-group">
+            <label class="form-label">URL da Foto do Prêmio</label>
+            <input class="form-input" type="text" id="cfgImgUrl" placeholder="https://... (link da imagem)">
+          </div>
+          <div class="form-group" style="grid-column:1/-1">
+            <label class="form-label">Nova Senha do Admin</label>
+            <input class="form-input" type="password" id="cfgPassword" placeholder="Deixe em branco para manter">
+          </div>
+        </div>
+        <button class="btn-save" onclick="saveConfig()">💾 Salvar Configurações</button>
+      </div>
+
+      <div class="admin-card">
+        <h2>💳 Configurações do Pix</h2>
         <div class="form-group">
-          <label class="form-label">Tipo de Chave Pix</label>
+          <label class="form-label">Tipo de Chave</label>
           <select class="form-input" id="pixType">
-            <option value="CPF">CPF</option>
-            <option value="CNPJ">CNPJ</option>
-            <option value="EMAIL">E-mail</option>
-            <option value="TELEFONE">Telefone</option>
-            <option value="ALEATORIA">Chave Aleatória</option>
+            <option>CPF</option><option>CNPJ</option>
+            <option>EMAIL</option><option>TELEFONE</option><option>ALEATORIA</option>
           </select>
         </div>
         <div class="form-group">
@@ -489,33 +357,30 @@
         </div>
         <button class="btn-save" onclick="savePixConfig()">💾 Salvar Pix</button>
       </div>
-    </div>
 
-    <!-- DRAW -->
-    <div class="admin-card">
-      <h2>🎲 Realizar Sorteio</h2>
-      <div class="draw-section">
-        <button class="btn-draw" onclick="drawWinner()">🎰 Sortear Ganhador!</button>
-        <div class="draw-result" id="drawResult">
-          <div>🏆 Número Sorteado</div>
-          <div class="draw-winner" id="drawNumber">--</div>
-          <div class="draw-name" id="drawName"></div>
+      <div class="admin-card">
+        <h2>🎲 Realizar Sorteio</h2>
+        <div class="draw-section">
+          <button class="btn-draw" onclick="drawWinner()">🎰 Sortear Ganhador!</button>
+          <div class="draw-result" id="drawResult">
+            <div style="color:var(--muted);font-size:.82rem">🏆 Número Sorteado</div>
+            <div class="draw-winner" id="drawNumber">--</div>
+            <div class="draw-name" id="drawName"></div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- BUYERS -->
-    <div class="admin-card">
-      <h2>👥 Compradores</h2>
-      <div id="buyersContainer">
-        <div class="empty-state">Nenhum número vendido ainda.</div>
+      <div class="admin-card">
+        <h2>👥 Compradores</h2>
+        <div id="buyersContainer"><div class="empty-state">Nenhuma compra ainda.</div></div>
+        <button class="btn-danger" onclick="confirmReset()">🗑️ Zerar todos os números vendidos</button>
       </div>
-    </div>
 
+    </div>
   </div>
 </div>
 
-<!-- ===== CONTACT MODAL ===== -->
+<!-- CONTACT MODAL -->
 <div class="modal-overlay" id="modalContact">
   <div class="modal">
     <div class="modal-header">
@@ -523,10 +388,10 @@
       <button class="modal-close" onclick="closeModal('modalContact')">✕</button>
     </div>
     <div class="modal-body">
-      <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px;">Preencha seus dados para reservar os números selecionados.</p>
+      <p style="color:var(--muted);font-size:.83rem;margin-bottom:14px">Preencha seus dados para reservar os números.</p>
       <div class="form-group">
         <label class="form-label">Nome Completo *</label>
-        <input class="form-input" type="text" id="buyerName" placeholder="Seu nome">
+        <input class="form-input" type="text" id="buyerName" placeholder="Seu nome completo">
       </div>
       <div class="form-group">
         <label class="form-label">WhatsApp *</label>
@@ -537,16 +402,16 @@
         <div class="nums-preview" id="numsPreview"></div>
       </div>
       <div class="separator"></div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-        <span style="font-size:.9rem;color:var(--muted);">Total a pagar:</span>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <span style="font-size:.88rem;color:var(--muted)">Total a pagar:</span>
         <span class="total-price" id="modalTotal">R$ 0,00</span>
       </div>
-      <button class="btn-buy" style="width:100%;padding:13px;" onclick="proceedToPix()">Prosseguir para Pagamento →</button>
+      <button class="btn-buy" style="width:100%;padding:12px" onclick="proceedToPix()">Ir para Pagamento →</button>
     </div>
   </div>
 </div>
 
-<!-- ===== PIX MODAL ===== -->
+<!-- PIX MODAL -->
 <div class="modal-overlay" id="modalPix">
   <div class="modal">
     <div class="modal-header">
@@ -557,9 +422,7 @@
       <div class="pix-section">
         <div class="pix-nums" id="pixNumsLabel"></div>
         <div class="pix-amount" id="pixAmountLabel"></div>
-        <div class="pix-qr" id="pixQrWrap">
-          <canvas id="qrCanvas"></canvas>
-        </div>
+        <div class="pix-qr"><canvas id="qrCanvas" width="180" height="180"></canvas></div>
         <div class="pix-key-box">
           <div class="pix-key" id="pixKeyDisplay">—</div>
           <button class="btn-copy" onclick="copyPix()">📋 Copiar</button>
@@ -568,475 +431,362 @@
           1. Abra seu banco ou carteira digital<br>
           2. Escaneie o QR Code ou copie a chave Pix<br>
           3. Confirme o valor e finalize o pagamento<br>
-          4. Após o pagamento, clique em "Confirmar Pagamento"
+          4. Clique em <b>"Confirmar Pagamento"</b> abaixo
         </div>
-        <button class="btn-confirm" onclick="confirmPayment()">✅ Confirmar Pagamento</button>
+        <button class="btn-confirm" id="btnConfirm" onclick="confirmPayment()">✅ Confirmar Pagamento</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- TOAST -->
 <div class="toast" id="toast"></div>
 
 <script>
-// ===================== STATE =====================
-let state = {
-  config: {
-    title: 'Configure sua Rifa',
-    desc: 'Acesse o painel Admin para configurar as informações da rifa.',
-    price: 10,
-    qty: 100,
-    date: '',
-    imgData: null,
-  },
-  pix: {
-    type: 'CPF',
-    key: '',
-    name: 'Organizador',
-    city: 'Brasil',
-  },
-  numbers: {}, // { num: { name, phone, status:'pending'|'paid' } }
-  selected: [],
-  buyerName: '',
-  buyerPhone: '',
+// ── STORAGE KEYS ──────────────────────────────────────────────────────
+const K_CFG  = 'rifa-config-v2';
+const K_NUMS = 'rifa-numbers-v2';
+const K_PIX  = 'rifa-pix-v2';
+
+// ── LOCAL STATE ───────────────────────────────────────────────────────
+let cfg = {
+  title:'Minha Rifa',desc:'Clique em um número para participar!',
+  price:10,qty:100,date:'',imgUrl:'',password:'admin123'
 };
+let pix  = {type:'CPF',key:'',name:'Organizador',city:'Brasil'};
+let numbers = {};   // shared: { "3":{name,phone,status,date}, ... }
+let selected = [];  // local tab selection
+let buyerName='',buyerPhone='';
+let adminAuthed=false;
 
-function saveState() {
-  try {
-    const toSave = { ...state, selected: [] };
-    // Don't save imgData to keep storage lean — re-check size
-    localStorage.setItem('rifaFacil_v2', JSON.stringify(toSave));
-  } catch(e) {}
+// ── STORAGE HELPERS ───────────────────────────────────────────────────
+async function sGet(key,shared=false){
+  try{const r=await window.storage.get(key,shared);return r?JSON.parse(r.value):null;}
+  catch{return null;}
+}
+async function sSet(key,val,shared=false){
+  try{await window.storage.set(key,JSON.stringify(val),shared);}catch(e){console.warn(e);}
 }
 
-function loadState() {
-  try {
-    const raw = localStorage.getItem('rifaFacil_v2');
-    if (raw) {
-      const saved = JSON.parse(raw);
-      state.config = { ...state.config, ...saved.config };
-      state.pix = { ...state.pix, ...saved.pix };
-      state.numbers = saved.numbers || {};
+// ── BOOT ──────────────────────────────────────────────────────────────
+async function init(){
+  const [sc,sp,sn]=await Promise.all([
+    sGet(K_CFG,true), sGet(K_PIX,true), sGet(K_NUMS,true)
+  ]);
+  if(sc) cfg={...cfg,...sc};
+  if(sp) pix={...pix,...sp};
+  if(sn) numbers=sn;
+  document.getElementById('loadingScreen').style.display='none';
+  renderAll();
+  setInterval(syncNow,5000);
+}
+
+// ── SYNC ──────────────────────────────────────────────────────────────
+async function syncNow(){
+  setSyncState('loading');
+  try{
+    const fresh=await sGet(K_NUMS,true);
+    if(fresh){
+      const changed=JSON.stringify(fresh)!==JSON.stringify(numbers);
+      numbers=fresh;
+      if(changed){
+        selected=selected.filter(n=>!numbers[n]);
+        renderGrid();updateSummary();renderHero();updateStats();
+        if(adminAuthed)renderBuyers();
+      }
     }
-  } catch(e) {}
-}
-
-// ===================== INIT =====================
-loadState();
-renderAll();
-syncAdminFields();
-
-// ===================== PAGES =====================
-function showPage(page) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('page-' + page).classList.add('active');
-  event.target.classList.add('active');
-  if (page === 'admin') renderBuyers();
-}
-
-// ===================== RENDER =====================
-function renderAll() {
-  renderHero();
-  renderGrid();
-  updateSummary();
-  updateStats();
-}
-
-function renderHero() {
-  const c = state.config;
-  document.getElementById('heroTitle').textContent = c.title;
-  document.getElementById('heroDesc').textContent = c.desc;
-  document.getElementById('heroPriceVal').textContent = fmt(c.price);
-  document.getElementById('heroDateVal').textContent = c.date ? formatDate(c.date) : '--';
-
-  const sold = Object.keys(state.numbers).length;
-  document.getElementById('heroSoldVal').textContent = sold;
-
-  const pct = c.qty > 0 ? Math.round((sold / c.qty) * 100) : 0;
-  document.getElementById('progressFill').style.width = pct + '%';
-  document.getElementById('progressPct').textContent = pct + '%';
-
-  const img = document.getElementById('heroImg');
-  const emoji = document.getElementById('heroEmoji');
-  if (c.imgData) {
-    img.src = c.imgData;
-    img.style.display = 'block';
-    emoji.style.display = 'none';
-  } else {
-    img.style.display = 'none';
-    emoji.style.display = 'block';
-  }
-}
-
-function renderGrid() {
-  const grid = document.getElementById('numbersGrid');
-  grid.innerHTML = '';
-  const qty = Math.max(10, Math.min(1000, state.config.qty || 100));
-  document.getElementById('gridTitle').textContent = `Escolha seus números (1–${qty})`;
-
-  for (let i = 1; i <= qty; i++) {
-    const num = String(i).padStart(String(qty).length < 3 ? 2 : 3, '0');
-    const btn = document.createElement('button');
-    btn.className = 'num-btn';
-    btn.textContent = num;
-    btn.dataset.num = i;
-
-    if (state.numbers[i]) {
-      btn.classList.add('sold');
-      btn.title = 'Vendido para: ' + state.numbers[i].name;
-      btn.disabled = true;
-    } else if (state.selected.includes(i)) {
-      btn.classList.add('selected');
-      btn.onclick = () => toggleNum(i);
-    } else {
-      btn.onclick = () => toggleNum(i);
+    const fc=await sGet(K_CFG,true);
+    if(fc&&JSON.stringify(fc)!==JSON.stringify(cfg)){
+      cfg={...cfg,...fc};renderHero();renderGrid();
     }
-    grid.appendChild(btn);
-  }
+    setSyncState('ok');
+  }catch{setSyncState('error');}
 }
 
-function updateSummary() {
-  const count = state.selected.length;
-  const total = count * state.config.price;
-  document.getElementById('selCount').textContent = count;
-  document.getElementById('totalPrice').textContent = 'R$ ' + fmt(total);
-  document.getElementById('btnBuy').disabled = count === 0;
+function setSyncState(s){
+  const d=document.getElementById('syncDot'),l=document.getElementById('syncLabel');
+  d.className='sync-dot'+(s==='loading'?' loading':s==='error'?' error':'');
+  l.textContent=s==='loading'?'Atualizando...':s==='error'?'Sem conexão':'Ao vivo ✓';
 }
 
-function updateStats() {
-  const sold = Object.keys(state.numbers).length;
-  const avail = Math.max(0, state.config.qty - sold);
-  const rev = Object.values(state.numbers).length * state.config.price;
-  document.getElementById('statSold').textContent = sold;
-  document.getElementById('statAvail').textContent = avail;
-  document.getElementById('statRevenue').textContent = 'R$' + fmt(rev);
+// ── PAGES ─────────────────────────────────────────────────────────────
+function showPage(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.getElementById('tab'+page.charAt(0).toUpperCase()+page.slice(1)).classList.add('active');
+  if(page==='admin'&&adminAuthed){syncAdminFields();renderBuyers();updateStats();}
 }
 
-// ===================== NUMBERS =====================
-function toggleNum(n) {
-  const idx = state.selected.indexOf(n);
-  if (idx === -1) {
-    state.selected.push(n);
-  } else {
-    state.selected.splice(idx, 1);
-  }
-  // just update that button's class
-  document.querySelectorAll('.num-btn').forEach(btn => {
-    const bn = parseInt(btn.dataset.num);
-    if (bn === n) {
-      if (state.selected.includes(n)) btn.classList.add('selected');
-      else btn.classList.remove('selected');
+// ── RENDER ─────────────────────────────────────────────────────────────
+function renderAll(){renderHero();renderGrid();updateSummary();updateStats();}
+
+function renderHero(){
+  document.getElementById('heroTitle').textContent=cfg.title;
+  document.getElementById('heroDesc').textContent=cfg.desc;
+  document.getElementById('heroPriceVal').textContent=fmt(cfg.price);
+  document.getElementById('heroDateVal').textContent=cfg.date?fmtDate(cfg.date):'--';
+  const sold=Object.keys(numbers).length;
+  document.getElementById('heroSoldVal').textContent=sold;
+  const pct=cfg.qty>0?Math.round((sold/cfg.qty)*100):0;
+  document.getElementById('progressFill').style.width=pct+'%';
+  document.getElementById('progressPct').textContent=pct+'%';
+  const img=document.getElementById('heroImg'),emoji=document.getElementById('heroEmoji');
+  if(cfg.imgUrl){img.src=cfg.imgUrl;img.style.display='block';emoji.style.display='none';}
+  else{img.style.display='none';emoji.style.display='block';}
+}
+
+function renderGrid(){
+  const grid=document.getElementById('numbersGrid');
+  const qty=Math.max(10,Math.min(1000,cfg.qty||100));
+  const pad=String(qty).length<3?2:3;
+  document.getElementById('gridTitle').textContent=`Escolha seus números (1 – ${qty})`;
+  if(grid.children.length!==qty){
+    grid.innerHTML='';
+    for(let i=1;i<=qty;i++){
+      const b=document.createElement('button');
+      b.className='num-btn';b.textContent=String(i).padStart(pad,'0');
+      b.dataset.n=i;b.onclick=()=>toggleNum(i);grid.appendChild(b);
     }
+  }
+  Array.from(grid.children).forEach(b=>{
+    const n=parseInt(b.dataset.n);
+    b.className='num-btn';b.disabled=false;b.title='';
+    if(numbers[n]){b.classList.add('sold');b.disabled=true;b.title='Vendido: '+numbers[n].name;}
+    else if(selected.includes(n)) b.classList.add('selected');
   });
+}
+
+function updateSummary(){
+  const c=selected.length;
+  document.getElementById('selCount').textContent=c;
+  document.getElementById('totalPrice').textContent='R$ '+fmt(c*cfg.price);
+  document.getElementById('btnBuy').disabled=c===0;
+}
+
+function updateStats(){
+  const sold=Object.keys(numbers).length;
+  document.getElementById('statSold').textContent=sold;
+  document.getElementById('statAvail').textContent=Math.max(0,cfg.qty-sold);
+  document.getElementById('statRevenue').textContent='R$'+fmt(sold*cfg.price);
+}
+
+// ── NUMBERS ────────────────────────────────────────────────────────────
+function toggleNum(n){
+  if(numbers[n])return;
+  const idx=selected.indexOf(n);
+  if(idx===-1)selected.push(n);else selected.splice(idx,1);
+  const b=document.querySelector(`.num-btn[data-n="${n}"]`);
+  if(b){if(selected.includes(n))b.classList.add('selected');else b.classList.remove('selected');}
   updateSummary();
 }
 
-// ===================== MODALS =====================
-function openContactModal() {
-  if (state.selected.length === 0) return;
-  // render selected nums
-  const preview = document.getElementById('numsPreview');
-  preview.innerHTML = state.selected.sort((a,b)=>a-b).map(n =>
-    `<span class="num-chip">${String(n).padStart(3,'0')}</span>`
-  ).join('');
-  const total = state.selected.length * state.config.price;
-  document.getElementById('modalTotal').textContent = 'R$ ' + fmt(total);
-  document.getElementById('buyerName').value = '';
-  document.getElementById('buyerPhone').value = '';
+// ── CONTACT MODAL ──────────────────────────────────────────────────────
+function openContactModal(){
+  if(!selected.length)return;
+  const pad=String(cfg.qty).length<3?2:3;
+  document.getElementById('numsPreview').innerHTML=
+    [...selected].sort((a,b)=>a-b).map(n=>`<span class="num-chip">${String(n).padStart(pad,'0')}</span>`).join('');
+  document.getElementById('modalTotal').textContent='R$ '+fmt(selected.length*cfg.price);
+  document.getElementById('buyerName').value='';
+  document.getElementById('buyerPhone').value='';
   openModal('modalContact');
 }
 
-function proceedToPix() {
-  const name = document.getElementById('buyerName').value.trim();
-  const phone = document.getElementById('buyerPhone').value.trim();
-  if (!name || !phone) { showToast('Preencha nome e telefone!', 'red'); return; }
-  state.buyerName = name;
-  state.buyerPhone = phone;
-  closeModal('modalContact');
-  openPixModal();
+function proceedToPix(){
+  const name=document.getElementById('buyerName').value.trim();
+  const phone=document.getElementById('buyerPhone').value.trim();
+  if(!name||!phone){showToast('Preencha nome e telefone!','red');return;}
+  buyerName=name;buyerPhone=phone;
+  closeModal('modalContact');openPixModal();
 }
 
-function openPixModal() {
-  const total = state.selected.length * state.config.price;
-  const numsText = state.selected.sort((a,b)=>a-b).map(n => String(n).padStart(3,'0')).join(', ');
-  document.getElementById('pixNumsLabel').textContent = `Números: ${numsText}`;
-  document.getElementById('pixAmountLabel').textContent = 'R$ ' + fmt(total);
-
-  const pixKey = state.pix.key || '---';
-  document.getElementById('pixKeyDisplay').textContent = `${state.pix.type}: ${pixKey}`;
-
-  generateQR(pixKey, total);
+function openPixModal(){
+  const total=selected.length*cfg.price;
+  const pad=String(cfg.qty).length<3?2:3;
+  document.getElementById('pixNumsLabel').textContent=
+    'Números: '+[...selected].sort((a,b)=>a-b).map(n=>String(n).padStart(pad,'0')).join(', ');
+  document.getElementById('pixAmountLabel').textContent='R$ '+fmt(total);
+  document.getElementById('pixKeyDisplay').textContent=(pix.type||'PIX')+': '+(pix.key||'Não configurado');
+  generateQR(pix.key||'',total);
   openModal('modalPix');
 }
 
-function generateQR(key, amount) {
-  const canvas = document.getElementById('qrCanvas');
-  canvas.width = 180; canvas.height = 180;
-  const ctx = canvas.getContext('2d');
-  // Simple QR-like visual (real QR needs library; we'll draw a decorative placeholder + actual pix text)
-  const pixPayload = buildPixPayload(key, amount);
-  drawFakeQR(ctx, pixPayload, 180);
-}
-
-function buildPixPayload(key, amount) {
-  // Simplified PIX EMV payload
-  const merchantName = (state.pix.name || 'RIFA').substring(0,25).toUpperCase();
-  const city = (state.pix.city || 'BRASIL').substring(0,15).toUpperCase();
-  const amtStr = amount.toFixed(2);
-
-  function tlv(id, val) {
-    const len = String(val.length).padStart(2,'0');
-    return id + len + val;
+async function confirmPayment(){
+  const btn=document.getElementById('btnConfirm');
+  btn.textContent='⏳ Verificando...';btn.disabled=true;
+  setSyncState('loading');
+  // Anti-race: fetch fresh copy before writing
+  const fresh=await sGet(K_NUMS,true)||{};
+  const pad=String(cfg.qty).length<3?2:3;
+  const conflicts=selected.filter(n=>fresh[n]);
+  if(conflicts.length){
+    showToast(`❌ Nº ${conflicts.map(n=>String(n).padStart(pad,'0')).join(',')} já vendidos!`,'red');
+    numbers=fresh;selected=selected.filter(n=>!fresh[n]);
+    renderGrid();updateSummary();
+    btn.textContent='✅ Confirmar Pagamento';btn.disabled=false;
+    closeModal('modalPix');setSyncState('ok');return;
   }
-  const pixKey = tlv('01', key);
-  const merchantAccountInfo = tlv('00','BR.GOV.BCB.PIX') + pixKey;
-  const mai = tlv('26', merchantAccountInfo);
-  const payload =
-    tlv('00','01') +
-    mai +
-    tlv('52','0000') +
-    tlv('53','986') +
-    tlv('54', amtStr) +
-    tlv('58','BR') +
-    tlv('59', merchantName) +
-    tlv('60', city) +
-    tlv('62', tlv('05','***'));
-
-  const crc = crc16(payload + '6304');
-  return payload + '6304' + crc;
+  selected.forEach(n=>{fresh[n]={name:buyerName,phone:buyerPhone,status:'pending',date:new Date().toISOString()};});
+  await sSet(K_NUMS,fresh,true);
+  numbers=fresh;
+  const count=selected.length;selected=[];
+  closeModal('modalPix');renderAll();setSyncState('ok');
+  showToast(`✅ ${count} número(s) reservado(s)! Aguardando confirmação do pagamento.`);
+  btn.textContent='✅ Confirmar Pagamento';btn.disabled=false;
 }
 
-function crc16(str) {
-  let crc = 0xFFFF;
-  for (let i = 0; i < str.length; i++) {
-    crc ^= str.charCodeAt(i) << 8;
-    for (let j = 0; j < 8; j++) {
-      crc = (crc & 0x8000) ? (crc << 1) ^ 0x1021 : crc << 1;
-    }
-  }
-  return ((crc & 0xFFFF).toString(16).toUpperCase().padStart(4,'0'));
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(o=>
+  o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+
+// ── QR CODE ────────────────────────────────────────────────────────────
+function generateQR(key,amount){
+  const cv=document.getElementById('qrCanvas'),ctx=cv.getContext('2d');
+  drawQR(ctx,buildPixPayload(key,amount),180);
 }
-
-function drawFakeQR(ctx, data, size) {
-  // White background
-  ctx.fillStyle = '#fff';
-  ctx.fillRect(0,0,size,size);
-
-  // Generate deterministic-ish pattern from data
-  const seed = data.split('').reduce((a,c)=>a+c.charCodeAt(0),0);
-  const modules = 25;
-  const mSize = size / modules;
-
-  ctx.fillStyle = '#000';
-
-  // Finder patterns
-  const finder = (ox,oy) => {
-    ctx.fillRect(ox*mSize,oy*mSize,7*mSize,7*mSize);
-    ctx.fillStyle='#fff'; ctx.fillRect((ox+1)*mSize,(oy+1)*mSize,5*mSize,5*mSize);
-    ctx.fillStyle='#000'; ctx.fillRect((ox+2)*mSize,(oy+2)*mSize,3*mSize,3*mSize);
+function buildPixPayload(key,amount){
+  function tlv(id,v){return id+String(v.length).padStart(2,'0')+v;}
+  const mai=tlv('26',tlv('00','BR.GOV.BCB.PIX')+tlv('01',key||'00000000000'));
+  const n=(pix.name||'RIFA').substring(0,25).toUpperCase();
+  const c=(pix.city||'BRASIL').substring(0,15).toUpperCase();
+  const a=parseFloat(amount||0).toFixed(2);
+  const p=tlv('00','01')+mai+tlv('52','0000')+tlv('53','986')+tlv('54',a)+tlv('58','BR')+tlv('59',n)+tlv('60',c)+tlv('62',tlv('05','***'));
+  let crc=0xFFFF;
+  for(const ch of p+'6304'){crc^=ch.charCodeAt(0)<<8;for(let j=0;j<8;j++)crc=(crc&0x8000)?(crc<<1)^0x1021:crc<<1;}
+  return p+'6304'+((crc&0xFFFF).toString(16).toUpperCase().padStart(4,'0'));
+}
+function drawQR(ctx,data,size){
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,size,size);
+  const M=25,ms=size/M;
+  const finder=(ox,oy)=>{
+    ctx.fillStyle='#000';ctx.fillRect(ox*ms,oy*ms,7*ms,7*ms);
+    ctx.fillStyle='#fff';ctx.fillRect((ox+1)*ms,(oy+1)*ms,5*ms,5*ms);
+    ctx.fillStyle='#000';ctx.fillRect((ox+2)*ms,(oy+2)*ms,3*ms,3*ms);
   };
-  finder(0,0); finder(modules-7,0); finder(0,modules-7);
+  finder(0,0);finder(M-7,0);finder(0,M-7);
   ctx.fillStyle='#000';
-
-  // Data modules from payload hash
-  let s = seed;
-  for (let r=0;r<modules;r++) {
-    for (let c=0;c<modules;c++) {
-      // skip finder areas
-      const inFinder = (r<8&&c<8)||(r<8&&c>=modules-8)||(r>=modules-8&&c<8);
-      if (inFinder) continue;
-      s = (s * 1664525 + 1013904223) & 0xffffffff;
-      if (s & 1) {
-        ctx.fillRect(c*mSize,r*mSize,mSize,mSize);
-      }
-    }
+  let s=data.split('').reduce((a,c)=>a+c.charCodeAt(0),0)|1;
+  for(let r=0;r<M;r++)for(let c=0;c<M;c++){
+    if((r<8&&c<8)||(r<8&&c>=M-8)||(r>=M-8&&c<8))continue;
+    s=(s*1664525+1013904223)&0xffffffff;
+    if(s&1)ctx.fillRect(c*ms,r*ms,ms,ms);
   }
 }
-
-function copyPix() {
-  const key = state.pix.key || '';
-  if (!key) { showToast('Chave Pix não configurada!', 'red'); return; }
-  navigator.clipboard.writeText(key).then(() => showToast('Chave Pix copiada!')).catch(()=>{});
+function copyPix(){
+  if(!pix.key){showToast('Chave Pix não configurada!','red');return;}
+  navigator.clipboard.writeText(pix.key).then(()=>showToast('Chave Pix copiada! ✓')).catch(()=>{});
 }
 
-function confirmPayment() {
-  // Mark numbers as sold
-  state.selected.forEach(n => {
-    state.numbers[n] = {
-      name: state.buyerName,
-      phone: state.buyerPhone,
-      status: 'pending',
-      date: new Date().toISOString(),
-    };
-  });
-  const count = state.selected.length;
-  state.selected = [];
-  saveState();
-  closeModal('modalPix');
-  renderAll();
-  showToast(`✅ ${count} número(s) reservado(s)! Aguardando confirmação.`);
-}
-
-function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-
-// Close on backdrop click
-document.querySelectorAll('.modal-overlay').forEach(o => {
-  o.addEventListener('click', e => { if(e.target===o) o.classList.remove('open'); });
-});
-
-// ===================== ADMIN =====================
-function saveConfig() {
-  state.config.title = document.getElementById('cfgTitle').value || 'Minha Rifa';
-  state.config.desc = document.getElementById('cfgDesc').value || '';
-  state.config.price = parseFloat(document.getElementById('cfgPrice').value) || 10;
-  state.config.qty = parseInt(document.getElementById('cfgQty').value) || 100;
-  state.config.date = document.getElementById('cfgDate').value || '';
-
-  // image handled separately
-  saveState();
-  state.selected = [];
-  renderAll();
-  showToast('✅ Configurações salvas!');
-}
-
-function savePixConfig() {
-  state.pix.type = document.getElementById('pixType').value;
-  state.pix.key = document.getElementById('pixKey').value.trim();
-  state.pix.name = document.getElementById('pixName').value.trim();
-  state.pix.city = document.getElementById('pixCity').value.trim();
-  saveState();
-  showToast('✅ Pix salvo!');
-}
-
-function syncAdminFields() {
-  document.getElementById('cfgTitle').value = state.config.title;
-  document.getElementById('cfgDesc').value = state.config.desc;
-  document.getElementById('cfgPrice').value = state.config.price;
-  document.getElementById('cfgQty').value = state.config.qty;
-  document.getElementById('cfgDate').value = state.config.date || '';
-  document.getElementById('pixType').value = state.pix.type;
-  document.getElementById('pixKey').value = state.pix.key;
-  document.getElementById('pixName').value = state.pix.name;
-  document.getElementById('pixCity').value = state.pix.city;
-}
-
-function previewImg(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const data = e.target.result;
-    document.getElementById('imgPreview').src = data;
-    document.getElementById('imgPreview').style.display = 'block';
-    state.config.imgData = data;
-    renderHero();
-  };
-  reader.readAsDataURL(file);
-}
-
-function renderBuyers() {
-  const container = document.getElementById('buyersContainer');
-  const entries = Object.entries(state.numbers);
-  if (entries.length === 0) {
-    container.innerHTML = '<div class="empty-state">Nenhum número vendido ainda.</div>';
-    return;
+// ── ADMIN ──────────────────────────────────────────────────────────────
+function checkAdmin(){
+  const pass=document.getElementById('adminPassInput').value;
+  if(pass===(cfg.password||'admin123')){
+    adminAuthed=true;
+    document.getElementById('adminLogin').style.display='none';
+    document.getElementById('adminPanel').style.display='block';
+    syncAdminFields();renderBuyers();updateStats();
+  }else{
+    showToast('Senha incorreta!','red');
+    document.getElementById('adminPassInput').value='';
   }
-
-  // Group by buyer
-  const buyers = {};
-  entries.forEach(([num, info]) => {
-    const key = info.phone;
-    if (!buyers[key]) buyers[key] = { name: info.name, phone: info.phone, status: info.status, nums: [] };
-    buyers[key].nums.push(parseInt(num));
-  });
-
-  const rows = Object.values(buyers).map(b => {
-    const numsHtml = b.nums.sort((a,x)=>a-x).map(n=>`<span class="num-sm">${String(n).padStart(3,'0')}</span>`).join('');
-    const total = b.nums.length * state.config.price;
-    const statusLabel = b.status === 'paid' ? 'Pago' : 'Pendente';
-    const statusClass = b.status === 'paid' ? 'status-paid' : 'status-pending';
-    return `<tr>
-      <td>${b.name}</td>
-      <td>${b.phone}</td>
-      <td><div class="num-list">${numsHtml}</div></td>
-      <td>R$ ${fmt(total)}</td>
-      <td>
-        <span class="status-badge ${statusClass}" style="cursor:pointer"
-          onclick="togglePayStatus('${b.phone}')">${statusLabel}</span>
-      </td>
-    </tr>`;
-  }).join('');
-
-  container.innerHTML = `
-    <table class="buyers-table">
-      <thead><tr><th>Nome</th><th>Telefone</th><th>Números</th><th>Total</th><th>Status</th></tr></thead>
-      <tbody>${rows}</tbody>
-    </table>`;
 }
-
-function togglePayStatus(phone) {
-  Object.entries(state.numbers).forEach(([num, info]) => {
-    if (info.phone === phone) {
-      state.numbers[num].status = info.status === 'paid' ? 'pending' : 'paid';
-    }
+function syncAdminFields(){
+  document.getElementById('cfgTitle').value=cfg.title;
+  document.getElementById('cfgDesc').value=cfg.desc;
+  document.getElementById('cfgPrice').value=cfg.price;
+  document.getElementById('cfgQty').value=cfg.qty;
+  document.getElementById('cfgDate').value=cfg.date||'';
+  document.getElementById('cfgImgUrl').value=cfg.imgUrl||'';
+  document.getElementById('cfgPassword').value='';
+  document.getElementById('pixType').value=pix.type;
+  document.getElementById('pixKey').value=pix.key;
+  document.getElementById('pixName').value=pix.name;
+  document.getElementById('pixCity').value=pix.city;
+}
+async function saveConfig(){
+  const newPass=document.getElementById('cfgPassword').value;
+  cfg.title=document.getElementById('cfgTitle').value||'Minha Rifa';
+  cfg.desc=document.getElementById('cfgDesc').value||'';
+  cfg.price=parseFloat(document.getElementById('cfgPrice').value)||10;
+  cfg.qty=parseInt(document.getElementById('cfgQty').value)||100;
+  cfg.date=document.getElementById('cfgDate').value||'';
+  cfg.imgUrl=document.getElementById('cfgImgUrl').value.trim()||'';
+  if(newPass) cfg.password=newPass;
+  await sSet(K_CFG,cfg,true);
+  renderAll();showToast('✅ Configurações salvas e sincronizadas!');
+}
+async function savePixConfig(){
+  pix.type=document.getElementById('pixType').value;
+  pix.key=document.getElementById('pixKey').value.trim();
+  pix.name=document.getElementById('pixName').value.trim();
+  pix.city=document.getElementById('pixCity').value.trim();
+  await sSet(K_PIX,pix,true);showToast('✅ Pix salvo!');
+}
+async function togglePayStatus(phone){
+  const fresh=await sGet(K_NUMS,true)||{};
+  Object.entries(fresh).forEach(([n,info])=>{
+    if(info.phone===phone) fresh[n].status=info.status==='paid'?'pending':'paid';
   });
-  saveState();
-  renderBuyers();
-  updateStats();
+  await sSet(K_NUMS,fresh,true);numbers=fresh;renderBuyers();updateStats();
   showToast('Status atualizado!');
 }
-
-function drawWinner() {
-  const soldNums = Object.keys(state.numbers).map(Number);
-  if (soldNums.length === 0) { showToast('Nenhum número vendido!', 'red'); return; }
-
-  const result = document.getElementById('drawResult');
-  const numEl = document.getElementById('drawNumber');
-  const nameEl = document.getElementById('drawName');
-
-  // Animate
-  result.style.display = 'block';
-  numEl.textContent = '🎲';
-  nameEl.textContent = 'Sorteando...';
-
-  let spins = 0;
-  const interval = setInterval(() => {
-    const r = soldNums[Math.floor(Math.random() * soldNums.length)];
-    numEl.textContent = String(r).padStart(3,'0');
-    spins++;
-    if (spins > 20) {
-      clearInterval(interval);
-      const winner = soldNums[Math.floor(Math.random() * soldNums.length)];
-      numEl.textContent = String(winner).padStart(3,'0');
-      nameEl.textContent = '🏆 ' + state.numbers[winner].name + ' (' + state.numbers[winner].phone + ')';
-      showToast('🎉 Ganhador sorteado!');
-    }
-  }, 80);
+async function confirmReset(){
+  if(!confirm('⚠️ Isso apagará TODOS os números vendidos. Tem certeza?'))return;
+  numbers={};selected=[];
+  await sSet(K_NUMS,{},true);renderAll();renderBuyers();showToast('Números zerados!');
+}
+function renderBuyers(){
+  const container=document.getElementById('buyersContainer');
+  const entries=Object.entries(numbers);
+  if(!entries.length){container.innerHTML='<div class="empty-state">Nenhuma compra ainda.</div>';return;}
+  const buyers={};
+  entries.forEach(([n,info])=>{
+    if(!buyers[info.phone]) buyers[info.phone]={name:info.name,phone:info.phone,status:info.status,nums:[]};
+    buyers[info.phone].nums.push(parseInt(n));
+  });
+  const pad=String(cfg.qty).length<3?2:3;
+  const rows=Object.values(buyers).map(b=>{
+    const nh=b.nums.sort((a,x)=>a-x).map(n=>`<span class="num-sm">${String(n).padStart(pad,'0')}</span>`).join('');
+    const sl=b.status==='paid'?'status-paid':'status-pending';
+    const lb=b.status==='paid'?'✅ Pago':'⏳ Pendente';
+    return `<tr><td>${b.name}</td><td>${b.phone}</td>
+      <td><div class="num-list">${nh}</div></td>
+      <td>R$ ${fmt(b.nums.length*cfg.price)}</td>
+      <td><span class="status-badge ${sl}" onclick="togglePayStatus('${b.phone}')">${lb}</span></td></tr>`;
+  }).join('');
+  container.innerHTML=`<table class="buyers-table">
+    <thead><tr><th>Nome</th><th>Telefone</th><th>Números</th><th>Total</th><th>Status</th></tr></thead>
+    <tbody>${rows}</tbody></table>`;
+}
+function drawWinner(){
+  const sold=Object.keys(numbers).map(Number);
+  if(!sold.length){showToast('Nenhum número vendido!','red');return;}
+  const res=document.getElementById('drawResult'),ne=document.getElementById('drawNumber'),nm=document.getElementById('drawName');
+  res.style.display='block';ne.textContent='🎲';nm.textContent='Sorteando...';
+  const pad=String(cfg.qty).length<3?2:3;
+  let i=0;const iv=setInterval(()=>{
+    ne.textContent=String(sold[Math.floor(Math.random()*sold.length)]).padStart(pad,'0');
+    if(++i>24){clearInterval(iv);
+      const w=sold[Math.floor(Math.random()*sold.length)];
+      ne.textContent=String(w).padStart(pad,'0');
+      nm.textContent='🏆 '+numbers[w].name+' ('+numbers[w].phone+')';
+      showToast('🎉 Ganhador sorteado!');}
+  },80);
 }
 
-// ===================== UTILS =====================
-function fmt(n) {
-  return parseFloat(n).toLocaleString('pt-BR', { minimumFractionDigits:2, maximumFractionDigits:2 });
-}
-function formatDate(d) {
-  if (!d) return '--';
-  const [y,m,day] = d.split('-');
-  return `${day}/${m}/${y}`;
-}
-
+// ── UTILS ──────────────────────────────────────────────────────────────
+function fmt(n){return parseFloat(n).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fmtDate(d){const[y,m,dy]=d.split('-');return`${dy}/${m}/${y}`;}
 let toastTimer;
-function showToast(msg, type='green') {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.style.background = type === 'red' ? 'var(--red)' : 'var(--green)';
-  t.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+function showToast(msg,type='green'){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.style.background=type==='red'?'var(--red)':'var(--green)';
+  t.classList.add('show');clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),3500);
 }
+
+init();
 </script>
 </body>
 </html>
-
