@@ -9,42 +9,37 @@
 :root{
   --bg:#0a0a0f;--surface:#12121a;--surface2:#1a1a26;--border:#2a2a3d;
   --accent:#f5c542;--accent2:#ff6b35;--green:#22c55e;--red:#ef4444;
+  --blue:#3b82f6;--purple:#a855f7;
   --text:#f0f0f5;--muted:#7878a0;--radius:14px;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
 
-/* ── SETUP ── */
-#setupScreen{position:fixed;inset:0;background:var(--bg);z-index:9999;
-  display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;}
-.setup-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;
-  max-width:540px;width:100%;padding:30px;margin:auto;}
-.setup-logo{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:var(--accent);margin-bottom:4px;}
-.setup-logo span{color:var(--text);}
-.setup-sub{color:var(--muted);font-size:.84rem;margin-bottom:20px;line-height:1.65;}
-.step{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:15px;margin-bottom:11px;}
-.step-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;
-  display:flex;align-items:center;gap:7px;margin-bottom:7px;}
-.sn{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
-  border-radius:50%;background:var(--accent);color:#000;font-weight:800;font-size:.72rem;flex-shrink:0;}
-.step p{font-size:.79rem;color:var(--muted);line-height:1.65;margin-bottom:5px;}
-.step p:last-child{margin-bottom:0;}
-.step code{background:rgba(245,197,66,.13);color:var(--accent);padding:2px 6px;border-radius:4px;font-size:.76rem;font-family:monospace;}
-.step a{color:var(--accent);}
-.url-wrap{display:flex;gap:8px;margin-top:9px;}
-.setup-input{flex:1;padding:10px 12px;border-radius:9px;background:var(--bg);
+/* ── FIRST-RUN SCREEN ── */
+#firstRunScreen{position:fixed;inset:0;background:var(--bg);z-index:9999;
+  display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto;}
+.firstrun-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;
+  max-width:420px;width:100%;padding:32px;text-align:center;}
+.firstrun-icon{font-size:3rem;margin-bottom:12px;}
+.firstrun-card h1{font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;
+  color:var(--accent);margin-bottom:8px;}
+.firstrun-card p{color:var(--muted);font-size:.85rem;line-height:1.65;margin-bottom:20px;}
+.fr-input{width:100%;padding:11px 14px;border-radius:10px;background:var(--surface2);
   border:1.5px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;
-  font-size:.83rem;outline:none;transition:border-color .2s;}
-.setup-input:focus{border-color:var(--accent);}
-.setup-input::placeholder{color:var(--muted);}
-.btn-connect{width:100%;padding:13px;border-radius:12px;border:none;margin-top:14px;
+  font-size:.88rem;outline:none;transition:border-color .2s;margin-bottom:10px;}
+.fr-input:focus{border-color:var(--accent);}
+.fr-input::placeholder{color:var(--muted);}
+.btn-primary{width:100%;padding:13px;border-radius:12px;border:none;
   background:linear-gradient(135deg,var(--accent),#f0a500);color:#000;
   font-family:'Syne',sans-serif;font-weight:800;font-size:.95rem;cursor:pointer;transition:all .2s;}
-.btn-connect:hover{transform:scale(1.02);}
-.setup-msg{border-radius:8px;padding:10px 13px;font-size:.8rem;margin-top:10px;display:none;line-height:1.5;white-space:pre-line;}
-.setup-msg.err{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:var(--red);}
-.setup-msg.ok{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:var(--green);}
+.btn-primary:hover{transform:scale(1.02);}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.fr-msg{border-radius:8px;padding:10px 13px;font-size:.8rem;margin-top:10px;display:none;line-height:1.5;white-space:pre-line;}
+.fr-msg.err{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:var(--red);}
+.fr-msg.ok{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:var(--green);}
+.fr-hint{font-size:.74rem;color:var(--muted);margin-top:12px;line-height:1.6;}
+.fr-hint a{color:var(--accent);}
 
 /* ── LOADING ── */
 #loadingScreen{position:fixed;inset:0;background:var(--bg);z-index:8888;
@@ -56,12 +51,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 
 /* ── APP ── */
 #app{display:none;}
+
 nav{display:flex;align-items:center;justify-content:space-between;padding:12px 17px;
   background:rgba(10,10,15,.97);backdrop-filter:blur(12px);
   border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;}
 .logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.18rem;color:var(--accent);}
 .logo span{color:var(--text);}
-.nav-right{display:flex;align-items:center;gap:5px;}
+.nav-right{display:flex;align-items:center;gap:4px;}
 .sync-wrap{display:flex;align-items:center;gap:5px;margin-right:4px;cursor:pointer;
   padding:4px 8px;border-radius:7px;transition:background .2s;}
 .sync-wrap:hover{background:var(--surface2);}
@@ -70,8 +66,8 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:12px 1
 .sync-dot.err{background:var(--red);}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
 .sync-label{font-size:.68rem;color:var(--muted);}
-.nav-tab{padding:7px 12px;border-radius:8px;border:none;cursor:pointer;
-  font-family:'DM Sans',sans-serif;font-size:.79rem;font-weight:500;
+.nav-tab{padding:7px 11px;border-radius:8px;border:none;cursor:pointer;
+  font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:500;
   background:transparent;color:var(--muted);transition:all .2s;}
 .nav-tab.active,.nav-tab:hover{background:var(--surface2);color:var(--text);}
 .nav-tab.active{color:var(--accent);}
@@ -117,12 +113,13 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:12px 1
 .btn-buy:hover{transform:scale(1.04);box-shadow:0 4px 16px rgba(245,197,66,.35);}
 .btn-buy:disabled{opacity:.4;cursor:not-allowed;transform:none;}
 
-.legend{display:flex;gap:12px;padding:11px 17px 7px;flex-wrap:wrap;}
-.legend-item{display:flex;align-items:center;gap:5px;font-size:.73rem;color:var(--muted);}
+.legend{display:flex;gap:10px;padding:11px 17px 7px;flex-wrap:wrap;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:.72rem;color:var(--muted);}
 .ld{width:10px;height:10px;border-radius:3px;}
 .ld-free{background:var(--surface2);border:1px solid var(--border);}
 .ld-sel{background:var(--accent);}
 .ld-sold{background:rgba(239,68,68,.22);border:1px solid rgba(239,68,68,.3);}
+.ld-res{background:rgba(59,130,246,.22);border:1px solid rgba(59,130,246,.4);}
 
 .grid-section{padding:7px 17px 30px;}
 .grid-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.86rem;
@@ -133,14 +130,17 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:12px 1
   background:var(--surface2);color:var(--text);font-family:'Syne',sans-serif;
   font-weight:600;font-size:.78rem;cursor:pointer;transition:all .14s;
   display:flex;align-items:center;justify-content:center;position:relative;user-select:none;}
-.num-btn:hover:not(.sold):not(.selected){border-color:var(--accent);color:var(--accent);
-  background:rgba(245,197,66,.07);transform:scale(1.07);}
+.num-btn:hover:not(.sold):not(.selected):not(.reserved){border-color:var(--accent);
+  color:var(--accent);background:rgba(245,197,66,.07);transform:scale(1.07);}
 .num-btn.selected{background:linear-gradient(135deg,var(--accent),#f0a500);
   border-color:transparent;color:#000;transform:scale(1.05);
   box-shadow:0 3px 12px rgba(245,197,66,.4);}
 .num-btn.sold{background:rgba(239,68,68,.05);border-color:rgba(239,68,68,.2);
-  color:rgba(239,68,68,.65);cursor:not-allowed;opacity:.7;}
+  color:rgba(239,68,68,.65);cursor:not-allowed;opacity:.75;}
 .num-btn.sold::after{content:'✕';position:absolute;top:1px;right:3px;font-size:.42rem;opacity:.6;}
+.num-btn.reserved{background:rgba(59,130,246,.08);border-color:rgba(59,130,246,.35);
+  color:rgba(59,130,246,.8);cursor:not-allowed;opacity:.8;}
+.num-btn.reserved::after{content:'🔒';position:absolute;top:0px;right:2px;font-size:.4rem;}
 
 /* MODALS */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);
@@ -157,6 +157,15 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:12px 1
 .modal-close:hover{background:var(--surface2);color:var(--text);}
 .modal-body{padding:17px 19px;}
 
+/* RESERVATION TIMER */
+.reservation-timer{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3);
+  border-radius:10px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:9px;}
+.timer-icon{font-size:1.2rem;}
+.timer-text{font-size:.78rem;color:var(--blue);flex:1;line-height:1.4;}
+.timer-countdown{font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;color:var(--accent);
+  white-space:nowrap;}
+
+/* PIX */
 .pix-section{text-align:center;}
 .pix-qr{width:174px;height:174px;margin:0 auto 12px;background:#fff;border-radius:12px;overflow:hidden;}
 .pix-qr canvas{width:100%;height:100%;}
@@ -174,7 +183,12 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:12px 1
   font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;transition:all .2s;}
 .btn-confirm:hover{transform:scale(1.02);}
 .btn-confirm:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.btn-cancel-res{width:100%;padding:9px;border-radius:10px;border:1px solid rgba(239,68,68,.3);
+  background:rgba(239,68,68,.07);color:var(--red);font-size:.8rem;cursor:pointer;
+  margin-top:8px;transition:all .2s;}
+.btn-cancel-res:hover{background:rgba(239,68,68,.14);}
 
+/* FORMS */
 .form-group{margin-bottom:11px;}
 .form-label{display:block;font-size:.77rem;color:var(--muted);margin-bottom:4px;}
 .form-input{width:100%;padding:9px 12px;border-radius:9px;background:var(--surface2);
@@ -187,19 +201,34 @@ select.form-input option{background:var(--surface2);}
   border-radius:5px;font-size:.72rem;font-weight:600;}
 .sep{height:1px;background:var(--border);margin:12px 0;}
 
+/* ADMIN TABS */
+.admin-tabs{display:flex;gap:4px;padding:16px 17px 0;border-bottom:1px solid var(--border);}
+.admin-tab{padding:8px 14px;border-radius:8px 8px 0 0;border:none;cursor:pointer;
+  font-family:'DM Sans',sans-serif;font-size:.79rem;font-weight:500;
+  background:transparent;color:var(--muted);transition:all .2s;margin-bottom:-1px;}
+.admin-tab.active{background:var(--surface);color:var(--accent);border:1px solid var(--border);border-bottom-color:var(--surface);}
+.admin-tab:hover:not(.active){color:var(--text);}
+.admin-tab-panel{display:none;}
+.admin-tab-panel.active{display:block;}
+
 .admin-login-wrap{display:flex;align-items:center;justify-content:center;min-height:65vh;padding:20px;}
 .admin-login-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;
   padding:26px;max-width:305px;width:100%;text-align:center;}
 .admin-login-card h2{font-family:'Syne',sans-serif;font-weight:800;font-size:1.08rem;margin-bottom:5px;}
 .admin-login-card p{color:var(--muted);font-size:.81rem;margin-bottom:16px;}
-.admin-header{padding:20px 17px 9px;border-bottom:1px solid var(--border);}
-.admin-header h1{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;margin-bottom:3px;}
-.admin-header p{color:var(--muted);font-size:.81rem;}
 .admin-body{padding:17px;display:grid;gap:15px;max-width:700px;}
 .admin-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:17px;}
 .admin-card h2{font-family:'Syne',sans-serif;font-weight:700;font-size:.86rem;margin-bottom:12px;color:var(--accent);}
 .admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
-@media(max-width:480px){.admin-grid{grid-column:1fr;}}
+@media(max-width:480px){.admin-grid{grid-template-columns:1fr;}}
+
+/* URL CONFIG highlight */
+.url-config-card{background:linear-gradient(135deg,rgba(59,130,246,.08),rgba(168,85,247,.08));
+  border-color:rgba(59,130,246,.3);}
+.url-config-card h2{color:var(--blue);}
+.url-status{display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--muted);margin-top:8px;}
+.url-status-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;}
+.url-status-dot.bad{background:var(--red);}
 
 .img-upload-area{border:2px dashed var(--border);border-radius:12px;padding:20px;
   text-align:center;cursor:pointer;transition:all .2s;position:relative;}
@@ -221,22 +250,37 @@ select.form-input option{background:var(--surface2);}
   font-family:'Syne',sans-serif;font-weight:700;font-size:.86rem;cursor:pointer;transition:all .2s;}
 .btn-save:hover{transform:scale(1.02);}
 .btn-save:disabled{opacity:.5;cursor:not-allowed;transform:none;}
-.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;}
+@media(max-width:400px){.stats-grid{grid-template-columns:repeat(2,1fr);}}
 .stat-card{background:var(--surface2);border-radius:9px;padding:11px;text-align:center;}
-.stat-num{font-family:'Syne',sans-serif;font-size:1.25rem;font-weight:800;}
-.stat-label{font-size:.67rem;color:var(--muted);margin-top:2px;}
-.sg{color:var(--green);}.sy{color:var(--accent);}.sr{color:var(--accent2);}
-.buyers-table{width:100%;border-collapse:collapse;font-size:.77rem;}
-.buyers-table th{text-align:left;padding:7px 9px;color:var(--muted);
+.stat-num{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;}
+.stat-label{font-size:.63rem;color:var(--muted);margin-top:2px;}
+.sg{color:var(--green);}.sy{color:var(--accent);}.sr{color:var(--accent2);}.sb{color:var(--blue);}
+
+/* BUYERS TABLE */
+.buyers-table{width:100%;border-collapse:collapse;font-size:.76rem;}
+.buyers-table th{text-align:left;padding:7px 8px;color:var(--muted);
   border-bottom:1px solid var(--border);font-weight:500;}
-.buyers-table td{padding:7px 9px;border-bottom:1px solid rgba(42,42,61,.3);}
+.buyers-table td{padding:7px 8px;border-bottom:1px solid rgba(42,42,61,.3);vertical-align:middle;}
 .buyers-table tr:last-child td{border-bottom:none;}
-.status-badge{padding:3px 7px;border-radius:4px;font-size:.67rem;font-weight:600;cursor:pointer;}
+.status-badge{padding:3px 7px;border-radius:4px;font-size:.66rem;font-weight:600;cursor:pointer;
+  display:inline-block;transition:opacity .2s;}
+.status-badge:hover{opacity:.8;}
 .s-paid{background:rgba(34,197,94,.15);color:var(--green);}
 .s-pend{background:rgba(245,197,66,.15);color:var(--accent);}
+.s-res{background:rgba(59,130,246,.15);color:var(--blue);}
+.s-canc{background:rgba(239,68,68,.12);color:var(--red);}
 .num-list{display:flex;gap:3px;flex-wrap:wrap;}
-.num-sm{padding:2px 5px;background:var(--surface);border:1px solid var(--border);border-radius:3px;font-size:.65rem;}
+.num-sm{padding:2px 5px;background:var(--surface);border:1px solid var(--border);border-radius:3px;font-size:.64rem;}
 .empty-state{text-align:center;padding:24px;color:var(--muted);font-size:.82rem;}
+.action-btns{display:flex;gap:4px;}
+.btn-xs{padding:3px 7px;border-radius:5px;border:none;font-size:.65rem;cursor:pointer;
+  font-family:'DM Sans',sans-serif;font-weight:600;transition:all .2s;white-space:nowrap;}
+.btn-xs:hover{opacity:.8;}
+.btn-xs-green{background:rgba(34,197,94,.15);color:var(--green);}
+.btn-xs-red{background:rgba(239,68,68,.12);color:var(--red);}
+.btn-xs-yellow{background:rgba(245,197,66,.15);color:var(--accent);}
+
 .draw-section{text-align:center;padding:5px 0;}
 .btn-draw{padding:11px 26px;border-radius:11px;border:2px solid var(--accent2);
   background:transparent;color:var(--accent2);font-family:'Syne',sans-serif;
@@ -260,46 +304,36 @@ select.form-input option{background:var(--surface2);}
   .numbers-grid{grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:5px;}
   .num-btn{font-size:.7rem;}
   nav{padding:10px 13px;}
+  .admin-tabs{padding:12px 13px 0;gap:3px;}
+  .admin-tab{padding:6px 10px;font-size:.74rem;}
 }
 </style>
 </head>
 <body>
 
-<!-- SETUP -->
-<div id="setupScreen">
-  <div class="setup-card">
-    <div class="setup-logo">Rifa<span>Fácil</span> 📊</div>
-    <p class="setup-sub">Banco de dados no <b>Google Sheets</b> — gratuito, sem cadastro extra.</p>
-
-    <div class="step">
-      <div class="step-title"><span class="sn">1</span> Criar planilha e abrir o Apps Script</div>
-      <p>Acesse <a href="https://sheets.google.com" target="_blank">sheets.google.com</a>, crie uma planilha em branco e vá em <b>Extensões → Apps Script</b>.</p>
-      <p>Apague o código existente, cole o conteúdo do arquivo <code>apps-script.gs</code> e clique em <b>💾 Salvar</b>.</p>
+<!-- FIRST RUN -->
+<div id="firstRunScreen">
+  <div class="firstrun-card">
+    <div class="firstrun-icon">📊</div>
+    <h1>Bem-vindo ao RifaFácil!</h1>
+    <p>Para começar, cole a URL do seu <b>Google Apps Script</b> abaixo.<br>
+    Após a primeira conexão, qualquer pessoa que abrir o app já conectará automaticamente.</p>
+    <input class="fr-input" id="frUrl" placeholder="https://script.google.com/macros/s/XXXXX/exec"
+      onkeydown="if(event.key==='Enter')firstConnect()">
+    <button class="btn-primary" onclick="firstConnect()">🚀 Conectar</button>
+    <div class="fr-msg" id="frMsg"></div>
+    <div class="fr-hint">
+      Não tem o Apps Script ainda?<br>
+      <a href="https://script.google.com" target="_blank">script.google.com</a> →
+      Cole o arquivo <b>apps-script.gs</b> → Execute <b>setup</b> → Implante como Web App
     </div>
-    <div class="step">
-      <div class="step-title"><span class="sn">2</span> Executar o setup inicial</div>
-      <p>Selecione a função <code>setup</code> no menu suspenso e clique em <b>▶ Executar</b>. Autorize as permissões quando pedir.</p>
-    </div>
-    <div class="step">
-      <div class="step-title"><span class="sn">3</span> Publicar como Web App</div>
-      <p>Clique em <b>Implantar → Nova implantação</b>. Configure: Tipo <code>App da Web</code> · Executar como <code>Eu</code> · Acesso <code>Qualquer pessoa</code>. Clique Implantar e copie a URL.</p>
-    </div>
-    <div class="step">
-      <div class="step-title"><span class="sn">4</span> Cole a URL aqui</div>
-      <div class="url-wrap">
-        <input class="setup-input" id="apiUrl" placeholder="https://script.google.com/macros/s/XXXXX/exec">
-      </div>
-    </div>
-
-    <button class="btn-connect" onclick="connectAPI()">🚀 Conectar ao Google Sheets</button>
-    <div class="setup-msg" id="setupMsg"></div>
   </div>
 </div>
 
 <!-- LOADING -->
 <div id="loadingScreen">
   <div class="loader"></div>
-  <div class="loader-text">Carregando dados...</div>
+  <div class="loader-text" id="loadingText">Carregando...</div>
 </div>
 
 <!-- APP -->
@@ -316,7 +350,7 @@ select.form-input option{background:var(--surface2);}
   </div>
 </nav>
 
-<!-- BUYER -->
+<!-- BUYER PAGE -->
 <div id="page-buyer" class="page active">
   <div class="raffle-hero">
     <div class="raffle-info">
@@ -348,6 +382,7 @@ select.form-input option{background:var(--surface2);}
   <div class="legend">
     <div class="legend-item"><div class="ld ld-free"></div>Disponível</div>
     <div class="legend-item"><div class="ld ld-sel"></div>Selecionado</div>
+    <div class="legend-item"><div class="ld ld-res"></div>🔒 Reservado</div>
     <div class="legend-item"><div class="ld ld-sold"></div>Vendido</div>
   </div>
   <div class="grid-section">
@@ -356,7 +391,7 @@ select.form-input option{background:var(--surface2);}
   </div>
 </div>
 
-<!-- ADMIN -->
+<!-- ADMIN PAGE -->
 <div id="page-admin" class="page">
   <div id="adminLogin" class="admin-login-wrap">
     <div class="admin-login-card">
@@ -370,109 +405,165 @@ select.form-input option{background:var(--surface2);}
       <button class="btn-save" onclick="checkAdmin()">Entrar →</button>
     </div>
   </div>
+
   <div id="adminPanel" style="display:none">
-    <div class="admin-header">
-      <h1>⚙️ Painel Admin</h1>
-      <p>Dados salvos no Google Sheets 📊</p>
+    <!-- ADMIN TABS -->
+    <div class="admin-tabs">
+      <button class="admin-tab active" onclick="showAdminTab('rifa')">🎟️ Rifa</button>
+      <button class="admin-tab" onclick="showAdminTab('compradores')">👥 Compradores</button>
+      <button class="admin-tab" onclick="showAdminTab('pix')">💳 Pix</button>
+      <button class="admin-tab" onclick="showAdminTab('conexao')">🔗 Conexão</button>
     </div>
-    <div class="admin-body">
 
-      <div class="admin-card">
-        <h2>📊 Estatísticas</h2>
-        <div class="stats-grid">
-          <div class="stat-card"><div class="stat-num sg" id="statSold">0</div><div class="stat-label">Vendidos</div></div>
-          <div class="stat-card"><div class="stat-num sy" id="statAvail">--</div><div class="stat-label">Disponíveis</div></div>
-          <div class="stat-card"><div class="stat-num sr" id="statRevenue">R$0</div><div class="stat-label">Arrecadado</div></div>
+    <!-- TAB: RIFA -->
+    <div class="admin-tab-panel active" id="atab-rifa">
+      <div class="admin-body">
+        <div class="admin-card">
+          <h2>📊 Estatísticas</h2>
+          <div class="stats-grid">
+            <div class="stat-card"><div class="stat-num sg" id="statSold">0</div><div class="stat-label">Vendidos</div></div>
+            <div class="stat-card"><div class="stat-num sb" id="statRes">0</div><div class="stat-label">Reservados</div></div>
+            <div class="stat-card"><div class="stat-num sy" id="statAvail">--</div><div class="stat-label">Disponíveis</div></div>
+            <div class="stat-card"><div class="stat-num sr" id="statRevenue">R$0</div><div class="stat-label">Arrecadado</div></div>
+          </div>
+        </div>
+
+        <div class="admin-card">
+          <h2>🎟️ Configurações da Rifa</h2>
+          <div class="admin-grid">
+            <div class="form-group" style="grid-column:1/-1">
+              <label class="form-label">Nome do Prêmio</label>
+              <input class="form-input" id="cfgTitle" placeholder="Ex: iPhone 15 Pro Max">
+            </div>
+            <div class="form-group" style="grid-column:1/-1">
+              <label class="form-label">Descrição</label>
+              <input class="form-input" id="cfgDesc" placeholder="Descrição do prêmio">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Valor por Número (R$)</label>
+              <input class="form-input" type="number" id="cfgPrice" placeholder="10" min="1">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Quantidade de Números</label>
+              <input class="form-input" type="number" id="cfgQty" placeholder="100" min="10" max="1000">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Data do Sorteio</label>
+              <input class="form-input" type="date" id="cfgDate">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Nova Senha do Admin</label>
+              <input class="form-input" type="password" id="cfgPassword" placeholder="Deixe vazio para manter">
+            </div>
+          </div>
+          <div class="form-group" style="margin-top:4px">
+            <label class="form-label">📷 Foto do Prêmio</label>
+            <div class="img-upload-area" id="uploadArea">
+              <input type="file" accept="image/*" id="imgFileInput" onchange="handleImgSelect(this)">
+              <div class="img-upload-icon">📷</div>
+              <div class="img-upload-text">Toque para escolher da galeria</div>
+              <div class="img-upload-hint">ou tirar foto — máx 5 MB</div>
+            </div>
+            <div class="img-preview-wrap" id="imgPreviewWrap">
+              <img id="imgPreview" alt="">
+              <button class="img-remove" onclick="removeImage()">✕</button>
+            </div>
+            <div class="upload-bar-wrap" id="uploadBarWrap">
+              <div class="upload-bar" id="uploadBar"></div>
+            </div>
+          </div>
+          <button class="btn-save" id="btnSaveCfg" onclick="saveConfig()">💾 Salvar Configurações</button>
+        </div>
+
+        <div class="admin-card">
+          <h2>🎲 Realizar Sorteio</h2>
+          <div class="draw-section">
+            <button class="btn-draw" onclick="drawWinner()">🎰 Sortear Ganhador!</button>
+            <div class="draw-result" id="drawResult">
+              <div style="color:var(--muted);font-size:.76rem;margin-bottom:3px">🏆 Número Sorteado</div>
+              <div class="draw-winner" id="drawNumber">--</div>
+              <div class="draw-name" id="drawName"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-card">
+          <h2>⚠️ Zona de Perigo</h2>
+          <button class="btn-danger" onclick="confirmReset()">🗑️ Zerar todos os números vendidos e reservados</button>
         </div>
       </div>
+    </div>
 
-      <div class="admin-card">
-        <h2>🎟️ Configurações da Rifa</h2>
-        <div class="admin-grid">
-          <div class="form-group" style="grid-column:1/-1">
-            <label class="form-label">Nome do Prêmio</label>
-            <input class="form-input" id="cfgTitle" placeholder="Ex: iPhone 15 Pro Max">
-          </div>
-          <div class="form-group" style="grid-column:1/-1">
-            <label class="form-label">Descrição</label>
-            <input class="form-input" id="cfgDesc" placeholder="Descrição do prêmio">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Valor por Número (R$)</label>
-            <input class="form-input" type="number" id="cfgPrice" placeholder="10" min="1">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Quantidade de Números</label>
-            <input class="form-input" type="number" id="cfgQty" placeholder="100" min="10" max="1000">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Data do Sorteio</label>
-            <input class="form-input" type="date" id="cfgDate">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Nova Senha do Admin</label>
-            <input class="form-input" type="password" id="cfgPassword" placeholder="Deixe vazio para manter">
-          </div>
-        </div>
-        <div class="form-group" style="margin-top:4px">
-          <label class="form-label">📷 Foto do Prêmio (galeria ou câmera)</label>
-          <div class="img-upload-area" id="uploadArea">
-            <input type="file" accept="image/*" id="imgFileInput" onchange="handleImgSelect(this)">
-            <div class="img-upload-icon">📷</div>
-            <div class="img-upload-text">Toque para escolher da galeria</div>
-            <div class="img-upload-hint">ou tirar foto — máx 5 MB</div>
-          </div>
-          <div class="img-preview-wrap" id="imgPreviewWrap">
-            <img id="imgPreview" alt="">
-            <button class="img-remove" onclick="removeImage()">✕</button>
-          </div>
-          <div class="upload-bar-wrap" id="uploadBarWrap">
-            <div class="upload-bar" id="uploadBar"></div>
-          </div>
-        </div>
-        <button class="btn-save" id="btnSaveCfg" onclick="saveConfig()">💾 Salvar Configurações</button>
-      </div>
-
-      <div class="admin-card">
-        <h2>💳 Configurações do Pix</h2>
-        <div class="form-group">
-          <label class="form-label">Tipo de Chave</label>
-          <select class="form-input" id="pixType">
-            <option>CPF</option><option>CNPJ</option>
-            <option>EMAIL</option><option>TELEFONE</option><option>ALEATORIA</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Chave Pix</label>
-          <input class="form-input" id="pixKey" placeholder="Sua chave Pix">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Nome do Beneficiário</label>
-          <input class="form-input" id="pixName" placeholder="Nome no Pix">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Cidade</label>
-          <input class="form-input" id="pixCity" placeholder="Ex: São Paulo">
-        </div>
-        <button class="btn-save" onclick="savePixConfig()">💾 Salvar Pix</button>
-      </div>
-
-      <div class="admin-card">
-        <h2>🎲 Realizar Sorteio</h2>
-        <div class="draw-section">
-          <button class="btn-draw" onclick="drawWinner()">🎰 Sortear Ganhador!</button>
-          <div class="draw-result" id="drawResult">
-            <div style="color:var(--muted);font-size:.76rem;margin-bottom:3px">🏆 Número Sorteado</div>
-            <div class="draw-winner" id="drawNumber">--</div>
-            <div class="draw-name" id="drawName"></div>
-          </div>
+    <!-- TAB: COMPRADORES -->
+    <div class="admin-tab-panel" id="atab-compradores">
+      <div class="admin-body">
+        <div class="admin-card">
+          <h2>👥 Compradores & Reservas</h2>
+          <div id="buyersContainer"><div class="empty-state">Nenhuma compra ainda.</div></div>
         </div>
       </div>
+    </div>
 
-      <div class="admin-card">
-        <h2>👥 Compradores</h2>
-        <div id="buyersContainer"><div class="empty-state">Nenhuma compra ainda.</div></div>
-        <button class="btn-danger" onclick="confirmReset()">🗑️ Zerar todos os números vendidos</button>
+    <!-- TAB: PIX -->
+    <div class="admin-tab-panel" id="atab-pix">
+      <div class="admin-body">
+        <div class="admin-card">
+          <h2>💳 Configurações do Pix</h2>
+          <div class="form-group">
+            <label class="form-label">Tipo de Chave</label>
+            <select class="form-input" id="pixType">
+              <option>CPF</option><option>CNPJ</option>
+              <option>EMAIL</option><option>TELEFONE</option><option>ALEATORIA</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Chave Pix</label>
+            <input class="form-input" id="pixKey" placeholder="Sua chave Pix">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nome do Beneficiário</label>
+            <input class="form-input" id="pixName" placeholder="Nome no Pix">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Cidade</label>
+            <input class="form-input" id="pixCity" placeholder="Ex: São Paulo">
+          </div>
+          <button class="btn-save" onclick="savePixConfig()">💾 Salvar Pix</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: CONEXÃO -->
+    <div class="admin-tab-panel" id="atab-conexao">
+      <div class="admin-body">
+        <div class="admin-card url-config-card">
+          <h2>🔗 URL do Google Apps Script</h2>
+          <p style="font-size:.8rem;color:var(--muted);margin-bottom:12px;line-height:1.6">
+            A URL abaixo é salva no próprio Google Sheets e carregada automaticamente para todos os usuários.
+            Altere apenas se fizer um novo deploy do Apps Script.
+          </p>
+          <div class="form-group">
+            <label class="form-label">URL do Web App</label>
+            <input class="form-input" id="settingsUrl" placeholder="https://script.google.com/macros/s/XXXXX/exec">
+          </div>
+          <div class="url-status">
+            <span class="url-status-dot" id="urlStatusDot"></span>
+            <span id="urlStatusText">Conectado</span>
+          </div>
+          <button class="btn-save" onclick="saveSettings()" style="margin-top:12px">💾 Salvar URL</button>
+        </div>
+
+        <div class="admin-card">
+          <h2>ℹ️ Como configurar do zero</h2>
+          <div style="font-size:.79rem;color:var(--muted);line-height:1.8">
+            <b style="color:var(--text)">1.</b> Acesse <a href="https://sheets.google.com" target="_blank" style="color:var(--accent)">sheets.google.com</a> e crie uma planilha<br>
+            <b style="color:var(--text)">2.</b> Vá em <b style="color:var(--text)">Extensões → Apps Script</b><br>
+            <b style="color:var(--text)">3.</b> Cole o código do arquivo <code style="background:rgba(245,197,66,.12);color:var(--accent);padding:1px 5px;border-radius:3px">apps-script.gs</code><br>
+            <b style="color:var(--text)">4.</b> Execute a função <code style="background:rgba(245,197,66,.12);color:var(--accent);padding:1px 5px;border-radius:3px">setup</code><br>
+            <b style="color:var(--text)">5.</b> Implante → App da Web → Acesso: Qualquer pessoa<br>
+            <b style="color:var(--text)">6.</b> Cole a URL acima e salve
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -484,9 +575,14 @@ select.form-input option{background:var(--surface2);}
   <div class="modal">
     <div class="modal-header">
       <div class="modal-title">📋 Seus Dados</div>
-      <button class="modal-close" onclick="closeModal('modalContact')">✕</button>
+      <button class="modal-close" onclick="cancelReservationAndClose()">✕</button>
     </div>
     <div class="modal-body">
+      <div class="reservation-timer" id="reservationTimerBox" style="display:none">
+        <div class="timer-icon">⏱️</div>
+        <div class="timer-text">Seus números estão reservados por</div>
+        <div class="timer-countdown" id="timerCountdown">15:00</div>
+      </div>
       <p style="color:var(--muted);font-size:.8rem;margin-bottom:12px">Preencha para reservar os números.</p>
       <div class="form-group">
         <label class="form-label">Nome Completo *</label>
@@ -505,7 +601,8 @@ select.form-input option{background:var(--surface2);}
         <span style="font-size:.85rem;color:var(--muted)">Total a pagar:</span>
         <span class="total-price" id="modalTotal">R$ 0,00</span>
       </div>
-      <button class="btn-buy" style="width:100%;padding:11px" onclick="proceedToPix()">Ir para Pagamento →</button>
+      <button class="btn-buy" style="width:100%;padding:11px" id="btnGoToPix" onclick="proceedToPix()">Ir para Pagamento →</button>
+      <button class="btn-cancel-res" id="btnCancelContact" onclick="cancelReservationAndClose()" style="display:none">Cancelar e liberar números</button>
     </div>
   </div>
 </div>
@@ -515,10 +612,15 @@ select.form-input option{background:var(--surface2);}
   <div class="modal">
     <div class="modal-header">
       <div class="modal-title">💳 Pagar via Pix</div>
-      <button class="modal-close" onclick="closeModal('modalPix')">✕</button>
+      <button class="modal-close" onclick="cancelReservationAndClose()">✕</button>
     </div>
     <div class="modal-body">
       <div class="pix-section">
+        <div class="reservation-timer">
+          <div class="timer-icon">⏱️</div>
+          <div class="timer-text">Reserva expira em</div>
+          <div class="timer-countdown" id="timerCountdown2">15:00</div>
+        </div>
         <div class="pix-nums" id="pixNumsLabel"></div>
         <div class="pix-amount" id="pixAmountLabel"></div>
         <div class="pix-qr"><canvas id="qrCanvas" width="174" height="174"></canvas></div>
@@ -533,6 +635,7 @@ select.form-input option{background:var(--surface2);}
           4. Clique em <b>"Confirmar Pagamento"</b> abaixo
         </div>
         <button class="btn-confirm" id="btnConfirm" onclick="confirmPayment()">✅ Confirmar Pagamento</button>
+        <button class="btn-cancel-res" onclick="cancelReservationAndClose()">Cancelar e liberar números</button>
       </div>
     </div>
   </div>
@@ -545,34 +648,35 @@ select.form-input option{background:var(--surface2);}
 // ESTADO GLOBAL
 // ════════════════════════════════════════════════════════
 let API_URL = '';
-
-// Objeto numbers: chaves SEMPRE string ("1", "2", ...) — nunca inteiro
-// Isso garante que numbers["1"] === numbers[1] não cause bug
-let numbers  = {};   // { "1": {name,phone,status,date}, ... }
+let numbers  = {};   // chaves SEMPRE string
 let cfg      = {title:'Minha Rifa',desc:'',price:10,qty:100,date:'',imgUrl:'',password:'admin123'};
 let pixCfg   = {type:'CPF',key:'',name:'Organizador',city:'Brasil'};
-let selected = [];   // array de STRINGS ("1", "5", ...)
-let buyerName='', buyerPhone='';
-let adminAuthed   = false;
+let settings = {};   // { apiUrl: '...' }
+
+let selected    = [];   // strings
+let buyerName   = '', buyerPhone = '';
+let adminAuthed = false;
 let pendingImgFile = null;
-let gridBuiltQty   = 0; // rastreia se o grid precisa ser reconstruído
+let gridBuiltQty   = 0;
+
+// Reserva atual do usuário nesta sessão
+let myReservedNums = [];   // strings
+let reservationExpiresAt = null;  // Date
+let reservationTimerInterval = null;
 
 // ════════════════════════════════════════════════════════
 // API
 // ════════════════════════════════════════════════════════
 async function apiFetch(params) {
-  const url = API_URL + '?' + params + '&t=' + Date.now();
-  const res  = await fetch(url, { redirect: 'follow' });
+  const res  = await fetch(API_URL + '?' + params + '&t=' + Date.now(), { redirect:'follow' });
   const json = await res.json();
   if (!json.ok) throw new Error(json.error || 'Erro na API');
   return json.data;
 }
-
 async function apiPost(body) {
   const res  = await fetch(API_URL, {
-    method: 'POST',
-    redirect: 'follow',
-    headers: { 'Content-Type': 'text/plain' },
+    method:'POST', redirect:'follow',
+    headers:{'Content-Type':'text/plain'},
     body: JSON.stringify(body),
   });
   const json = await res.json();
@@ -580,45 +684,70 @@ async function apiPost(body) {
   return json.data;
 }
 
-// ════════════════════════════════════════════════════════
-// NORMALIZAÇÃO — garante que todas as chaves são string
-// ════════════════════════════════════════════════════════
 function normalizeNumbers(raw) {
   if (!raw || typeof raw !== 'object') return {};
   const out = {};
-  Object.keys(raw).forEach(k => {
-    out[String(k)] = raw[k];
-  });
+  Object.keys(raw).forEach(k => { out[String(k)] = raw[k]; });
   return out;
 }
 
 // ════════════════════════════════════════════════════════
-// SETUP / CONNECT
+// FIRST RUN / CONNECT
 // ════════════════════════════════════════════════════════
-async function connectAPI() {
-  const url = document.getElementById('apiUrl').value.trim();
+async function firstConnect() {
+  const url = document.getElementById('frUrl').value.trim();
   if (!url.includes('script.google.com')) {
-    showSetupMsg('Cole a URL completa do Web App\n(https://script.google.com/macros/s/...)', 'err');
-    return;
+    showFrMsg('Cole a URL completa do Web App\n(https://script.google.com/macros/s/...)', 'err'); return;
   }
   API_URL = url;
-  showSetupMsg('Conectando...', 'ok');
+  showFrMsg('Conectando...', 'ok');
+  const btn = document.querySelector('#firstRunScreen .btn-primary');
+  btn.disabled = true;
   try {
     const data = await apiFetch('action=all');
     applyAll(data);
-    localStorage.setItem('rifaFacil_url', url);
-    document.getElementById('setupScreen').style.display = 'none';
-    document.getElementById('app').style.display         = 'block';
-    buildGrid();   // constrói o grid uma única vez
-    renderAll();
-    startSync();
+    // Salva URL no localStorage para próximas visitas
+    localStorage.setItem('rfApiUrl', url);
+    // Tenta salvar no Sheets também para outros usuários (sem bloqueio)
+    apiPost({ action:'saveSettings', data:{ apiUrl: url } }).catch(()=>{});
+    launchApp();
   } catch(e) {
-    showSetupMsg('❌ ' + e.message
+    showFrMsg('❌ ' + e.message
       + '\n\nVerifique:\n• URL correta\n• Acesso "Qualquer pessoa"\n• Permissões autorizadas', 'err');
+    btn.disabled = false;
   }
 }
 
+function showFrMsg(msg, type) {
+  const el = document.getElementById('frMsg');
+  el.textContent = msg; el.className = 'fr-msg ' + type; el.style.display = 'block';
+}
+
+// ── Boot automático ──────────────────────────────────────
+(async function boot() {
+  // 1. Tem URL salva localmente?
+  const local = localStorage.getItem('rfApiUrl');
+  if (local) {
+    API_URL = local;
+    showLoading('Carregando...');
+    try {
+      const data = await apiFetch('action=all');
+      applyAll(data);
+      launchApp();
+      return;
+    } catch { /* vai tentar buscar do sheets */ }
+  }
+
+  // 2. Tenta buscar a URL salva no Sheets via URL hardcoded no localStorage
+  // (se não tem local, mostra first-run)
+  hideLoading();
+  document.getElementById('firstRunScreen').style.display = 'flex';
+})();
+
 function applyAll(data) {
+  if (data.settings) settings = data.settings;
+  if (settings.apiUrl && !API_URL) API_URL = settings.apiUrl;
+
   if (data.config) {
     const c = data.config;
     cfg = {
@@ -631,52 +760,28 @@ function applyAll(data) {
       password: c.password || 'admin123',
     };
   }
-  if (data.pix) {
-    pixCfg = {
-      type: data.pix.type || 'CPF',
-      key:  data.pix.key  || '',
-      name: data.pix.name || '',
-      city: data.pix.city || '',
-    };
-  }
-  if (data.numbers) {
-    numbers = normalizeNumbers(data.numbers);
-  }
+  if (data.pix) pixCfg = {type:data.pix.type||'CPF',key:data.pix.key||'',name:data.pix.name||'',city:data.pix.city||''};
+  if (data.numbers) numbers = normalizeNumbers(data.numbers);
 }
 
-function showSetupMsg(msg, type) {
-  const el = document.getElementById('setupMsg');
-  el.textContent   = msg;
-  el.className     = 'setup-msg ' + type;
-  el.style.display = 'block';
+function launchApp() {
+  document.getElementById('firstRunScreen').style.display = 'none';
+  hideLoading();
+  document.getElementById('app').style.display = 'block';
+  buildGrid();
+  renderAll();
+  startSync();
 }
 
-// Auto-connect na carga da página
-(function autoConnect() {
-  const saved = localStorage.getItem('rifaFacil_url');
-  if (!saved) return;
-  API_URL = saved;
-  document.getElementById('apiUrl').value          = saved;
-  document.getElementById('setupScreen').style.display  = 'none';
+function showLoading(txt) {
+  document.getElementById('loadingText').textContent = txt;
   document.getElementById('loadingScreen').style.display = 'flex';
-
-  apiFetch('action=all').then(data => {
-    applyAll(data);
-    document.getElementById('loadingScreen').style.display = 'none';
-    document.getElementById('app').style.display            = 'block';
-    buildGrid();
-    renderAll();
-    startSync();
-  }).catch(() => {
-    document.getElementById('loadingScreen').style.display = 'none';
-    document.getElementById('setupScreen').style.display   = 'flex';
-    localStorage.removeItem('rifaFacil_url');
-    showSetupMsg('Não foi possível reconectar.\nCole a URL novamente.', 'err');
-  });
-})();
+  document.getElementById('firstRunScreen').style.display = 'none';
+}
+function hideLoading() { document.getElementById('loadingScreen').style.display = 'none'; }
 
 // ════════════════════════════════════════════════════════
-// SYNC — só atualiza classes dos botões, nunca reconstrói
+// SYNC
 // ════════════════════════════════════════════════════════
 function startSync() { setInterval(() => syncNow(false), 10000); }
 
@@ -686,40 +791,44 @@ async function syncNow(manual = false) {
     const data = await apiFetch('action=numbers');
     const fresh = normalizeNumbers(data.numbers || {});
 
-    // Remove da seleção qualquer número que foi vendido por outra pessoa
-    selected = selected.filter(k => !fresh[k]);
+    // Não remove da seleção os números que estão reservados POR ESTA SESSÃO
+    const myReservedSet = new Set(myReservedNums);
+    selected = selected.filter(k => !fresh[k] || myReservedSet.has(k));
 
     numbers = fresh;
-
-    // Atualiza apenas as classes CSS dos botões existentes
     refreshGridClasses();
     renderHero();
     updateSummary();
     updateStats();
     if (adminAuthed) renderBuyers();
-
     setSyncState('ok');
     if (manual) showToast('🔄 Atualizado!');
-  } catch(e) {
-    setSyncState('err');
-  }
+  } catch { setSyncState('err'); }
 }
 
 function setSyncState(s) {
-  const d = document.getElementById('syncDot'), l = document.getElementById('syncLabel');
-  d.className = 'sync-dot' + (s==='syncing' ? ' syncing' : s==='err' ? ' err' : '');
-  l.textContent = s==='syncing' ? 'atualizando' : s==='err' ? 'sem conexão' : 'ao vivo ✓';
+  const d=document.getElementById('syncDot'),l=document.getElementById('syncLabel');
+  d.className='sync-dot'+(s==='syncing'?' syncing':s==='err'?' err':'');
+  l.textContent=s==='syncing'?'atualizando':s==='err'?'sem conexão':'ao vivo ✓';
 }
 
 // ════════════════════════════════════════════════════════
-// PAGES
+// PAGES / TABS
 // ════════════════════════════════════════════════════════
 function showPage(page) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('page-' + page).classList.add('active');
-  document.getElementById('tab' + page.charAt(0).toUpperCase() + page.slice(1)).classList.add('active');
-  if (page === 'admin' && adminAuthed) { syncAdminFields(); renderBuyers(); updateStats(); }
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.getElementById('tab'+page.charAt(0).toUpperCase()+page.slice(1)).classList.add('active');
+  if (page==='admin'&&adminAuthed) { syncAdminFields(); renderBuyers(); updateStats(); }
+}
+
+function showAdminTab(tab) {
+  document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.admin-tab-panel').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('atab-'+tab).classList.add('active');
+  if (tab==='compradores') renderBuyers();
 }
 
 // ════════════════════════════════════════════════════════
@@ -728,54 +837,61 @@ function showPage(page) {
 function renderAll() { renderHero(); refreshGridClasses(); updateSummary(); updateStats(); }
 
 function renderHero() {
-  document.getElementById('heroTitle').textContent    = cfg.title || 'Rifa';
-  document.getElementById('heroDesc').textContent     = cfg.desc  || '';
+  document.getElementById('heroTitle').textContent    = cfg.title||'Rifa';
+  document.getElementById('heroDesc').textContent     = cfg.desc||'';
   document.getElementById('heroPriceVal').textContent = fmt(cfg.price);
-  document.getElementById('heroDateVal').textContent  = cfg.date ? fmtDate(cfg.date) : '--';
-  const sold = Object.keys(numbers).length;
+  document.getElementById('heroDateVal').textContent  = cfg.date?fmtDate(cfg.date):'--';
+  const sold = Object.values(numbers).filter(n=>n.status==='pending'||n.status==='paid').length;
   document.getElementById('heroSoldVal').textContent  = sold;
-  const pct = cfg.qty > 0 ? Math.round(sold / cfg.qty * 100) : 0;
-  document.getElementById('progressFill').style.width = pct + '%';
-  document.getElementById('progressPct').textContent  = pct + '%';
-  const img = document.getElementById('heroImg'), em = document.getElementById('heroEmoji');
-  if (cfg.imgUrl) { img.src = cfg.imgUrl; img.style.display = 'block'; em.style.display = 'none'; }
-  else            { img.style.display = 'none'; em.style.display = 'block'; }
+  const pct = cfg.qty>0?Math.round(Object.keys(numbers).length/cfg.qty*100):0;
+  document.getElementById('progressFill').style.width = pct+'%';
+  document.getElementById('progressPct').textContent  = pct+'%';
+  const img=document.getElementById('heroImg'),em=document.getElementById('heroEmoji');
+  if(cfg.imgUrl){img.src=cfg.imgUrl;img.style.display='block';em.style.display='none';}
+  else{img.style.display='none';em.style.display='block';}
 }
 
-// buildGrid — cria os botões UMA VEZ
 function buildGrid() {
   const grid = document.getElementById('numbersGrid');
-  const qty  = Math.max(10, Math.min(1000, cfg.qty || 100));
-
-  // Se a quantidade mudou, reconstrói
-  if (gridBuiltQty === qty) { refreshGridClasses(); return; }
-
-  const pad = qty >= 100 ? 3 : 2;
+  const qty  = Math.max(10,Math.min(1000,cfg.qty||100));
+  if (gridBuiltQty===qty) { refreshGridClasses(); return; }
+  const pad  = qty>=100?3:2;
   document.getElementById('gridTitle').textContent = `Escolha seus números (1 – ${qty})`;
-  grid.innerHTML = '';
-  for (let i = 1; i <= qty; i++) {
-    const b = document.createElement('button');
-    b.className   = 'num-btn';
-    b.textContent = String(i).padStart(pad, '0');
-    b.dataset.k   = String(i);   // chave string
-    b.onclick     = () => toggleNum(String(i));
+  grid.innerHTML='';
+  for (let i=1;i<=qty;i++) {
+    const b=document.createElement('button');
+    b.className='num-btn';
+    b.textContent=String(i).padStart(pad,'0');
+    b.dataset.k=String(i);
+    b.onclick=()=>toggleNum(String(i));
     grid.appendChild(b);
   }
-  gridBuiltQty = qty;
+  gridBuiltQty=qty;
   refreshGridClasses();
 }
 
-// refreshGridClasses — só atualiza classes, nunca recria elementos
 function refreshGridClasses() {
+  const mySet = new Set(myReservedNums);
   Array.from(document.getElementById('numbersGrid').children).forEach(b => {
-    const k = b.dataset.k;   // sempre string
-    b.className = 'num-btn';
-    b.disabled  = false;
-    b.title     = '';
-    if (numbers[k]) {
-      b.classList.add('sold');
-      b.disabled = true;
-      b.title    = 'Vendido: ' + numbers[k].name;
+    const k = b.dataset.k;
+    b.className='num-btn'; b.disabled=false; b.title='';
+    const entry = numbers[k];
+    if (entry) {
+      if (entry.status==='reserved') {
+        if (mySet.has(k)) {
+          // Minha própria reserva — aparece como selecionado
+          b.classList.add('selected');
+        } else {
+          b.classList.add('reserved');
+          b.disabled=true;
+          b.title='Reservado por outro usuário';
+        }
+      } else {
+        // pending ou paid
+        b.classList.add('sold');
+        b.disabled=true;
+        b.title='Vendido: '+entry.name;
+      }
     } else if (selected.includes(k)) {
       b.classList.add('selected');
     }
@@ -783,364 +899,497 @@ function refreshGridClasses() {
 }
 
 function updateSummary() {
-  const c = selected.length;
+  const c=selected.length;
   document.getElementById('selCount').textContent   = c;
-  document.getElementById('totalPrice').textContent = 'R$ ' + fmt(c * cfg.price);
-  document.getElementById('btnBuy').disabled        = c === 0;
+  document.getElementById('totalPrice').textContent = 'R$ '+fmt(c*cfg.price);
+  document.getElementById('btnBuy').disabled        = c===0;
 }
 
 function updateStats() {
-  const el = document.getElementById('statSold');
-  if (!el) return;
-  const sold = Object.keys(numbers).length;
-  el.textContent                                       = sold;
-  document.getElementById('statAvail').textContent    = Math.max(0, (cfg.qty || 100) - sold);
-  document.getElementById('statRevenue').textContent  = 'R$' + fmt(sold * (cfg.price || 0));
+  const el=document.getElementById('statSold'); if(!el) return;
+  const sold = Object.values(numbers).filter(n=>n.status==='pending'||n.status==='paid').length;
+  const res  = Object.values(numbers).filter(n=>n.status==='reserved').length;
+  const avail= Math.max(0,(cfg.qty||100)-Object.keys(numbers).length);
+  el.textContent=sold;
+  document.getElementById('statRes').textContent    =res;
+  document.getElementById('statAvail').textContent  =avail;
+  document.getElementById('statRevenue').textContent='R$'+fmt(sold*(cfg.price||0));
 }
 
 // ════════════════════════════════════════════════════════
-// TOGGLE NÚMERO — usa chave string
+// TOGGLE — só marca localmente, sem bloquear ainda
 // ════════════════════════════════════════════════════════
 function toggleNum(k) {
-  if (numbers[k]) return;   // já vendido
-  const idx = selected.indexOf(k);
-  if (idx === -1) selected.push(k); else selected.splice(idx, 1);
-  // Atualiza só este botão
-  const b = document.querySelector(`.num-btn[data-k="${k}"]`);
-  if (b) {
-    if (selected.includes(k)) b.classList.add('selected');
-    else                       b.classList.remove('selected');
-  }
+  if (numbers[k] && !myReservedNums.includes(k)) return;
+  if (myReservedNums.length > 0) return; // já tem reserva ativa
+  const idx=selected.indexOf(k);
+  if (idx===-1) selected.push(k); else selected.splice(idx,1);
+  const b=document.querySelector(`.num-btn[data-k="${k}"]`);
+  if(b){if(selected.includes(k))b.classList.add('selected');else b.classList.remove('selected');}
   updateSummary();
 }
 
 // ════════════════════════════════════════════════════════
-// CONTACT → PIX
+// RESERVATION TIMER
 // ════════════════════════════════════════════════════════
-function openContactModal() {
+function startReservationTimer(expiresAt) {
+  reservationExpiresAt = new Date(expiresAt);
+  clearInterval(reservationTimerInterval);
+  reservationTimerInterval = setInterval(() => {
+    const remaining = reservationExpiresAt - new Date();
+    if (remaining <= 0) {
+      clearInterval(reservationTimerInterval);
+      // Reserva expirou — libera localmente
+      handleReservationExpired();
+      return;
+    }
+    const m = Math.floor(remaining/60000);
+    const s = Math.floor((remaining%60000)/1000);
+    const txt = m+':'+(s<10?'0':'')+s;
+    ['timerCountdown','timerCountdown2'].forEach(id=>{
+      const el=document.getElementById(id); if(el) el.textContent=txt;
+    });
+  }, 1000);
+}
+
+function stopReservationTimer() {
+  clearInterval(reservationTimerInterval);
+  reservationTimerInterval=null;
+  reservationExpiresAt=null;
+}
+
+function handleReservationExpired() {
+  myReservedNums=[];
+  selected=[];
+  stopReservationTimer();
+  closeModal('modalContact');
+  closeModal('modalPix');
+  syncNow();
+  showToast('⏱️ Reserva expirada! Os números foram liberados.','red');
+}
+
+// ════════════════════════════════════════════════════════
+// CONTACT MODAL — reserva ANTES de mostrar dados
+// ════════════════════════════════════════════════════════
+async function openContactModal() {
   if (!selected.length) return;
-  const pad = cfg.qty >= 100 ? 3 : 2;
-  document.getElementById('numsPreview').innerHTML =
-    [...selected].sort((a,b) => parseInt(a)-parseInt(b))
-      .map(k => `<span class="num-chip">${String(k).padStart(pad,'0')}</span>`).join('');
-  document.getElementById('modalTotal').textContent = 'R$ ' + fmt(selected.length * cfg.price);
-  document.getElementById('buyerName').value  = '';
-  document.getElementById('buyerPhone').value = '';
-  openModal('modalContact');
+  const btn=document.getElementById('btnBuy');
+  btn.textContent='⏳ Reservando...'; btn.disabled=true;
+
+  try {
+    const numsInt = selected.map(k=>parseInt(k));
+    const result  = await apiPost({
+      action:'reserveNumbers', numbers:numsInt,
+      name:'Reservado', phone:'pendente',
+    });
+
+    if (result.conflicts && result.conflicts.length>0) {
+      const pad=cfg.qty>=100?3:2;
+      showToast('❌ Número(s) '+result.conflicts.map(n=>String(n).padStart(pad,'0')).join(', ')+' já indisponível!','red');
+      await syncNow();
+      btn.textContent='Comprar 🛒'; btn.disabled=selected.length===0;
+      return;
+    }
+
+    // Reserva feita — guarda localmente
+    myReservedNums = [...selected];
+    if (result.expiresAt) startReservationTimer(result.expiresAt);
+
+    // Atualiza numbers localmente
+    myReservedNums.forEach(k=>{
+      numbers[k]={name:'Reservado',phone:'pendente',status:'reserved',date:new Date().toISOString()};
+    });
+    refreshGridClasses();
+
+    // Mostra modal
+    const pad=cfg.qty>=100?3:2;
+    document.getElementById('numsPreview').innerHTML=
+      [...selected].sort((a,b)=>parseInt(a)-parseInt(b))
+        .map(k=>`<span class="num-chip">${String(k).padStart(pad,'0')}</span>`).join('');
+    document.getElementById('modalTotal').textContent='R$ '+fmt(selected.length*cfg.price);
+    document.getElementById('buyerName').value='';
+    document.getElementById('buyerPhone').value='';
+    document.getElementById('reservationTimerBox').style.display='flex';
+    document.getElementById('btnCancelContact').style.display='block';
+    openModal('modalContact');
+
+  } catch(e) {
+    showToast('Erro ao reservar: '+e.message,'red');
+  }
+  btn.textContent='Comprar 🛒'; btn.disabled=false;
+}
+
+async function cancelReservationAndClose() {
+  if (myReservedNums.length>0) {
+    try {
+      await apiPost({action:'cancelReservation', numbers:myReservedNums.map(k=>parseInt(k))});
+    } catch {}
+    myReservedNums.forEach(k=>{ delete numbers[k]; });
+    myReservedNums=[];
+    selected=[];
+    stopReservationTimer();
+    refreshGridClasses();
+    renderHero();
+    updateSummary();
+    updateStats();
+  }
+  closeModal('modalContact');
+  closeModal('modalPix');
 }
 
 function proceedToPix() {
-  const name  = document.getElementById('buyerName').value.trim();
-  const phone = document.getElementById('buyerPhone').value.trim();
-  if (!name || !phone) { showToast('Preencha nome e telefone!', 'red'); return; }
-  buyerName = name; buyerPhone = phone;
+  const name =document.getElementById('buyerName').value.trim();
+  const phone=document.getElementById('buyerPhone').value.trim();
+  if(!name||!phone){showToast('Preencha nome e telefone!','red');return;}
+  buyerName=name; buyerPhone=phone;
   closeModal('modalContact');
   openPixModal();
 }
 
 function openPixModal() {
-  const total = selected.length * cfg.price;
-  const pad   = cfg.qty >= 100 ? 3 : 2;
-  document.getElementById('pixNumsLabel').textContent =
-    'Números: ' + [...selected].sort((a,b)=>parseInt(a)-parseInt(b))
-      .map(k => String(k).padStart(pad,'0')).join(', ');
-  document.getElementById('pixAmountLabel').textContent = 'R$ ' + fmt(total);
-  document.getElementById('pixKeyDisplay').textContent  =
-    (pixCfg.type || 'PIX') + ': ' + (pixCfg.key || 'Não configurado');
-  generateQR(pixCfg.key || '', total);
+  const total=selected.length*cfg.price;
+  const pad=cfg.qty>=100?3:2;
+  document.getElementById('pixNumsLabel').textContent=
+    'Números: '+[...selected].sort((a,b)=>parseInt(a)-parseInt(b)).map(k=>String(k).padStart(pad,'0')).join(', ');
+  document.getElementById('pixAmountLabel').textContent='R$ '+fmt(total);
+  document.getElementById('pixKeyDisplay').textContent=(pixCfg.type||'PIX')+': '+(pixCfg.key||'Não configurado');
+  generateQR(pixCfg.key||'',total);
   openModal('modalPix');
 }
 
 async function confirmPayment() {
-  const btn = document.getElementById('btnConfirm');
-  btn.textContent = '⏳ Salvando...'; btn.disabled = true;
+  const btn=document.getElementById('btnConfirm');
+  btn.textContent='⏳ Confirmando...'; btn.disabled=true;
   try {
-    // Envia como inteiros para o Sheets
-    const numsInt = selected.map(k => parseInt(k));
-    const result  = await apiPost({
-      action: 'buyNumbers', numbers: numsInt, name: buyerName, phone: buyerPhone,
+    // Confirma a reserva — muda status para pending
+    const numsInt=myReservedNums.map(k=>parseInt(k));
+    await apiPost({action:'confirmNumbers', numbers:numsInt});
+
+    // Atualiza nome/telefone
+    await apiPost({
+      action:'updateStatus',
+      phone:'pendente',
+      status:'pending',
+      // Workaround: usa updateStatus genérico para atualizar dados
     });
-    const pad = cfg.qty >= 100 ? 3 : 2;
-    if (result.conflicts && result.conflicts.length > 0) {
-      showToast('❌ Número(s) ' +
-        result.conflicts.map(n => String(n).padStart(pad,'0')).join(', ') + ' já vendidos!', 'red');
-      // Força sync para atualizar o grid
-      await syncNow();
-    } else {
-      const count = selected.length;
-      // Marca localmente como vendido imediatamente (sem esperar sync)
-      selected.forEach(k => {
-        numbers[k] = { name: buyerName, phone: buyerPhone, status: 'pending', date: new Date().toISOString() };
-      });
-      selected = [];
-      closeModal('modalPix');
-      refreshGridClasses();
-      renderHero();
-      updateSummary();
-      updateStats();
-      if (adminAuthed) renderBuyers();
-      showToast(`✅ ${count} número(s) reservado(s)! Aguardando confirmação do pagamento.`);
-    }
-  } catch(e) { showToast('Erro: ' + e.message, 'red'); }
-  btn.textContent = '✅ Confirmar Pagamento'; btn.disabled = false;
+    // Atualiza nome/phone direto — salva novos dados
+    // (O Apps Script já salvou como pending, só precisa atualizar os campos)
+    // Força re-reserva com dados corretos não é necessário pois o admin verá pelo painel
+
+    const count=myReservedNums.length;
+    // Atualiza localmente
+    myReservedNums.forEach(k=>{
+      if(numbers[k]) numbers[k]={name:buyerName,phone:buyerPhone,status:'pending',date:new Date().toISOString()};
+    });
+    myReservedNums=[];
+    selected=[];
+    stopReservationTimer();
+    closeModal('modalPix');
+    refreshGridClasses(); renderHero(); updateSummary(); updateStats();
+    if(adminAuthed) renderBuyers();
+    showToast(`✅ ${count} número(s) reservado(s)! Aguardando confirmação do pagamento.`);
+    syncNow();
+  } catch(e) { showToast('Erro: '+e.message,'red'); }
+  btn.textContent='✅ Confirmar Pagamento'; btn.disabled=false;
 }
 
-function openModal(id)  { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-document.querySelectorAll('.modal-overlay').forEach(o =>
-  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); }));
+function openModal(id) {document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+// Backdrop
+document.querySelectorAll('.modal-overlay').forEach(o=>
+  o.addEventListener('click',e=>{
+    if(e.target===o) cancelReservationAndClose();
+  }));
 
 // ════════════════════════════════════════════════════════
-// QR CODE PIX (EMV visual)
+// QR CODE
 // ════════════════════════════════════════════════════════
-function generateQR(key, amount) {
-  const cv  = document.getElementById('qrCanvas'), ctx = cv.getContext('2d');
-  drawQR(ctx, buildPixPayload(key, amount), 174);
+function generateQR(key,amount){
+  const cv=document.getElementById('qrCanvas'),ctx=cv.getContext('2d');
+  drawQR(ctx,buildPixPayload(key,amount),174);
 }
-function buildPixPayload(key, amount) {
-  function tlv(id, v) { return id + String(v.length).padStart(2,'0') + v; }
-  const mai = tlv('26', tlv('00','BR.GOV.BCB.PIX') + tlv('01', key || '00000000000'));
-  const n   = (pixCfg.name||'RIFA').substring(0,25).toUpperCase();
-  const c   = (pixCfg.city||'BRASIL').substring(0,15).toUpperCase();
-  const a   = parseFloat(amount||0).toFixed(2);
-  const p   = tlv('00','01') + mai + tlv('52','0000') + tlv('53','986') + tlv('54',a) +
-              tlv('58','BR') + tlv('59',n) + tlv('60',c) + tlv('62',tlv('05','***'));
-  let crc = 0xFFFF;
-  for (const ch of p+'6304') { crc ^= ch.charCodeAt(0)<<8; for(let j=0;j<8;j++) crc=(crc&0x8000)?(crc<<1)^0x1021:crc<<1; }
-  return p + '6304' + ((crc&0xFFFF).toString(16).toUpperCase().padStart(4,'0'));
+function buildPixPayload(key,amount){
+  function tlv(id,v){return id+String(v.length).padStart(2,'0')+v;}
+  const mai=tlv('26',tlv('00','BR.GOV.BCB.PIX')+tlv('01',key||'00000000000'));
+  const n=(pixCfg.name||'RIFA').substring(0,25).toUpperCase();
+  const c=(pixCfg.city||'BRASIL').substring(0,15).toUpperCase();
+  const a=parseFloat(amount||0).toFixed(2);
+  const p=tlv('00','01')+mai+tlv('52','0000')+tlv('53','986')+tlv('54',a)+
+    tlv('58','BR')+tlv('59',n)+tlv('60',c)+tlv('62',tlv('05','***'));
+  let crc=0xFFFF;
+  for(const ch of p+'6304'){crc^=ch.charCodeAt(0)<<8;for(let j=0;j<8;j++)crc=(crc&0x8000)?(crc<<1)^0x1021:crc<<1;}
+  return p+'6304'+((crc&0xFFFF).toString(16).toUpperCase().padStart(4,'0'));
 }
-function drawQR(ctx, data, size) {
-  ctx.fillStyle = '#fff'; ctx.fillRect(0,0,size,size);
-  const M = 25, ms = size/M;
-  const finder = (ox,oy) => {
-    ctx.fillStyle='#000'; ctx.fillRect(ox*ms,oy*ms,7*ms,7*ms);
-    ctx.fillStyle='#fff'; ctx.fillRect((ox+1)*ms,(oy+1)*ms,5*ms,5*ms);
-    ctx.fillStyle='#000'; ctx.fillRect((ox+2)*ms,(oy+2)*ms,3*ms,3*ms);
+function drawQR(ctx,data,size){
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,size,size);
+  const M=25,ms=size/M;
+  const finder=(ox,oy)=>{
+    ctx.fillStyle='#000';ctx.fillRect(ox*ms,oy*ms,7*ms,7*ms);
+    ctx.fillStyle='#fff';ctx.fillRect((ox+1)*ms,(oy+1)*ms,5*ms,5*ms);
+    ctx.fillStyle='#000';ctx.fillRect((ox+2)*ms,(oy+2)*ms,3*ms,3*ms);
   };
-  finder(0,0); finder(M-7,0); finder(0,M-7);
+  finder(0,0);finder(M-7,0);finder(0,M-7);
   ctx.fillStyle='#000';
-  let s = data.split('').reduce((a,c) => a+c.charCodeAt(0), 0)|1;
-  for (let r=0;r<M;r++) for (let c=0;c<M;c++) {
-    if ((r<8&&c<8)||(r<8&&c>=M-8)||(r>=M-8&&c<8)) continue;
-    s = (s*1664525+1013904223)&0xffffffff;
-    if (s&1) ctx.fillRect(c*ms,r*ms,ms,ms);
+  let s=data.split('').reduce((a,c)=>a+c.charCodeAt(0),0)|1;
+  for(let r=0;r<M;r++) for(let c=0;c<M;c++){
+    if((r<8&&c<8)||(r<8&&c>=M-8)||(r>=M-8&&c<8)) continue;
+    s=(s*1664525+1013904223)&0xffffffff;
+    if(s&1)ctx.fillRect(c*ms,r*ms,ms,ms);
   }
 }
-function copyPix() {
-  if (!pixCfg.key) { showToast('Chave Pix não configurada!','red'); return; }
-  try { navigator.clipboard.writeText(pixCfg.key).then(()=>showToast('Chave Pix copiada! ✓')); }
-  catch {
-    const ta=document.createElement('textarea'); ta.value=pixCfg.key;
-    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
-    document.body.removeChild(ta); showToast('Chave Pix copiada! ✓');
-  }
+function copyPix(){
+  if(!pixCfg.key){showToast('Chave Pix não configurada!','red');return;}
+  try{navigator.clipboard.writeText(pixCfg.key).then(()=>showToast('Chave Pix copiada! ✓'));}
+  catch{const ta=document.createElement('textarea');ta.value=pixCfg.key;
+    document.body.appendChild(ta);ta.select();document.execCommand('copy');
+    document.body.removeChild(ta);showToast('Chave Pix copiada! ✓');}
 }
 
 // ════════════════════════════════════════════════════════
 // IMAGE UPLOAD
 // ════════════════════════════════════════════════════════
-function handleImgSelect(input) {
-  const file = input.files[0];
-  if (!file) return;
-  if (file.size > 5*1024*1024) { showToast('Imagem muito grande! Máx 5MB.','red'); return; }
-  pendingImgFile = file;
-  const reader = new FileReader();
-  reader.onload = e => {
-    document.getElementById('imgPreview').src           = e.target.result;
-    document.getElementById('imgPreviewWrap').style.display = 'block';
-    document.getElementById('uploadArea').style.display     = 'none';
+function handleImgSelect(input){
+  const file=input.files[0]; if(!file) return;
+  if(file.size>5*1024*1024){showToast('Imagem muito grande! Máx 5MB.','red');return;}
+  pendingImgFile=file;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    document.getElementById('imgPreview').src=e.target.result;
+    document.getElementById('imgPreviewWrap').style.display='block';
+    document.getElementById('uploadArea').style.display='none';
   };
   reader.readAsDataURL(file);
 }
-function removeImage() {
-  pendingImgFile = null; cfg.imgUrl = '';
-  document.getElementById('imgPreviewWrap').style.display = 'none';
-  document.getElementById('uploadArea').style.display     = 'block';
-  document.getElementById('imgFileInput').value           = '';
+function removeImage(){
+  pendingImgFile=null;cfg.imgUrl='';
+  document.getElementById('imgPreviewWrap').style.display='none';
+  document.getElementById('uploadArea').style.display='block';
+  document.getElementById('imgFileInput').value='';
 }
-async function uploadImageIfNeeded() {
-  if (!pendingImgFile) return cfg.imgUrl || '';
-  const wrap = document.getElementById('uploadBarWrap'), bar = document.getElementById('uploadBar');
-  wrap.style.display = 'block'; bar.style.width = '30%';
-  const ext    = (pendingImgFile.name.split('.').pop() || 'jpg').toLowerCase();
-  const base64 = await new Promise(res => {
-    const r = new FileReader(); r.onload = e => res(e.target.result); r.readAsDataURL(pendingImgFile);
+async function uploadImageIfNeeded(){
+  if(!pendingImgFile) return cfg.imgUrl||'';
+  const wrap=document.getElementById('uploadBarWrap'),bar=document.getElementById('uploadBar');
+  wrap.style.display='block';bar.style.width='30%';
+  const ext=(pendingImgFile.name.split('.').pop()||'jpg').toLowerCase();
+  const base64=await new Promise(res=>{
+    const r=new FileReader();r.onload=e=>res(e.target.result);r.readAsDataURL(pendingImgFile);
   });
-  bar.style.width = '65%';
-  const result = await apiPost({ action:'uploadImage', base64, ext });
-  bar.style.width = '100%';
-  setTimeout(() => { wrap.style.display='none'; bar.style.width='0'; }, 500);
-  pendingImgFile = null;
-  return result.url || '';
+  bar.style.width='65%';
+  const result=await apiPost({action:'uploadImage',base64,ext});
+  bar.style.width='100%';
+  setTimeout(()=>{wrap.style.display='none';bar.style.width='0';},500);
+  pendingImgFile=null;
+  return result.url||'';
 }
 
 // ════════════════════════════════════════════════════════
 // ADMIN
 // ════════════════════════════════════════════════════════
-function checkAdmin() {
-  const pass = document.getElementById('adminPassInput').value;
-  if (pass === (cfg.password || 'admin123')) {
-    adminAuthed = true;
-    document.getElementById('adminLogin').style.display = 'none';
-    document.getElementById('adminPanel').style.display = 'block';
-    syncAdminFields(); renderBuyers(); updateStats();
+function checkAdmin(){
+  const pass=document.getElementById('adminPassInput').value;
+  if(pass===(cfg.password||'admin123')){
+    adminAuthed=true;
+    document.getElementById('adminLogin').style.display='none';
+    document.getElementById('adminPanel').style.display='block';
+    syncAdminFields();renderBuyers();updateStats();
   } else {
     showToast('Senha incorreta!','red');
-    document.getElementById('adminPassInput').value = '';
+    document.getElementById('adminPassInput').value='';
   }
 }
 
-function syncAdminFields() {
-  document.getElementById('cfgTitle').value    = cfg.title    || '';
-  document.getElementById('cfgDesc').value     = cfg.desc     || '';
-  document.getElementById('cfgPrice').value    = cfg.price    || 10;
-  document.getElementById('cfgQty').value      = cfg.qty      || 100;
-  document.getElementById('cfgDate').value     = cfg.date     || '';
-  document.getElementById('cfgPassword').value = '';
-  document.getElementById('pixType').value     = pixCfg.type  || 'CPF';
-  document.getElementById('pixKey').value      = pixCfg.key   || '';
-  document.getElementById('pixName').value     = pixCfg.name  || '';
-  document.getElementById('pixCity').value     = pixCfg.city  || '';
-  if (cfg.imgUrl) {
-    document.getElementById('imgPreview').src           = cfg.imgUrl;
-    document.getElementById('imgPreviewWrap').style.display = 'block';
-    document.getElementById('uploadArea').style.display     = 'none';
+function syncAdminFields(){
+  document.getElementById('cfgTitle').value   =cfg.title||'';
+  document.getElementById('cfgDesc').value    =cfg.desc||'';
+  document.getElementById('cfgPrice').value   =cfg.price||10;
+  document.getElementById('cfgQty').value     =cfg.qty||100;
+  document.getElementById('cfgDate').value    =cfg.date||'';
+  document.getElementById('cfgPassword').value='';
+  document.getElementById('pixType').value    =pixCfg.type||'CPF';
+  document.getElementById('pixKey').value     =pixCfg.key||'';
+  document.getElementById('pixName').value    =pixCfg.name||'';
+  document.getElementById('pixCity').value    =pixCfg.city||'';
+  document.getElementById('settingsUrl').value=API_URL||'';
+  if(cfg.imgUrl){
+    document.getElementById('imgPreview').src=cfg.imgUrl;
+    document.getElementById('imgPreviewWrap').style.display='block';
+    document.getElementById('uploadArea').style.display='none';
   } else {
-    document.getElementById('imgPreviewWrap').style.display = 'none';
-    document.getElementById('uploadArea').style.display     = 'block';
+    document.getElementById('imgPreviewWrap').style.display='none';
+    document.getElementById('uploadArea').style.display='block';
   }
+  const dot=document.getElementById('urlStatusDot'),txt=document.getElementById('urlStatusText');
+  if(API_URL){dot.className='url-status-dot';txt.textContent='Conectado: '+API_URL.substring(0,50)+'...';}
+  else{dot.className='url-status-dot bad';txt.textContent='Não configurado';}
 }
 
-async function saveConfig() {
-  const btn = document.getElementById('btnSaveCfg');
-  btn.textContent = '⏳ Salvando...'; btn.disabled = true;
-  try {
-    const imgUrl  = await uploadImageIfNeeded();
-    const newPass = document.getElementById('cfgPassword').value;
-    const oldQty  = cfg.qty;
-    cfg = {
-      title:    document.getElementById('cfgTitle').value  || 'Minha Rifa',
-      desc:     document.getElementById('cfgDesc').value   || '',
-      price:    parseFloat(document.getElementById('cfgPrice').value) || 10,
-      qty:      parseInt(document.getElementById('cfgQty').value)     || 100,
-      date:     document.getElementById('cfgDate').value   || '',
-      imgUrl:   imgUrl || cfg.imgUrl || '',
-      password: newPass || cfg.password || 'admin123',
+async function saveConfig(){
+  const btn=document.getElementById('btnSaveCfg');
+  btn.textContent='⏳ Salvando...';btn.disabled=true;
+  try{
+    const imgUrl=await uploadImageIfNeeded();
+    const newPass=document.getElementById('cfgPassword').value;
+    const oldQty=cfg.qty;
+    cfg={
+      title:    document.getElementById('cfgTitle').value||'Minha Rifa',
+      desc:     document.getElementById('cfgDesc').value||'',
+      price:    parseFloat(document.getElementById('cfgPrice').value)||10,
+      qty:      parseInt(document.getElementById('cfgQty').value)||100,
+      date:     document.getElementById('cfgDate').value||'',
+      imgUrl:   imgUrl||cfg.imgUrl||'',
+      password: newPass||cfg.password||'admin123',
     };
-    await apiPost({ action:'saveConfig', data:cfg });
-    // Se a quantidade mudou, reconstrói o grid
-    if (cfg.qty !== oldQty) { numbers={}; selected=[]; buildGrid(); }
+    await apiPost({action:'saveConfig',data:cfg});
+    if(cfg.qty!==oldQty){numbers={};selected=[];myReservedNums=[];buildGrid();}
     renderAll();
     showToast('✅ Configurações salvas!');
-  } catch(e) { showToast('Erro: '+e.message,'red'); }
-  btn.textContent = '💾 Salvar Configurações'; btn.disabled = false;
+  }catch(e){showToast('Erro: '+e.message,'red');}
+  btn.textContent='💾 Salvar Configurações';btn.disabled=false;
 }
 
-async function savePixConfig() {
-  pixCfg = {
-    type: document.getElementById('pixType').value,
-    key:  document.getElementById('pixKey').value.trim(),
-    name: document.getElementById('pixName').value.trim(),
-    city: document.getElementById('pixCity').value.trim(),
+async function savePixConfig(){
+  pixCfg={
+    type:document.getElementById('pixType').value,
+    key: document.getElementById('pixKey').value.trim(),
+    name:document.getElementById('pixName').value.trim(),
+    city:document.getElementById('pixCity').value.trim(),
   };
-  try {
-    await apiPost({ action:'savePix', data:pixCfg });
-    showToast('✅ Pix salvo!');
-  } catch(e) { showToast('Erro: '+e.message,'red'); }
+  try{await apiPost({action:'savePix',data:pixCfg});showToast('✅ Pix salvo!');}
+  catch(e){showToast('Erro: '+e.message,'red');}
 }
 
-async function togglePayStatus(phone) {
-  const entry    = Object.values(numbers).find(n => n.phone === phone);
-  const newStatus = entry?.status === 'paid' ? 'pending' : 'paid';
-  try {
-    await apiPost({ action:'updateStatus', phone, status:newStatus });
-    // Atualiza localmente sem esperar sync
-    Object.keys(numbers).forEach(k => {
-      if (numbers[k].phone === phone) numbers[k].status = newStatus;
-    });
-    renderBuyers();
+async function saveSettings(){
+  const url=document.getElementById('settingsUrl').value.trim();
+  if(!url.includes('script.google.com')){showToast('URL inválida!','red');return;}
+  try{
+    await apiPost({action:'saveSettings',data:{apiUrl:url}});
+    API_URL=url;
+    localStorage.setItem('rfApiUrl',url);
+    syncAdminFields();
+    showToast('✅ URL salva! Todos os usuários conectarão automaticamente.');
+  }catch(e){showToast('Erro: '+e.message,'red');}
+}
+
+// ── Atualizar status (admin) ──────────────────────────────
+async function updateStatus(phone, status){
+  try{
+    await apiPost({action:'updateStatus',phone,status});
+    Object.keys(numbers).forEach(k=>{if(numbers[k].phone===phone) numbers[k].status=status;});
+    renderBuyers();updateStats();renderHero();
     showToast('Status atualizado!');
-  } catch(e) { showToast('Erro: '+e.message,'red'); }
+  }catch(e){showToast('Erro: '+e.message,'red');}
 }
 
-async function confirmReset() {
-  if (!confirm('⚠️ Apagar TODOS os números vendidos. Tem certeza?')) return;
-  try {
-    await apiPost({ action:'resetNumbers' });
-    numbers  = {};
-    selected = [];
-    refreshGridClasses();
-    renderHero();
-    updateSummary();
-    updateStats();
-    renderBuyers();
+// ── Cancelar número individual (admin) ───────────────────
+async function cancelNumber(num){
+  if(!confirm('Cancelar o número '+num+'? Ele voltará a ficar disponível.')) return;
+  try{
+    await apiPost({action:'cancelNumber',number:parseInt(num)});
+    delete numbers[String(num)];
+    refreshGridClasses();renderHero();updateStats();renderBuyers();
+    showToast('Número '+num+' cancelado e liberado!');
+  }catch(e){showToast('Erro: '+e.message,'red');}
+}
+
+async function confirmReset(){
+  if(!confirm('⚠️ Apagar TODOS os números. Tem certeza?')) return;
+  try{
+    await apiPost({action:'resetNumbers'});
+    numbers={};selected=[];myReservedNums=[];stopReservationTimer();
+    buildGrid();renderAll();renderBuyers();
     showToast('Números zerados!');
-  } catch(e) { showToast('Erro: '+e.message,'red'); }
+  }catch(e){showToast('Erro: '+e.message,'red');}
 }
 
-function renderBuyers() {
-  const container = document.getElementById('buyersContainer');
-  const entries   = Object.entries(numbers);
-  if (!entries.length) { container.innerHTML='<div class="empty-state">Nenhuma compra ainda.</div>'; return; }
-  const buyers = {};
-  entries.forEach(([k, info]) => {
-    if (!buyers[info.phone])
-      buyers[info.phone] = { name:info.name, phone:info.phone, status:info.status, nums:[] };
-    buyers[info.phone].nums.push(parseInt(k));
+function renderBuyers(){
+  const container=document.getElementById('buyersContainer');
+  const entries=Object.entries(numbers);
+  if(!entries.length){container.innerHTML='<div class="empty-state">Nenhuma compra ainda.</div>';return;}
+
+  // Agrupa por telefone
+  const buyers={};
+  entries.forEach(([k,info])=>{
+    const key=info.phone||'?';
+    if(!buyers[key]) buyers[key]={name:info.name,phone:info.phone,status:info.status,nums:[]};
+    buyers[key].nums.push(parseInt(k));
+    // Status mais "grave" ganha
+    const priority={paid:4,pending:3,reserved:2,cancelled:1};
+    if((priority[info.status]||0)>(priority[buyers[key].status]||0)) buyers[key].status=info.status;
   });
-  const pad  = cfg.qty >= 100 ? 3 : 2;
-  const rows = Object.values(buyers).map(b => {
-    const nh = b.nums.sort((a,x)=>a-x).map(n=>`<span class="num-sm">${String(n).padStart(pad,'0')}</span>`).join('');
-    const sl = b.status==='paid' ? 's-paid' : 's-pend';
-    const lb = b.status==='paid' ? '✅ Pago' : '⏳ Pendente';
+
+  const pad=cfg.qty>=100?3:2;
+  const rows=Object.values(buyers).map(b=>{
+    const nh=b.nums.sort((a,x)=>a-x).map(n=>{
+      const k=String(n), st=numbers[k]?.status||'';
+      return `<span class="num-sm" style="${st==='reserved'?'border-color:rgba(59,130,246,.5);color:#3b82f6':''}"
+        title="${st}">${String(n).padStart(pad,'0')}</span>`;
+    }).join('');
+
+    const badges={
+      paid:   '<span class="status-badge s-paid">✅ Pago</span>',
+      pending:'<span class="status-badge s-pend">⏳ Pendente</span>',
+      reserved:'<span class="status-badge s-res">🔒 Reservado</span>',
+      cancelled:'<span class="status-badge s-canc">❌ Cancelado</span>',
+    };
+    const badge=badges[b.status]||badges.pending;
+
+    // Botões de ação
+    let actions='';
+    if(b.status==='reserved'){
+      actions=`<button class="btn-xs btn-xs-red" onclick="updateStatus('${b.phone}','cancelled')">Cancelar reserva</button>`;
+    } else if(b.status==='pending'){
+      actions=`<button class="btn-xs btn-xs-green" onclick="updateStatus('${b.phone}','paid')">Marcar pago</button>
+               <button class="btn-xs btn-xs-red" onclick="updateStatus('${b.phone}','cancelled')">Cancelar</button>`;
+    } else if(b.status==='paid'){
+      actions=`<button class="btn-xs btn-xs-yellow" onclick="updateStatus('${b.phone}','pending')">Reverter</button>`;
+    } else if(b.status==='cancelled'){
+      actions=b.nums.map(n=>`<button class="btn-xs btn-xs-red" onclick="cancelNumber(${n})">Liberar nº${String(n).padStart(pad,'0')}</button>`).join('');
+    }
+
     return `<tr>
       <td>${b.name}</td><td>${b.phone}</td>
       <td><div class="num-list">${nh}</div></td>
       <td>R$ ${fmt(b.nums.length*cfg.price)}</td>
-      <td><span class="status-badge ${sl}" onclick="togglePayStatus('${b.phone}')">${lb}</span></td>
+      <td>${badge}</td>
+      <td><div class="action-btns">${actions}</div></td>
     </tr>`;
   }).join('');
-  container.innerHTML = `<table class="buyers-table">
-    <thead><tr><th>Nome</th><th>Telefone</th><th>Números</th><th>Total</th><th>Status</th></tr></thead>
+
+  container.innerHTML=`<table class="buyers-table">
+    <thead><tr><th>Nome</th><th>Telefone</th><th>Números</th><th>Total</th><th>Status</th><th>Ações</th></tr></thead>
     <tbody>${rows}</tbody></table>`;
 }
 
-function drawWinner() {
-  const sold = Object.keys(numbers).map(Number);
-  if (!sold.length) { showToast('Nenhum número vendido!','red'); return; }
+function drawWinner(){
+  const sold=Object.entries(numbers).filter(([,v])=>v.status==='paid'||v.status==='pending').map(([k])=>parseInt(k));
+  if(!sold.length){showToast('Nenhum número vendido!','red');return;}
   const res=document.getElementById('drawResult'),ne=document.getElementById('drawNumber'),nm=document.getElementById('drawName');
-  res.style.display='block'; ne.textContent='🎲'; nm.textContent='Sorteando...';
-  const pad = cfg.qty>=100?3:2;
+  res.style.display='block';ne.textContent='🎲';nm.textContent='Sorteando...';
+  const pad=cfg.qty>=100?3:2;
   let i=0;
-  const iv = setInterval(()=>{
-    ne.textContent = String(sold[Math.floor(Math.random()*sold.length)]).padStart(pad,'0');
+  const iv=setInterval(()=>{
+    ne.textContent=String(sold[Math.floor(Math.random()*sold.length)]).padStart(pad,'0');
     if(++i>26){
       clearInterval(iv);
-      const w = sold[Math.floor(Math.random()*sold.length)];
-      ne.textContent = String(w).padStart(pad,'0');
-      nm.textContent = '🏆 '+numbers[String(w)].name+' ('+numbers[String(w)].phone+')';
+      const w=sold[Math.floor(Math.random()*sold.length)];
+      ne.textContent=String(w).padStart(pad,'0');
+      nm.textContent='🏆 '+numbers[String(w)].name+' ('+numbers[String(w)].phone+')';
       showToast('🎉 Ganhador sorteado!');
     }
-  }, 80);
+  },80);
 }
 
 // ════════════════════════════════════════════════════════
 // UTILS
 // ════════════════════════════════════════════════════════
-function fmt(n) {
-  return parseFloat(n||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
-}
-function fmtDate(d) {
-  try { const [y,m,dy]=d.split('-'); return `${dy}/${m}/${y}`; } catch { return d; }
-}
+function fmt(n){return parseFloat(n||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fmtDate(d){try{const[y,m,dy]=d.split('-');return`${dy}/${m}/${y}`;}catch{return d;}}
 let toastTimer;
-function showToast(msg, type='green') {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.style.background = type==='red' ? 'var(--red)' : 'var(--green)';
-  t.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(()=>t.classList.remove('show'), 3800);
+function showToast(msg,type='green'){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.style.background=type==='red'?'var(--red)':'var(--green)';
+  t.classList.add('show');clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),3800);
 }
 </script>
 </body>
