@@ -913,7 +913,7 @@ function renderHero() {
   document.getElementById('heroPriceVal').textContent = fmt(cfg.price);
   // ← usa fmtDate corrigido
   document.getElementById('heroDateVal').textContent  = cfg.date ? fmtDate(cfg.date) : '--';
-  const sold = Object.values(numbers).filter(n=>n.status==='pending'||n.status==='paid').length;
+  const sold = Object.values(numbers).filter(n=>{const s=(n.status||'').toLowerCase();return s==='pending'||s==='paid';}).length;
   document.getElementById('heroSoldVal').textContent  = sold;
   const total = Object.keys(numbers).length;
   const pct   = cfg.qty>0 ? Math.round(total/cfg.qty*100) : 0;
@@ -947,7 +947,8 @@ function refreshGridClasses() {
     b.className='num-btn'; b.disabled=false; b.title='';
     const e=numbers[k];
     if(e){
-      if(e.status==='reserved'){
+      const st=(e.status||'').trim().toLowerCase();
+      if(st==='reserved'){
         if(mySet.has(k)){b.classList.add('selected');}
         else{b.classList.add('reserved');b.disabled=true;b.title='Reservado momentaneamente';}
       } else {
@@ -966,8 +967,8 @@ function updateSummary() {
 
 function updateStats() {
   const el=document.getElementById('statSold'); if(!el) return;
-  const sold =Object.values(numbers).filter(n=>n.status==='pending'||n.status==='paid').length;
-  const res  =Object.values(numbers).filter(n=>n.status==='reserved').length;
+  const sold = Object.values(numbers).filter(n=>{const s=(n.status||'').toLowerCase();return s==='pending'||s==='paid';}).length;
+  const res  = Object.values(numbers).filter(n=>(n.status||'').toLowerCase()==='reserved').length;
   const avail=Math.max(0,(cfg.qty||100)-Object.keys(numbers).length);
   el.textContent=sold;
   document.getElementById('statRes').textContent    =res;
@@ -1078,22 +1079,54 @@ function openPixModal() {
 async function confirmPayment() {
   const btn=document.getElementById('btnConfirm');
   btn.textContent='⏳ Confirmando...'; btn.disabled=true;
+
+  // Garante que temos nome e telefone
+  const nomeFinal  = (buyerName  || '').trim();
+  const foneFinal  = (buyerPhone || '').trim();
+  if (!nomeFinal || !foneFinal) {
+    showToast('Nome ou telefone não preenchido!', 'red');
+    btn.textContent='✅ Confirmar Pagamento'; btn.disabled=false;
+    return;
+  }
+
   try {
-    // ← Envia nome e telefone reais no confirmNumbers
-    const numsInt=myReservedNums.map(k=>parseInt(k));
-    await apiPost({action:'confirmNumbers', numbers:numsInt, name:buyerName, phone:buyerPhone});
-    const count=myReservedNums.length;
-    // Atualiza estado local com dados reais
-    myReservedNums.forEach(k=>{
-      numbers[k]={name:buyerName,phone:buyerPhone,status:'pending',date:new Date().toISOString()};
+    const numsInt = myReservedNums.map(k => parseInt(k));
+    // Apps Script irá: deletar linhas reservadas → inserir novas com status "pending" e dados reais
+    await apiPost({
+      action:  'confirmNumbers',
+      numbers: numsInt,
+      name:    nomeFinal,
+      phone:   foneFinal,
     });
-    myReservedNums=[];selected=[];stopReservationTimer();
+
+    const count = myReservedNums.length;
+
+    // Atualiza estado local imediatamente com dados corretos
+    myReservedNums.forEach(k => {
+      numbers[k] = {
+        name:   nomeFinal,
+        phone:  foneFinal,
+        status: 'pending',
+        date:   new Date().toISOString(),
+        reservedUntil: '',
+      };
+    });
+
+    myReservedNums = [];
+    selected = [];
+    stopReservationTimer();
     closeModal('modalPix');
-    refreshGridClasses();renderHero();updateSummary();updateStats();
-    if(adminAuthed)renderBuyers();
-    showToast(`✅ ${count} número(s) reservado(s)! Pagamento enviado para confirmação.`);
-    syncNow();
-  }catch(e){showToast('Erro: '+e.message,'red');}
+    refreshGridClasses();
+    renderHero();
+    updateSummary();
+    updateStats();
+    if (adminAuthed) renderBuyers();
+    showToast(`✅ ${count} número(s) confirmado(s)! Aguardando confirmação do pagamento.`);
+    // Sync para garantir consistência com o Sheets
+    setTimeout(() => syncNow(false), 2000);
+  } catch(e) {
+    showToast('Erro ao confirmar: ' + e.message, 'red');
+  }
   btn.textContent='✅ Confirmar Pagamento'; btn.disabled=false;
 }
 
@@ -1309,16 +1342,17 @@ function renderBuyers(){
   if(!entries.length){container.innerHTML='<div class="empty-state">Nenhuma compra ainda.</div>';return;}
   const buyers={};
   entries.forEach(([k,info])=>{
-    const key=info.phone||'?';
-    if(!buyers[key]) buyers[key]={name:info.name,phone:info.phone,status:info.status,nums:[]};
+    const key = info.phone||'?';
+    const st  = (info.status||'').trim().toLowerCase();
+    if(!buyers[key]) buyers[key]={name:info.name,phone:info.phone,status:st,nums:[]};
     buyers[key].nums.push(parseInt(k));
     const pri={paid:4,pending:3,reserved:2};
-    if((pri[info.status]||0)>(pri[buyers[key].status]||0)) buyers[key].status=info.status;
+    if((pri[st]||0)>(pri[buyers[key].status]||0)) buyers[key].status=st;
   });
   const pad=cfg.qty>=100?3:2;
   const rows=Object.values(buyers).map(b=>{
     const nh=b.nums.sort((a,x)=>a-x).map(n=>{
-      const st=numbers[String(n)]?.status||'';
+      const st=(numbers[String(n)]?.status||'').toLowerCase();
       return `<span class="num-sm${st==='reserved'?' res-num':''}">${String(n).padStart(pad,'0')}</span>`;
     }).join('');
     const badges={paid:'<span class="status-badge s-paid">✅ Pago</span>',
@@ -1348,7 +1382,7 @@ function renderBuyers(){
 }
 
 function drawWinner(){
-  const sold=Object.entries(numbers).filter(([,v])=>v.status==='paid'||v.status==='pending').map(([k])=>parseInt(k));
+  const sold=Object.entries(numbers).filter(([,v])=>{const s=(v.status||'').toLowerCase();return s==='paid'||s==='pending';}).map(([k])=>parseInt(k));
   if(!sold.length){showToast('Nenhum número vendido!','red');return;}
   const res=document.getElementById('drawResult'),ne=document.getElementById('drawNumber'),nm=document.getElementById('drawName');
   res.style.display='block';ne.textContent='🎲';nm.textContent='Sorteando...';
