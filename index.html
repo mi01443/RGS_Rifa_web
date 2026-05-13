@@ -2,8 +2,42 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="RifaFácil">
+<meta name="description" content="Sistema de gerenciamento de rifas online">
 <title>RifaFácil</title>
+
+<!-- PWA Manifest inline via blob (funciona sem servidor) -->
+<script>
+(function(){
+  const manifest = {
+    name: "RifaFácil",
+    short_name: "RifaFácil",
+    description: "Sistema de gerenciamento de rifas online",
+    start_url: "./",
+    display: "standalone",
+    background_color: "#0a0a0f",
+    theme_color: "#f5c542",
+    orientation: "portrait-primary",
+    icons: [
+      { src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='40' fill='%230a0a0f'/><text y='130' x='96' text-anchor='middle' font-size='110' font-family='serif'>🎟️</text></svg>", sizes: "192x192", type: "image/svg+xml" },
+      { src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%230a0a0f'/><text y='360' x='256' text-anchor='middle' font-size='300' font-family='serif'>🎟️</text></svg>", sizes: "512x512", type: "image/svg+xml" }
+    ]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+  const url  = URL.createObjectURL(blob);
+  const link = document.createElement('link');
+  link.rel='manifest'; link.href=url;
+  document.head.appendChild(link);
+})();
+</script>
+
+<!-- Apple touch icons inline -->
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='36' fill='%230a0a0f'/><text y='125' x='90' text-anchor='middle' font-size='100' font-family='serif'>🎟️</text></svg>">
+
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -14,9 +48,12 @@
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);
+  min-height:100vh;overflow-x:hidden;
+  padding-top:env(safe-area-inset-top);
+  padding-bottom:env(safe-area-inset-bottom);}
 
-/* ── FIRST-RUN SCREEN ── */
+/* ── FIRST RUN ── */
 #firstRunScreen{position:fixed;inset:0;background:var(--bg);z-index:9999;
   display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto;}
 .firstrun-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;
@@ -35,11 +72,23 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   font-family:'Syne',sans-serif;font-weight:800;font-size:.95rem;cursor:pointer;transition:all .2s;}
 .btn-primary:hover{transform:scale(1.02);}
 .btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none;}
-.fr-msg{border-radius:8px;padding:10px 13px;font-size:.8rem;margin-top:10px;display:none;line-height:1.5;white-space:pre-line;}
+.fr-msg{border-radius:8px;padding:10px 13px;font-size:.8rem;margin-top:10px;
+  display:none;line-height:1.5;white-space:pre-line;text-align:left;}
 .fr-msg.err{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:var(--red);}
 .fr-msg.ok{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:var(--green);}
-.fr-hint{font-size:.74rem;color:var(--muted);margin-top:12px;line-height:1.6;}
+.fr-hint{font-size:.74rem;color:var(--muted);margin-top:14px;line-height:1.7;text-align:left;}
 .fr-hint a{color:var(--accent);}
+
+/* ── INSTALL BANNER ── */
+#installBanner{display:none;background:linear-gradient(135deg,rgba(245,197,66,.15),rgba(168,85,247,.1));
+  border-bottom:1px solid rgba(245,197,66,.3);padding:10px 17px;
+  align-items:center;gap:10px;justify-content:space-between;}
+.install-text{font-size:.78rem;color:var(--text);}
+.install-text b{color:var(--accent);}
+.btn-install{padding:7px 14px;border-radius:8px;border:none;background:var(--accent);color:#000;
+  font-family:'Syne',sans-serif;font-weight:700;font-size:.76rem;cursor:pointer;white-space:nowrap;}
+.btn-dismiss{padding:5px 9px;border-radius:7px;border:1px solid var(--border);
+  background:transparent;color:var(--muted);font-size:.72rem;cursor:pointer;}
 
 /* ── LOADING ── */
 #loadingScreen{position:fixed;inset:0;background:var(--bg);z-index:8888;
@@ -51,7 +100,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 
 /* ── APP ── */
 #app{display:none;}
-
 nav{display:flex;align-items:center;justify-content:space-between;padding:12px 17px;
   background:rgba(10,10,15,.97);backdrop-filter:blur(12px);
   border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;}
@@ -61,7 +109,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:12px 1
 .sync-wrap{display:flex;align-items:center;gap:5px;margin-right:4px;cursor:pointer;
   padding:4px 8px;border-radius:7px;transition:background .2s;}
 .sync-wrap:hover{background:var(--surface2);}
-.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--green);transition:background .3s;}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--green);}
 .sync-dot.syncing{background:var(--accent);animation:blink 1s infinite;}
 .sync-dot.err{background:var(--red);}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
@@ -118,8 +166,8 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:12px 1
 .ld{width:10px;height:10px;border-radius:3px;}
 .ld-free{background:var(--surface2);border:1px solid var(--border);}
 .ld-sel{background:var(--accent);}
-.ld-sold{background:rgba(239,68,68,.22);border:1px solid rgba(239,68,68,.3);}
 .ld-res{background:rgba(59,130,246,.22);border:1px solid rgba(59,130,246,.4);}
+.ld-sold{background:rgba(239,68,68,.22);border:1px solid rgba(239,68,68,.3);}
 
 .grid-section{padding:7px 17px 30px;}
 .grid-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.86rem;
@@ -140,7 +188,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:12px 1
 .num-btn.sold::after{content:'✕';position:absolute;top:1px;right:3px;font-size:.42rem;opacity:.6;}
 .num-btn.reserved{background:rgba(59,130,246,.08);border-color:rgba(59,130,246,.35);
   color:rgba(59,130,246,.8);cursor:not-allowed;opacity:.8;}
-.num-btn.reserved::after{content:'🔒';position:absolute;top:0px;right:2px;font-size:.4rem;}
+.num-btn.reserved::after{content:'🔒';position:absolute;top:0;right:2px;font-size:.38rem;}
 
 /* MODALS */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);
@@ -157,15 +205,15 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:12px 1
 .modal-close:hover{background:var(--surface2);color:var(--text);}
 .modal-body{padding:17px 19px;}
 
-/* RESERVATION TIMER */
 .reservation-timer{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3);
-  border-radius:10px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:9px;}
-.timer-icon{font-size:1.2rem;}
-.timer-text{font-size:.78rem;color:var(--blue);flex:1;line-height:1.4;}
-.timer-countdown{font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;color:var(--accent);
-  white-space:nowrap;}
+  border-radius:10px;padding:10px 14px;margin-bottom:13px;
+  display:flex;align-items:center;gap:9px;}
+.timer-icon{font-size:1.1rem;}
+.timer-text{font-size:.76rem;color:var(--blue);flex:1;line-height:1.4;}
+.timer-countdown{font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;
+  color:var(--accent);white-space:nowrap;}
+.timer-countdown.urgent{color:var(--red);animation:blink .7s infinite;}
 
-/* PIX */
 .pix-section{text-align:center;}
 .pix-qr{width:174px;height:174px;margin:0 auto 12px;background:#fff;border-radius:12px;overflow:hidden;}
 .pix-qr canvas{width:100%;height:100%;}
@@ -173,7 +221,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:12px 1
   padding:11px;margin:11px 0;display:flex;align-items:center;justify-content:space-between;gap:8px;}
 .pix-key{font-family:monospace;font-size:.79rem;color:var(--accent);word-break:break-all;text-align:left;}
 .btn-copy{padding:5px 10px;border-radius:7px;border:1px solid var(--border);background:var(--surface);
-  color:var(--text);cursor:pointer;font-size:.72rem;white-space:nowrap;transition:all .2s;}
+  color:var(--text);cursor:pointer;font-size:.72rem;white-space:nowrap;}
 .btn-copy:hover{background:var(--surface2);}
 .pix-amount{font-family:'Syne',sans-serif;font-size:1.65rem;font-weight:800;color:var(--accent);margin:6px 0;}
 .pix-nums{font-size:.77rem;color:var(--muted);margin-bottom:3px;}
@@ -184,11 +232,9 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:12px 1
 .btn-confirm:hover{transform:scale(1.02);}
 .btn-confirm:disabled{opacity:.5;cursor:not-allowed;transform:none;}
 .btn-cancel-res{width:100%;padding:9px;border-radius:10px;border:1px solid rgba(239,68,68,.3);
-  background:rgba(239,68,68,.07);color:var(--red);font-size:.8rem;cursor:pointer;
-  margin-top:8px;transition:all .2s;}
+  background:rgba(239,68,68,.07);color:var(--red);font-size:.8rem;cursor:pointer;margin-top:8px;}
 .btn-cancel-res:hover{background:rgba(239,68,68,.14);}
 
-/* FORMS */
 .form-group{margin-bottom:11px;}
 .form-label{display:block;font-size:.77rem;color:var(--muted);margin-bottom:4px;}
 .form-input{width:100%;padding:9px 12px;border-radius:9px;background:var(--surface2);
@@ -201,12 +247,15 @@ select.form-input option{background:var(--surface2);}
   border-radius:5px;font-size:.72rem;font-weight:600;}
 .sep{height:1px;background:var(--border);margin:12px 0;}
 
-/* ADMIN TABS */
-.admin-tabs{display:flex;gap:4px;padding:16px 17px 0;border-bottom:1px solid var(--border);}
-.admin-tab{padding:8px 14px;border-radius:8px 8px 0 0;border:none;cursor:pointer;
-  font-family:'DM Sans',sans-serif;font-size:.79rem;font-weight:500;
-  background:transparent;color:var(--muted);transition:all .2s;margin-bottom:-1px;}
-.admin-tab.active{background:var(--surface);color:var(--accent);border:1px solid var(--border);border-bottom-color:var(--surface);}
+/* ADMIN */
+.admin-tabs{display:flex;gap:3px;padding:14px 17px 0;border-bottom:1px solid var(--border);
+  overflow-x:auto;scrollbar-width:none;}
+.admin-tabs::-webkit-scrollbar{display:none;}
+.admin-tab{padding:7px 13px;border-radius:8px 8px 0 0;border:none;cursor:pointer;
+  font-family:'DM Sans',sans-serif;font-size:.77rem;font-weight:500;
+  background:transparent;color:var(--muted);transition:all .2s;white-space:nowrap;margin-bottom:-1px;}
+.admin-tab.active{background:var(--surface);color:var(--accent);
+  border:1px solid var(--border);border-bottom-color:var(--surface);}
 .admin-tab:hover:not(.active){color:var(--text);}
 .admin-tab-panel{display:none;}
 .admin-tab-panel.active{display:block;}
@@ -221,14 +270,6 @@ select.form-input option{background:var(--surface2);}
 .admin-card h2{font-family:'Syne',sans-serif;font-weight:700;font-size:.86rem;margin-bottom:12px;color:var(--accent);}
 .admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
 @media(max-width:480px){.admin-grid{grid-template-columns:1fr;}}
-
-/* URL CONFIG highlight */
-.url-config-card{background:linear-gradient(135deg,rgba(59,130,246,.08),rgba(168,85,247,.08));
-  border-color:rgba(59,130,246,.3);}
-.url-config-card h2{color:var(--blue);}
-.url-status{display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--muted);margin-top:8px;}
-.url-status-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;}
-.url-status-dot.bad{background:var(--red);}
 
 .img-upload-area{border:2px dashed var(--border);border-radius:12px;padding:20px;
   text-align:center;cursor:pointer;transition:all .2s;position:relative;}
@@ -257,24 +298,20 @@ select.form-input option{background:var(--surface2);}
 .stat-label{font-size:.63rem;color:var(--muted);margin-top:2px;}
 .sg{color:var(--green);}.sy{color:var(--accent);}.sr{color:var(--accent2);}.sb{color:var(--blue);}
 
-/* BUYERS TABLE */
-.buyers-table{width:100%;border-collapse:collapse;font-size:.76rem;}
+.buyers-table{width:100%;border-collapse:collapse;font-size:.75rem;}
 .buyers-table th{text-align:left;padding:7px 8px;color:var(--muted);
-  border-bottom:1px solid var(--border);font-weight:500;}
+  border-bottom:1px solid var(--border);font-weight:500;white-space:nowrap;}
 .buyers-table td{padding:7px 8px;border-bottom:1px solid rgba(42,42,61,.3);vertical-align:middle;}
 .buyers-table tr:last-child td{border-bottom:none;}
-.status-badge{padding:3px 7px;border-radius:4px;font-size:.66rem;font-weight:600;cursor:pointer;
-  display:inline-block;transition:opacity .2s;}
-.status-badge:hover{opacity:.8;}
+.status-badge{padding:3px 7px;border-radius:4px;font-size:.65rem;font-weight:600;display:inline-block;}
 .s-paid{background:rgba(34,197,94,.15);color:var(--green);}
 .s-pend{background:rgba(245,197,66,.15);color:var(--accent);}
 .s-res{background:rgba(59,130,246,.15);color:var(--blue);}
-.s-canc{background:rgba(239,68,68,.12);color:var(--red);}
 .num-list{display:flex;gap:3px;flex-wrap:wrap;}
 .num-sm{padding:2px 5px;background:var(--surface);border:1px solid var(--border);border-radius:3px;font-size:.64rem;}
-.empty-state{text-align:center;padding:24px;color:var(--muted);font-size:.82rem;}
-.action-btns{display:flex;gap:4px;}
-.btn-xs{padding:3px 7px;border-radius:5px;border:none;font-size:.65rem;cursor:pointer;
+.num-sm.res-num{border-color:rgba(59,130,246,.4);color:var(--blue);}
+.action-btns{display:flex;gap:4px;flex-wrap:wrap;}
+.btn-xs{padding:3px 8px;border-radius:5px;border:none;font-size:.64rem;cursor:pointer;
   font-family:'DM Sans',sans-serif;font-weight:600;transition:all .2s;white-space:nowrap;}
 .btn-xs:hover{opacity:.8;}
 .btn-xs-green{background:rgba(34,197,94,.15);color:var(--green);}
@@ -295,6 +332,15 @@ select.form-input option{background:var(--surface2);}
   font-size:.79rem;cursor:pointer;margin-top:9px;transition:all .2s;}
 .btn-danger:hover{background:rgba(239,68,68,.13);}
 
+.url-config-card{background:linear-gradient(135deg,rgba(59,130,246,.07),rgba(168,85,247,.07));
+  border-color:rgba(59,130,246,.25);}
+.url-config-card h2{color:var(--blue);}
+.url-status{display:flex;align-items:flex-start;gap:8px;font-size:.76rem;color:var(--muted);
+  margin-top:8px;line-height:1.5;}
+.url-status-dot{width:8px;height:8px;border-radius:50%;background:var(--green);
+  flex-shrink:0;margin-top:3px;}
+.url-status-dot.bad{background:var(--red);}
+
 .toast{position:fixed;bottom:19px;right:19px;background:var(--green);color:#fff;
   padding:10px 16px;border-radius:9px;font-size:.8rem;font-weight:500;z-index:9999;
   transform:translateY(60px);opacity:0;transition:all .3s;box-shadow:0 4px 16px rgba(0,0,0,.3);}
@@ -304,8 +350,6 @@ select.form-input option{background:var(--surface2);}
   .numbers-grid{grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:5px;}
   .num-btn{font-size:.7rem;}
   nav{padding:10px 13px;}
-  .admin-tabs{padding:12px 13px 0;gap:3px;}
-  .admin-tab{padding:6px 10px;font-size:.74rem;}
 }
 </style>
 </head>
@@ -314,19 +358,32 @@ select.form-input option{background:var(--surface2);}
 <!-- FIRST RUN -->
 <div id="firstRunScreen">
   <div class="firstrun-card">
-    <div class="firstrun-icon">📊</div>
+    <div class="firstrun-icon">🎟️</div>
     <h1>Bem-vindo ao RifaFácil!</h1>
-    <p>Para começar, cole a URL do seu <b>Google Apps Script</b> abaixo.<br>
-    Após a primeira conexão, qualquer pessoa que abrir o app já conectará automaticamente.</p>
-    <input class="fr-input" id="frUrl" placeholder="https://script.google.com/macros/s/XXXXX/exec"
+    <p>Para começar, o administrador deve conectar o Google Sheets uma única vez.<br>
+    Depois, todos os usuários conectam automaticamente.</p>
+    <input class="fr-input" id="frUrl"
+      placeholder="https://script.google.com/macros/s/XXXXX/exec"
       onkeydown="if(event.key==='Enter')firstConnect()">
-    <button class="btn-primary" onclick="firstConnect()">🚀 Conectar</button>
+    <button class="btn-primary" id="frBtn" onclick="firstConnect()">🚀 Conectar</button>
     <div class="fr-msg" id="frMsg"></div>
     <div class="fr-hint">
-      Não tem o Apps Script ainda?<br>
-      <a href="https://script.google.com" target="_blank">script.google.com</a> →
-      Cole o arquivo <b>apps-script.gs</b> → Execute <b>setup</b> → Implante como Web App
+      <b style="color:var(--text)">Como obter a URL:</b><br>
+      1. Acesse <a href="https://sheets.google.com" target="_blank">sheets.google.com</a> → crie planilha<br>
+      2. Extensões → Apps Script → cole o <code style="background:rgba(245,197,66,.12);color:var(--accent);padding:1px 5px;border-radius:3px">apps-script.gs</code><br>
+      3. Execute a função <code style="background:rgba(245,197,66,.12);color:var(--accent);padding:1px 5px;border-radius:3px">setup</code><br>
+      4. Implante → App da Web → Acesso: <b style="color:var(--text)">Qualquer pessoa</b><br>
+      5. Copie a URL e cole acima
     </div>
+  </div>
+</div>
+
+<!-- INSTALL BANNER -->
+<div id="installBanner">
+  <div class="install-text">📲 <b>Instalar RifaFácil</b> no seu dispositivo</div>
+  <div style="display:flex;gap:6px">
+    <button class="btn-install" onclick="installApp()">Instalar</button>
+    <button class="btn-dismiss" onclick="dismissInstall()">✕</button>
   </div>
 </div>
 
@@ -350,13 +407,11 @@ select.form-input option{background:var(--surface2);}
   </div>
 </nav>
 
-<!-- BUYER PAGE -->
+<!-- BUYER -->
 <div id="page-buyer" class="page active">
   <div class="raffle-hero">
     <div class="raffle-info">
-      <div class="raffle-img-wrap">
-        <img id="heroImg" alt=""><span id="heroEmoji">🏆</span>
-      </div>
+      <div class="raffle-img-wrap"><img id="heroImg" alt=""><span id="heroEmoji">🏆</span></div>
       <div class="raffle-meta">
         <h1 id="heroTitle">Carregando...</h1>
         <div class="desc" id="heroDesc"></div>
@@ -391,13 +446,13 @@ select.form-input option{background:var(--surface2);}
   </div>
 </div>
 
-<!-- ADMIN PAGE -->
+<!-- ADMIN -->
 <div id="page-admin" class="page">
   <div id="adminLogin" class="admin-login-wrap">
     <div class="admin-login-card">
       <div style="font-size:2.1rem;margin-bottom:7px">🔐</div>
       <h2>Área do Admin</h2>
-      <p>Digite a senha para acessar o painel</p>
+      <p>Digite a senha para acessar</p>
       <div class="form-group">
         <input class="form-input" type="password" id="adminPassInput"
           placeholder="Senha" onkeydown="if(event.key==='Enter')checkAdmin()">
@@ -405,17 +460,15 @@ select.form-input option{background:var(--surface2);}
       <button class="btn-save" onclick="checkAdmin()">Entrar →</button>
     </div>
   </div>
-
   <div id="adminPanel" style="display:none">
-    <!-- ADMIN TABS -->
     <div class="admin-tabs">
-      <button class="admin-tab active" onclick="showAdminTab('rifa')">🎟️ Rifa</button>
-      <button class="admin-tab" onclick="showAdminTab('compradores')">👥 Compradores</button>
-      <button class="admin-tab" onclick="showAdminTab('pix')">💳 Pix</button>
-      <button class="admin-tab" onclick="showAdminTab('conexao')">🔗 Conexão</button>
+      <button class="admin-tab active" onclick="showAdminTab('rifa',this)">🎟️ Rifa</button>
+      <button class="admin-tab" onclick="showAdminTab('compradores',this)">👥 Compradores</button>
+      <button class="admin-tab" onclick="showAdminTab('pix',this)">💳 Pix</button>
+      <button class="admin-tab" onclick="showAdminTab('conexao',this)">🔗 Conexão</button>
     </div>
 
-    <!-- TAB: RIFA -->
+    <!-- TAB RIFA -->
     <div class="admin-tab-panel active" id="atab-rifa">
       <div class="admin-body">
         <div class="admin-card">
@@ -427,7 +480,6 @@ select.form-input option{background:var(--surface2);}
             <div class="stat-card"><div class="stat-num sr" id="statRevenue">R$0</div><div class="stat-label">Arrecadado</div></div>
           </div>
         </div>
-
         <div class="admin-card">
           <h2>🎟️ Configurações da Rifa</h2>
           <div class="admin-grid">
@@ -474,7 +526,6 @@ select.form-input option{background:var(--surface2);}
           </div>
           <button class="btn-save" id="btnSaveCfg" onclick="saveConfig()">💾 Salvar Configurações</button>
         </div>
-
         <div class="admin-card">
           <h2>🎲 Realizar Sorteio</h2>
           <div class="draw-section">
@@ -486,15 +537,14 @@ select.form-input option{background:var(--surface2);}
             </div>
           </div>
         </div>
-
         <div class="admin-card">
           <h2>⚠️ Zona de Perigo</h2>
-          <button class="btn-danger" onclick="confirmReset()">🗑️ Zerar todos os números vendidos e reservados</button>
+          <button class="btn-danger" onclick="confirmReset()">🗑️ Zerar todos os números (vendidos + reservados)</button>
         </div>
       </div>
     </div>
 
-    <!-- TAB: COMPRADORES -->
+    <!-- TAB COMPRADORES -->
     <div class="admin-tab-panel" id="atab-compradores">
       <div class="admin-body">
         <div class="admin-card">
@@ -504,65 +554,57 @@ select.form-input option{background:var(--surface2);}
       </div>
     </div>
 
-    <!-- TAB: PIX -->
+    <!-- TAB PIX -->
     <div class="admin-tab-panel" id="atab-pix">
       <div class="admin-body">
         <div class="admin-card">
           <h2>💳 Configurações do Pix</h2>
-          <div class="form-group">
-            <label class="form-label">Tipo de Chave</label>
+          <div class="form-group"><label class="form-label">Tipo de Chave</label>
             <select class="form-input" id="pixType">
-              <option>CPF</option><option>CNPJ</option>
-              <option>EMAIL</option><option>TELEFONE</option><option>ALEATORIA</option>
+              <option>CPF</option><option>CNPJ</option><option>EMAIL</option>
+              <option>TELEFONE</option><option>ALEATORIA</option>
             </select>
           </div>
-          <div class="form-group">
-            <label class="form-label">Chave Pix</label>
-            <input class="form-input" id="pixKey" placeholder="Sua chave Pix">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Nome do Beneficiário</label>
-            <input class="form-input" id="pixName" placeholder="Nome no Pix">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Cidade</label>
-            <input class="form-input" id="pixCity" placeholder="Ex: São Paulo">
-          </div>
+          <div class="form-group"><label class="form-label">Chave Pix</label>
+            <input class="form-input" id="pixKey" placeholder="Sua chave Pix"></div>
+          <div class="form-group"><label class="form-label">Nome do Beneficiário</label>
+            <input class="form-input" id="pixName" placeholder="Nome no Pix"></div>
+          <div class="form-group"><label class="form-label">Cidade</label>
+            <input class="form-input" id="pixCity" placeholder="Ex: São Paulo"></div>
           <button class="btn-save" onclick="savePixConfig()">💾 Salvar Pix</button>
         </div>
       </div>
     </div>
 
-    <!-- TAB: CONEXÃO -->
+    <!-- TAB CONEXÃO -->
     <div class="admin-tab-panel" id="atab-conexao">
       <div class="admin-body">
         <div class="admin-card url-config-card">
           <h2>🔗 URL do Google Apps Script</h2>
-          <p style="font-size:.8rem;color:var(--muted);margin-bottom:12px;line-height:1.6">
-            A URL abaixo é salva no próprio Google Sheets e carregada automaticamente para todos os usuários.
-            Altere apenas se fizer um novo deploy do Apps Script.
+          <p style="font-size:.79rem;color:var(--muted);margin-bottom:12px;line-height:1.6">
+            A URL é salva no Google Sheets e carregada automaticamente para todos os usuários.
           </p>
-          <div class="form-group">
-            <label class="form-label">URL do Web App</label>
+          <div class="form-group"><label class="form-label">URL do Web App</label>
             <input class="form-input" id="settingsUrl" placeholder="https://script.google.com/macros/s/XXXXX/exec">
           </div>
           <div class="url-status">
             <span class="url-status-dot" id="urlStatusDot"></span>
-            <span id="urlStatusText">Conectado</span>
+            <span id="urlStatusText">Verificando...</span>
           </div>
           <button class="btn-save" onclick="saveSettings()" style="margin-top:12px">💾 Salvar URL</button>
         </div>
-
         <div class="admin-card">
-          <h2>ℹ️ Como configurar do zero</h2>
-          <div style="font-size:.79rem;color:var(--muted);line-height:1.8">
-            <b style="color:var(--text)">1.</b> Acesse <a href="https://sheets.google.com" target="_blank" style="color:var(--accent)">sheets.google.com</a> e crie uma planilha<br>
-            <b style="color:var(--text)">2.</b> Vá em <b style="color:var(--text)">Extensões → Apps Script</b><br>
-            <b style="color:var(--text)">3.</b> Cole o código do arquivo <code style="background:rgba(245,197,66,.12);color:var(--accent);padding:1px 5px;border-radius:3px">apps-script.gs</code><br>
-            <b style="color:var(--text)">4.</b> Execute a função <code style="background:rgba(245,197,66,.12);color:var(--accent);padding:1px 5px;border-radius:3px">setup</code><br>
-            <b style="color:var(--text)">5.</b> Implante → App da Web → Acesso: Qualquer pessoa<br>
-            <b style="color:var(--text)">6.</b> Cole a URL acima e salve
-          </div>
+          <h2>📲 Instalar como App</h2>
+          <p style="font-size:.79rem;color:var(--muted);margin-bottom:12px;line-height:1.6">
+            Instale o RifaFácil como aplicativo no seu dispositivo para acesso rápido sem abrir o navegador.
+          </p>
+          <button class="btn-save" id="btnInstallAdmin" onclick="installApp()" style="background:linear-gradient(135deg,var(--blue),#2563eb)">
+            📲 Instalar no Dispositivo
+          </button>
+          <p style="font-size:.72rem;color:var(--muted);margin-top:8px;line-height:1.5">
+            <b style="color:var(--text)">iOS (Safari):</b> Toque em Compartilhar → "Adicionar à Tela de Início"<br>
+            <b style="color:var(--text)">Android/Chrome:</b> Toque nos 3 pontos → "Adicionar à tela inicial"
+          </p>
         </div>
       </div>
     </div>
@@ -578,12 +620,12 @@ select.form-input option{background:var(--surface2);}
       <button class="modal-close" onclick="cancelReservationAndClose()">✕</button>
     </div>
     <div class="modal-body">
-      <div class="reservation-timer" id="reservationTimerBox" style="display:none">
+      <div class="reservation-timer" id="resTimerContact">
         <div class="timer-icon">⏱️</div>
-        <div class="timer-text">Seus números estão reservados por</div>
-        <div class="timer-countdown" id="timerCountdown">15:00</div>
+        <div class="timer-text">Números reservados por</div>
+        <div class="timer-countdown" id="timerA">15:00</div>
       </div>
-      <p style="color:var(--muted);font-size:.8rem;margin-bottom:12px">Preencha para reservar os números.</p>
+      <p style="color:var(--muted);font-size:.8rem;margin-bottom:12px">Preencha seus dados para confirmar.</p>
       <div class="form-group">
         <label class="form-label">Nome Completo *</label>
         <input class="form-input" id="buyerName" placeholder="Seu nome completo">
@@ -598,11 +640,11 @@ select.form-input option{background:var(--surface2);}
       </div>
       <div class="sep"></div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <span style="font-size:.85rem;color:var(--muted)">Total a pagar:</span>
+        <span style="font-size:.85rem;color:var(--muted)">Total:</span>
         <span class="total-price" id="modalTotal">R$ 0,00</span>
       </div>
-      <button class="btn-buy" style="width:100%;padding:11px" id="btnGoToPix" onclick="proceedToPix()">Ir para Pagamento →</button>
-      <button class="btn-cancel-res" id="btnCancelContact" onclick="cancelReservationAndClose()" style="display:none">Cancelar e liberar números</button>
+      <button class="btn-buy" style="width:100%;padding:11px" onclick="proceedToPix()">Ir para Pagamento →</button>
+      <button class="btn-cancel-res" onclick="cancelReservationAndClose()">❌ Cancelar e liberar números</button>
     </div>
   </div>
 </div>
@@ -619,7 +661,7 @@ select.form-input option{background:var(--surface2);}
         <div class="reservation-timer">
           <div class="timer-icon">⏱️</div>
           <div class="timer-text">Reserva expira em</div>
-          <div class="timer-countdown" id="timerCountdown2">15:00</div>
+          <div class="timer-countdown" id="timerB">15:00</div>
         </div>
         <div class="pix-nums" id="pixNumsLabel"></div>
         <div class="pix-amount" id="pixAmountLabel"></div>
@@ -635,7 +677,7 @@ select.form-input option{background:var(--surface2);}
           4. Clique em <b>"Confirmar Pagamento"</b> abaixo
         </div>
         <button class="btn-confirm" id="btnConfirm" onclick="confirmPayment()">✅ Confirmar Pagamento</button>
-        <button class="btn-cancel-res" onclick="cancelReservationAndClose()">Cancelar e liberar números</button>
+        <button class="btn-cancel-res" onclick="cancelReservationAndClose()">❌ Cancelar e liberar números</button>
       </div>
     </div>
   </div>
@@ -644,29 +686,48 @@ select.form-input option{background:var(--surface2);}
 <div class="toast" id="toast"></div>
 
 <script>
-// ════════════════════════════════════════════════════════
-// ESTADO GLOBAL
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════
+// ESTADO
+// ════════════════════════════════════════════════════
 let API_URL = '';
-let numbers  = {};   // chaves SEMPRE string
+let numbers  = {};
 let cfg      = {title:'Minha Rifa',desc:'',price:10,qty:100,date:'',imgUrl:'',password:'admin123'};
 let pixCfg   = {type:'CPF',key:'',name:'Organizador',city:'Brasil'};
-let settings = {};   // { apiUrl: '...' }
-
-let selected    = [];   // strings
-let buyerName   = '', buyerPhone = '';
+let settings = {};
+let selected = [];
+let buyerName='', buyerPhone='';
 let adminAuthed = false;
 let pendingImgFile = null;
-let gridBuiltQty   = 0;
-
-// Reserva atual do usuário nesta sessão
-let myReservedNums = [];   // strings
-let reservationExpiresAt = null;  // Date
+let gridBuiltQty = 0;
+let myReservedNums = [];
+let reservationExpiresAt = null;
 let reservationTimerInterval = null;
 
-// ════════════════════════════════════════════════════════
+// PWA
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  if (!localStorage.getItem('rfInstallDismissed')) {
+    document.getElementById('installBanner').style.display = 'flex';
+  }
+});
+function installApp() {
+  if (deferredInstallPrompt) {
+    deferredInstallPrompt.prompt();
+    deferredInstallPrompt.userChoice.then(() => { deferredInstallPrompt = null; dismissInstall(); });
+  } else {
+    showToast('Use o menu do navegador para instalar (Adicionar à tela inicial)');
+  }
+}
+function dismissInstall() {
+  document.getElementById('installBanner').style.display = 'none';
+  localStorage.setItem('rfInstallDismissed', '1');
+}
+
+// ════════════════════════════════════════════════════
 // API
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════
 async function apiFetch(params) {
   const res  = await fetch(API_URL + '?' + params + '&t=' + Date.now(), { redirect:'follow' });
   const json = await res.json();
@@ -683,7 +744,6 @@ async function apiPost(body) {
   if (!json.ok) throw new Error(json.error || 'Erro na API');
   return json.data;
 }
-
 function normalizeNumbers(raw) {
   if (!raw || typeof raw !== 'object') return {};
   const out = {};
@@ -691,63 +751,87 @@ function normalizeNumbers(raw) {
   return out;
 }
 
-// ════════════════════════════════════════════════════════
-// FIRST RUN / CONNECT
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════
+// DATE HELPERS — corrige vários formatos possíveis
+// ════════════════════════════════════════════════════
+function parseDate(val) {
+  // Já está no formato YYYY-MM-DD
+  if (!val || val === 'undefined' || val === 'null' || val === '') return '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(val)) return val;
+  // Formato DD/MM/YYYY
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(val)) {
+    const [d,m,y] = val.split('/');
+    return `${y}-${m}-${d}`;
+  }
+  // Objeto Date serializado ou ISO
+  try {
+    const d = new Date(val);
+    if (!isNaN(d.getTime())) {
+      const y  = d.getFullYear();
+      const mo = String(d.getMonth()+1).padStart(2,'0');
+      const dy = String(d.getDate()).padStart(2,'0');
+      return `${y}-${mo}-${dy}`;
+    }
+  } catch {}
+  return '';
+}
+
+function fmtDate(val) {
+  const iso = parseDate(val);
+  if (!iso) return '--';
+  const [y,m,d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+// ════════════════════════════════════════════════════
+// FIRST RUN
+// ════════════════════════════════════════════════════
 async function firstConnect() {
   const url = document.getElementById('frUrl').value.trim();
   if (!url.includes('script.google.com')) {
     showFrMsg('Cole a URL completa do Web App\n(https://script.google.com/macros/s/...)', 'err'); return;
   }
   API_URL = url;
-  showFrMsg('Conectando...', 'ok');
-  const btn = document.querySelector('#firstRunScreen .btn-primary');
-  btn.disabled = true;
+  const btn = document.getElementById('frBtn');
+  btn.disabled=true; btn.textContent='⏳ Conectando...';
+  showFrMsg('Conectando ao Google Sheets...', 'ok');
   try {
     const data = await apiFetch('action=all');
     applyAll(data);
-    // Salva URL no localStorage para próximas visitas
     localStorage.setItem('rfApiUrl', url);
-    // Tenta salvar no Sheets também para outros usuários (sem bloqueio)
-    apiPost({ action:'saveSettings', data:{ apiUrl: url } }).catch(()=>{});
+    apiPost({action:'saveSettings', data:{apiUrl:url}}).catch(()=>{});
     launchApp();
   } catch(e) {
-    showFrMsg('❌ ' + e.message
-      + '\n\nVerifique:\n• URL correta\n• Acesso "Qualquer pessoa"\n• Permissões autorizadas', 'err');
-    btn.disabled = false;
+    showFrMsg('❌ '+e.message+'\n\nVerifique:\n• URL correta\n• Acesso "Qualquer pessoa"\n• Permissões autorizadas', 'err');
+    btn.disabled=false; btn.textContent='🚀 Conectar';
   }
 }
-
 function showFrMsg(msg, type) {
-  const el = document.getElementById('frMsg');
-  el.textContent = msg; el.className = 'fr-msg ' + type; el.style.display = 'block';
+  const el=document.getElementById('frMsg');
+  el.textContent=msg; el.className='fr-msg '+type; el.style.display='block';
 }
 
-// ── Boot automático ──────────────────────────────────────
+// Boot automático
 (async function boot() {
-  // 1. Tem URL salva localmente?
   const local = localStorage.getItem('rfApiUrl');
-  if (local) {
-    API_URL = local;
-    showLoading('Carregando...');
-    try {
-      const data = await apiFetch('action=all');
-      applyAll(data);
-      launchApp();
-      return;
-    } catch { /* vai tentar buscar do sheets */ }
+  if (!local) return; // mostra first run
+  API_URL = local;
+  document.getElementById('apiUrl') && (document.getElementById('apiUrl').value = local);
+  showLoading('Carregando...');
+  try {
+    const data = await apiFetch('action=all');
+    applyAll(data);
+    launchApp();
+  } catch {
+    hideLoading();
+    document.getElementById('firstRunScreen').style.display='flex';
+    localStorage.removeItem('rfApiUrl');
+    showFrMsg('Não foi possível reconectar.\nCole a URL novamente.','err');
   }
-
-  // 2. Tenta buscar a URL salva no Sheets via URL hardcoded no localStorage
-  // (se não tem local, mostra first-run)
-  hideLoading();
-  document.getElementById('firstRunScreen').style.display = 'flex';
 })();
 
 function applyAll(data) {
   if (data.settings) settings = data.settings;
-  if (settings.apiUrl && !API_URL) API_URL = settings.apiUrl;
-
   if (data.config) {
     const c = data.config;
     cfg = {
@@ -755,51 +839,39 @@ function applyAll(data) {
       desc:     c.desc     || '',
       price:    parseFloat(c.price)  || 10,
       qty:      parseInt(c.qty)      || 100,
-      date:     c.date     || '',
+      date:     parseDate(c.date),   // ← normaliza aqui
       imgUrl:   c.imgUrl   || '',
       password: c.password || 'admin123',
     };
   }
-  if (data.pix) pixCfg = {type:data.pix.type||'CPF',key:data.pix.key||'',name:data.pix.name||'',city:data.pix.city||''};
-  if (data.numbers) numbers = normalizeNumbers(data.numbers);
+  if (data.pix) pixCfg={type:data.pix.type||'CPF',key:data.pix.key||'',name:data.pix.name||'',city:data.pix.city||''};
+  if (data.numbers) numbers=normalizeNumbers(data.numbers);
 }
 
 function launchApp() {
-  document.getElementById('firstRunScreen').style.display = 'none';
+  document.getElementById('firstRunScreen').style.display='none';
   hideLoading();
-  document.getElementById('app').style.display = 'block';
-  buildGrid();
-  renderAll();
-  startSync();
+  document.getElementById('app').style.display='block';
+  buildGrid(); renderAll(); startSync();
 }
+function showLoading(t) { document.getElementById('loadingText').textContent=t; document.getElementById('loadingScreen').style.display='flex'; document.getElementById('firstRunScreen').style.display='none'; }
+function hideLoading() { document.getElementById('loadingScreen').style.display='none'; }
 
-function showLoading(txt) {
-  document.getElementById('loadingText').textContent = txt;
-  document.getElementById('loadingScreen').style.display = 'flex';
-  document.getElementById('firstRunScreen').style.display = 'none';
-}
-function hideLoading() { document.getElementById('loadingScreen').style.display = 'none'; }
-
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════
 // SYNC
-// ════════════════════════════════════════════════════════
-function startSync() { setInterval(() => syncNow(false), 10000); }
+// ════════════════════════════════════════════════════
+function startSync() { setInterval(()=>syncNow(false), 10000); }
 
-async function syncNow(manual = false) {
+async function syncNow(manual=false) {
   setSyncState('syncing');
   try {
     const data = await apiFetch('action=numbers');
-    const fresh = normalizeNumbers(data.numbers || {});
-
-    // Não remove da seleção os números que estão reservados POR ESTA SESSÃO
-    const myReservedSet = new Set(myReservedNums);
-    selected = selected.filter(k => !fresh[k] || myReservedSet.has(k));
-
+    const fresh = normalizeNumbers(data.numbers||{});
+    const mySet = new Set(myReservedNums);
+    // Só remove da seleção os que foram vendidos por OUTROS (não minha reserva)
+    selected = selected.filter(k => !fresh[k] || mySet.has(k));
     numbers = fresh;
-    refreshGridClasses();
-    renderHero();
-    updateSummary();
-    updateStats();
+    refreshGridClasses(); renderHero(); updateSummary(); updateStats();
     if (adminAuthed) renderBuyers();
     setSyncState('ok');
     if (manual) showToast('🔄 Atualizado!');
@@ -812,38 +884,39 @@ function setSyncState(s) {
   l.textContent=s==='syncing'?'atualizando':s==='err'?'sem conexão':'ao vivo ✓';
 }
 
-// ════════════════════════════════════════════════════════
-// PAGES / TABS
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════
+// PAGES / ADMIN TABS
+// ════════════════════════════════════════════════════
 function showPage(page) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
-  document.getElementById('tab'+page.charAt(0).toUpperCase()+page.slice(1)).classList.add('active');
-  if (page==='admin'&&adminAuthed) { syncAdminFields(); renderBuyers(); updateStats(); }
+  document.getElementById('tab'+page[0].toUpperCase()+page.slice(1)).classList.add('active');
+  if(page==='admin'&&adminAuthed){syncAdminFields();renderBuyers();updateStats();}
 }
-
-function showAdminTab(tab) {
+function showAdminTab(tab, el) {
   document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.admin-tab-panel').forEach(p=>p.classList.remove('active'));
-  event.target.classList.add('active');
+  el.classList.add('active');
   document.getElementById('atab-'+tab).classList.add('active');
-  if (tab==='compradores') renderBuyers();
+  if(tab==='compradores') renderBuyers();
 }
 
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════
 // RENDER
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════
 function renderAll() { renderHero(); refreshGridClasses(); updateSummary(); updateStats(); }
 
 function renderHero() {
   document.getElementById('heroTitle').textContent    = cfg.title||'Rifa';
   document.getElementById('heroDesc').textContent     = cfg.desc||'';
   document.getElementById('heroPriceVal').textContent = fmt(cfg.price);
-  document.getElementById('heroDateVal').textContent  = cfg.date?fmtDate(cfg.date):'--';
+  // ← usa fmtDate corrigido
+  document.getElementById('heroDateVal').textContent  = cfg.date ? fmtDate(cfg.date) : '--';
   const sold = Object.values(numbers).filter(n=>n.status==='pending'||n.status==='paid').length;
   document.getElementById('heroSoldVal').textContent  = sold;
-  const pct = cfg.qty>0?Math.round(Object.keys(numbers).length/cfg.qty*100):0;
+  const total = Object.keys(numbers).length;
+  const pct   = cfg.qty>0 ? Math.round(total/cfg.qty*100) : 0;
   document.getElementById('progressFill').style.width = pct+'%';
   document.getElementById('progressPct').textContent  = pct+'%';
   const img=document.getElementById('heroImg'),em=document.getElementById('heroEmoji');
@@ -855,153 +928,112 @@ function buildGrid() {
   const grid = document.getElementById('numbersGrid');
   const qty  = Math.max(10,Math.min(1000,cfg.qty||100));
   if (gridBuiltQty===qty) { refreshGridClasses(); return; }
-  const pad  = qty>=100?3:2;
-  document.getElementById('gridTitle').textContent = `Escolha seus números (1 – ${qty})`;
+  const pad=qty>=100?3:2;
+  document.getElementById('gridTitle').textContent=`Escolha seus números (1 – ${qty})`;
   grid.innerHTML='';
-  for (let i=1;i<=qty;i++) {
+  for(let i=1;i<=qty;i++){
     const b=document.createElement('button');
-    b.className='num-btn';
-    b.textContent=String(i).padStart(pad,'0');
-    b.dataset.k=String(i);
-    b.onclick=()=>toggleNum(String(i));
+    b.className='num-btn'; b.textContent=String(i).padStart(pad,'0');
+    b.dataset.k=String(i); b.onclick=()=>toggleNum(String(i));
     grid.appendChild(b);
   }
-  gridBuiltQty=qty;
-  refreshGridClasses();
+  gridBuiltQty=qty; refreshGridClasses();
 }
 
 function refreshGridClasses() {
-  const mySet = new Set(myReservedNums);
-  Array.from(document.getElementById('numbersGrid').children).forEach(b => {
-    const k = b.dataset.k;
+  const mySet=new Set(myReservedNums);
+  Array.from(document.getElementById('numbersGrid').children).forEach(b=>{
+    const k=b.dataset.k;
     b.className='num-btn'; b.disabled=false; b.title='';
-    const entry = numbers[k];
-    if (entry) {
-      if (entry.status==='reserved') {
-        if (mySet.has(k)) {
-          // Minha própria reserva — aparece como selecionado
-          b.classList.add('selected');
-        } else {
-          b.classList.add('reserved');
-          b.disabled=true;
-          b.title='Reservado por outro usuário';
-        }
+    const e=numbers[k];
+    if(e){
+      if(e.status==='reserved'){
+        if(mySet.has(k)){b.classList.add('selected');}
+        else{b.classList.add('reserved');b.disabled=true;b.title='Reservado momentaneamente';}
       } else {
-        // pending ou paid
-        b.classList.add('sold');
-        b.disabled=true;
-        b.title='Vendido: '+entry.name;
+        b.classList.add('sold');b.disabled=true;b.title='Vendido: '+e.name;
       }
-    } else if (selected.includes(k)) {
-      b.classList.add('selected');
-    }
+    } else if(selected.includes(k)){b.classList.add('selected');}
   });
 }
 
 function updateSummary() {
   const c=selected.length;
-  document.getElementById('selCount').textContent   = c;
-  document.getElementById('totalPrice').textContent = 'R$ '+fmt(c*cfg.price);
-  document.getElementById('btnBuy').disabled        = c===0;
+  document.getElementById('selCount').textContent  =c;
+  document.getElementById('totalPrice').textContent='R$ '+fmt(c*cfg.price);
+  document.getElementById('btnBuy').disabled       =c===0;
 }
 
 function updateStats() {
   const el=document.getElementById('statSold'); if(!el) return;
-  const sold = Object.values(numbers).filter(n=>n.status==='pending'||n.status==='paid').length;
-  const res  = Object.values(numbers).filter(n=>n.status==='reserved').length;
-  const avail= Math.max(0,(cfg.qty||100)-Object.keys(numbers).length);
+  const sold =Object.values(numbers).filter(n=>n.status==='pending'||n.status==='paid').length;
+  const res  =Object.values(numbers).filter(n=>n.status==='reserved').length;
+  const avail=Math.max(0,(cfg.qty||100)-Object.keys(numbers).length);
   el.textContent=sold;
   document.getElementById('statRes').textContent    =res;
   document.getElementById('statAvail').textContent  =avail;
   document.getElementById('statRevenue').textContent='R$'+fmt(sold*(cfg.price||0));
 }
 
-// ════════════════════════════════════════════════════════
-// TOGGLE — só marca localmente, sem bloquear ainda
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════
+// TOGGLE
+// ════════════════════════════════════════════════════
 function toggleNum(k) {
-  if (numbers[k] && !myReservedNums.includes(k)) return;
-  if (myReservedNums.length > 0) return; // já tem reserva ativa
+  if(numbers[k]&&!myReservedNums.includes(k)) return;
+  if(myReservedNums.length>0) return;
   const idx=selected.indexOf(k);
-  if (idx===-1) selected.push(k); else selected.splice(idx,1);
+  if(idx===-1) selected.push(k); else selected.splice(idx,1);
   const b=document.querySelector(`.num-btn[data-k="${k}"]`);
   if(b){if(selected.includes(k))b.classList.add('selected');else b.classList.remove('selected');}
   updateSummary();
 }
 
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════
 // RESERVATION TIMER
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════
 function startReservationTimer(expiresAt) {
-  reservationExpiresAt = new Date(expiresAt);
+  reservationExpiresAt=new Date(expiresAt);
   clearInterval(reservationTimerInterval);
-  reservationTimerInterval = setInterval(() => {
-    const remaining = reservationExpiresAt - new Date();
-    if (remaining <= 0) {
-      clearInterval(reservationTimerInterval);
-      // Reserva expirou — libera localmente
-      handleReservationExpired();
-      return;
-    }
-    const m = Math.floor(remaining/60000);
-    const s = Math.floor((remaining%60000)/1000);
-    const txt = m+':'+(s<10?'0':'')+s;
-    ['timerCountdown','timerCountdown2'].forEach(id=>{
-      const el=document.getElementById(id); if(el) el.textContent=txt;
+  reservationTimerInterval=setInterval(()=>{
+    const rem=reservationExpiresAt-new Date();
+    if(rem<=0){clearInterval(reservationTimerInterval);handleExpired();return;}
+    const m=Math.floor(rem/60000),s=Math.floor((rem%60000)/1000);
+    const txt=m+':'+(s<10?'0':'')+s;
+    const urgent=rem<120000; // vermelho nos últimos 2min
+    ['timerA','timerB'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el){el.textContent=txt;el.className='timer-countdown'+(urgent?' urgent':'');}
     });
-  }, 1000);
+  },1000);
+}
+function stopReservationTimer(){clearInterval(reservationTimerInterval);reservationTimerInterval=null;reservationExpiresAt=null;}
+function handleExpired(){
+  myReservedNums=[];selected=[];stopReservationTimer();
+  closeModal('modalContact');closeModal('modalPix');
+  syncNow();showToast('⏱️ Reserva expirada! Números liberados.','red');
 }
 
-function stopReservationTimer() {
-  clearInterval(reservationTimerInterval);
-  reservationTimerInterval=null;
-  reservationExpiresAt=null;
-}
-
-function handleReservationExpired() {
-  myReservedNums=[];
-  selected=[];
-  stopReservationTimer();
-  closeModal('modalContact');
-  closeModal('modalPix');
-  syncNow();
-  showToast('⏱️ Reserva expirada! Os números foram liberados.','red');
-}
-
-// ════════════════════════════════════════════════════════
-// CONTACT MODAL — reserva ANTES de mostrar dados
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════
+// CONTACT MODAL — reserva ao abrir
+// ════════════════════════════════════════════════════
 async function openContactModal() {
-  if (!selected.length) return;
+  if(!selected.length) return;
   const btn=document.getElementById('btnBuy');
   btn.textContent='⏳ Reservando...'; btn.disabled=true;
-
   try {
-    const numsInt = selected.map(k=>parseInt(k));
-    const result  = await apiPost({
-      action:'reserveNumbers', numbers:numsInt,
-      name:'Reservado', phone:'pendente',
-    });
-
-    if (result.conflicts && result.conflicts.length>0) {
+    const numsInt=selected.map(k=>parseInt(k));
+    const result=await apiPost({action:'reserveNumbers',numbers:numsInt,name:'Reservado',phone:'pendente'});
+    if(result.conflicts&&result.conflicts.length>0){
       const pad=cfg.qty>=100?3:2;
-      showToast('❌ Número(s) '+result.conflicts.map(n=>String(n).padStart(pad,'0')).join(', ')+' já indisponível!','red');
+      showToast('❌ Número(s) '+result.conflicts.map(n=>String(n).padStart(pad,'0')).join(', ')+' indisponível!','red');
       await syncNow();
       btn.textContent='Comprar 🛒'; btn.disabled=selected.length===0;
       return;
     }
-
-    // Reserva feita — guarda localmente
-    myReservedNums = [...selected];
-    if (result.expiresAt) startReservationTimer(result.expiresAt);
-
-    // Atualiza numbers localmente
-    myReservedNums.forEach(k=>{
-      numbers[k]={name:'Reservado',phone:'pendente',status:'reserved',date:new Date().toISOString()};
-    });
+    myReservedNums=[...selected];
+    if(result.expiresAt) startReservationTimer(result.expiresAt);
+    myReservedNums.forEach(k=>{ numbers[k]={name:'Reservado',phone:'pendente',status:'reserved',date:''}; });
     refreshGridClasses();
-
-    // Mostra modal
     const pad=cfg.qty>=100?3:2;
     document.getElementById('numsPreview').innerHTML=
       [...selected].sort((a,b)=>parseInt(a)-parseInt(b))
@@ -1009,41 +1041,27 @@ async function openContactModal() {
     document.getElementById('modalTotal').textContent='R$ '+fmt(selected.length*cfg.price);
     document.getElementById('buyerName').value='';
     document.getElementById('buyerPhone').value='';
-    document.getElementById('reservationTimerBox').style.display='flex';
-    document.getElementById('btnCancelContact').style.display='block';
     openModal('modalContact');
-
-  } catch(e) {
-    showToast('Erro ao reservar: '+e.message,'red');
-  }
+  } catch(e){showToast('Erro ao reservar: '+e.message,'red');}
   btn.textContent='Comprar 🛒'; btn.disabled=false;
 }
 
 async function cancelReservationAndClose() {
-  if (myReservedNums.length>0) {
-    try {
-      await apiPost({action:'cancelReservation', numbers:myReservedNums.map(k=>parseInt(k))});
-    } catch {}
-    myReservedNums.forEach(k=>{ delete numbers[k]; });
-    myReservedNums=[];
-    selected=[];
-    stopReservationTimer();
-    refreshGridClasses();
-    renderHero();
-    updateSummary();
-    updateStats();
+  if(myReservedNums.length>0){
+    try{ await apiPost({action:'cancelReservation',numbers:myReservedNums.map(k=>parseInt(k))}); }catch{}
+    myReservedNums.forEach(k=>{delete numbers[k];});
+    myReservedNums=[];selected=[];stopReservationTimer();
+    refreshGridClasses();renderHero();updateSummary();updateStats();
   }
-  closeModal('modalContact');
-  closeModal('modalPix');
+  closeModal('modalContact');closeModal('modalPix');
 }
 
 function proceedToPix() {
   const name =document.getElementById('buyerName').value.trim();
   const phone=document.getElementById('buyerPhone').value.trim();
   if(!name||!phone){showToast('Preencha nome e telefone!','red');return;}
-  buyerName=name; buyerPhone=phone;
-  closeModal('modalContact');
-  openPixModal();
+  buyerName=name;buyerPhone=phone;
+  closeModal('modalContact');openPixModal();
 }
 
 function openPixModal() {
@@ -1061,49 +1079,32 @@ async function confirmPayment() {
   const btn=document.getElementById('btnConfirm');
   btn.textContent='⏳ Confirmando...'; btn.disabled=true;
   try {
-    // Confirma a reserva — muda status para pending
+    // ← Envia nome e telefone reais no confirmNumbers
     const numsInt=myReservedNums.map(k=>parseInt(k));
-    await apiPost({action:'confirmNumbers', numbers:numsInt});
-
-    // Atualiza nome/telefone
-    await apiPost({
-      action:'updateStatus',
-      phone:'pendente',
-      status:'pending',
-      // Workaround: usa updateStatus genérico para atualizar dados
-    });
-    // Atualiza nome/phone direto — salva novos dados
-    // (O Apps Script já salvou como pending, só precisa atualizar os campos)
-    // Força re-reserva com dados corretos não é necessário pois o admin verá pelo painel
-
+    await apiPost({action:'confirmNumbers', numbers:numsInt, name:buyerName, phone:buyerPhone});
     const count=myReservedNums.length;
-    // Atualiza localmente
+    // Atualiza estado local com dados reais
     myReservedNums.forEach(k=>{
-      if(numbers[k]) numbers[k]={name:buyerName,phone:buyerPhone,status:'pending',date:new Date().toISOString()};
+      numbers[k]={name:buyerName,phone:buyerPhone,status:'pending',date:new Date().toISOString()};
     });
-    myReservedNums=[];
-    selected=[];
-    stopReservationTimer();
+    myReservedNums=[];selected=[];stopReservationTimer();
     closeModal('modalPix');
-    refreshGridClasses(); renderHero(); updateSummary(); updateStats();
-    if(adminAuthed) renderBuyers();
-    showToast(`✅ ${count} número(s) reservado(s)! Aguardando confirmação do pagamento.`);
+    refreshGridClasses();renderHero();updateSummary();updateStats();
+    if(adminAuthed)renderBuyers();
+    showToast(`✅ ${count} número(s) reservado(s)! Pagamento enviado para confirmação.`);
     syncNow();
-  } catch(e) { showToast('Erro: '+e.message,'red'); }
+  }catch(e){showToast('Erro: '+e.message,'red');}
   btn.textContent='✅ Confirmar Pagamento'; btn.disabled=false;
 }
 
-function openModal(id) {document.getElementById(id).classList.add('open');}
+function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
-// Backdrop
 document.querySelectorAll('.modal-overlay').forEach(o=>
-  o.addEventListener('click',e=>{
-    if(e.target===o) cancelReservationAndClose();
-  }));
+  o.addEventListener('click',e=>{if(e.target===o)cancelReservationAndClose();}));
 
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════
 // QR CODE
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════
 function generateQR(key,amount){
   const cv=document.getElementById('qrCanvas'),ctx=cv.getContext('2d');
   drawQR(ctx,buildPixPayload(key,amount),174);
@@ -1145,20 +1146,20 @@ function copyPix(){
     document.body.removeChild(ta);showToast('Chave Pix copiada! ✓');}
 }
 
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════
 // IMAGE UPLOAD
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════
 function handleImgSelect(input){
-  const file=input.files[0]; if(!file) return;
+  const file=input.files[0];if(!file)return;
   if(file.size>5*1024*1024){showToast('Imagem muito grande! Máx 5MB.','red');return;}
   pendingImgFile=file;
-  const reader=new FileReader();
-  reader.onload=e=>{
+  const r=new FileReader();
+  r.onload=e=>{
     document.getElementById('imgPreview').src=e.target.result;
     document.getElementById('imgPreviewWrap').style.display='block';
     document.getElementById('uploadArea').style.display='none';
   };
-  reader.readAsDataURL(file);
+  r.readAsDataURL(file);
 }
 function removeImage(){
   pendingImgFile=null;cfg.imgUrl='';
@@ -1182,9 +1183,9 @@ async function uploadImageIfNeeded(){
   return result.url||'';
 }
 
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════
 // ADMIN
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════
 function checkAdmin(){
   const pass=document.getElementById('adminPassInput').value;
   if(pass===(cfg.password||'admin123')){
@@ -1192,10 +1193,7 @@ function checkAdmin(){
     document.getElementById('adminLogin').style.display='none';
     document.getElementById('adminPanel').style.display='block';
     syncAdminFields();renderBuyers();updateStats();
-  } else {
-    showToast('Senha incorreta!','red');
-    document.getElementById('adminPassInput').value='';
-  }
+  }else{showToast('Senha incorreta!','red');document.getElementById('adminPassInput').value='';}
 }
 
 function syncAdminFields(){
@@ -1203,7 +1201,8 @@ function syncAdminFields(){
   document.getElementById('cfgDesc').value    =cfg.desc||'';
   document.getElementById('cfgPrice').value   =cfg.price||10;
   document.getElementById('cfgQty').value     =cfg.qty||100;
-  document.getElementById('cfgDate').value    =cfg.date||'';
+  // ← usa parseDate para garantir formato YYYY-MM-DD no input type=date
+  document.getElementById('cfgDate').value    =parseDate(cfg.date)||'';
   document.getElementById('cfgPassword').value='';
   document.getElementById('pixType').value    =pixCfg.type||'CPF';
   document.getElementById('pixKey').value     =pixCfg.key||'';
@@ -1214,12 +1213,12 @@ function syncAdminFields(){
     document.getElementById('imgPreview').src=cfg.imgUrl;
     document.getElementById('imgPreviewWrap').style.display='block';
     document.getElementById('uploadArea').style.display='none';
-  } else {
+  }else{
     document.getElementById('imgPreviewWrap').style.display='none';
     document.getElementById('uploadArea').style.display='block';
   }
   const dot=document.getElementById('urlStatusDot'),txt=document.getElementById('urlStatusText');
-  if(API_URL){dot.className='url-status-dot';txt.textContent='Conectado: '+API_URL.substring(0,50)+'...';}
+  if(API_URL){dot.className='url-status-dot';txt.textContent='Conectado: '+API_URL.substring(0,55)+'...';}
   else{dot.className='url-status-dot bad';txt.textContent='Não configurado';}
 }
 
@@ -1230,12 +1229,14 @@ async function saveConfig(){
     const imgUrl=await uploadImageIfNeeded();
     const newPass=document.getElementById('cfgPassword').value;
     const oldQty=cfg.qty;
+    // ← salva data como YYYY-MM-DD
+    const dateVal=document.getElementById('cfgDate').value||'';
     cfg={
       title:    document.getElementById('cfgTitle').value||'Minha Rifa',
       desc:     document.getElementById('cfgDesc').value||'',
       price:    parseFloat(document.getElementById('cfgPrice').value)||10,
       qty:      parseInt(document.getElementById('cfgQty').value)||100,
-      date:     document.getElementById('cfgDate').value||'',
+      date:     dateVal,
       imgUrl:   imgUrl||cfg.imgUrl||'',
       password: newPass||cfg.password||'admin123',
     };
@@ -1263,31 +1264,32 @@ async function saveSettings(){
   if(!url.includes('script.google.com')){showToast('URL inválida!','red');return;}
   try{
     await apiPost({action:'saveSettings',data:{apiUrl:url}});
-    API_URL=url;
-    localStorage.setItem('rfApiUrl',url);
-    syncAdminFields();
-    showToast('✅ URL salva! Todos os usuários conectarão automaticamente.');
+    API_URL=url;localStorage.setItem('rfApiUrl',url);
+    syncAdminFields();showToast('✅ URL salva! Todos os usuários conectarão automaticamente.');
   }catch(e){showToast('Erro: '+e.message,'red');}
 }
 
-// ── Atualizar status (admin) ──────────────────────────────
-async function updateStatus(phone, status){
+async function updateStatus(phone,status){
   try{
     await apiPost({action:'updateStatus',phone,status});
-    Object.keys(numbers).forEach(k=>{if(numbers[k].phone===phone) numbers[k].status=status;});
+    // Se cancelou, remove do objeto local
+    if(status==='cancelled'){
+      Object.keys(numbers).forEach(k=>{if(numbers[k].phone===phone) delete numbers[k];});
+    } else {
+      Object.keys(numbers).forEach(k=>{if(numbers[k].phone===phone) numbers[k].status=status;});
+    }
     renderBuyers();updateStats();renderHero();
     showToast('Status atualizado!');
   }catch(e){showToast('Erro: '+e.message,'red');}
 }
 
-// ── Cancelar número individual (admin) ───────────────────
 async function cancelNumber(num){
   if(!confirm('Cancelar o número '+num+'? Ele voltará a ficar disponível.')) return;
   try{
     await apiPost({action:'cancelNumber',number:parseInt(num)});
     delete numbers[String(num)];
     refreshGridClasses();renderHero();updateStats();renderBuyers();
-    showToast('Número '+num+' cancelado e liberado!');
+    showToast('Número '+num+' liberado!');
   }catch(e){showToast('Erro: '+e.message,'red');}
 }
 
@@ -1305,47 +1307,33 @@ function renderBuyers(){
   const container=document.getElementById('buyersContainer');
   const entries=Object.entries(numbers);
   if(!entries.length){container.innerHTML='<div class="empty-state">Nenhuma compra ainda.</div>';return;}
-
-  // Agrupa por telefone
   const buyers={};
   entries.forEach(([k,info])=>{
     const key=info.phone||'?';
     if(!buyers[key]) buyers[key]={name:info.name,phone:info.phone,status:info.status,nums:[]};
     buyers[key].nums.push(parseInt(k));
-    // Status mais "grave" ganha
-    const priority={paid:4,pending:3,reserved:2,cancelled:1};
-    if((priority[info.status]||0)>(priority[buyers[key].status]||0)) buyers[key].status=info.status;
+    const pri={paid:4,pending:3,reserved:2};
+    if((pri[info.status]||0)>(pri[buyers[key].status]||0)) buyers[key].status=info.status;
   });
-
   const pad=cfg.qty>=100?3:2;
   const rows=Object.values(buyers).map(b=>{
     const nh=b.nums.sort((a,x)=>a-x).map(n=>{
-      const k=String(n), st=numbers[k]?.status||'';
-      return `<span class="num-sm" style="${st==='reserved'?'border-color:rgba(59,130,246,.5);color:#3b82f6':''}"
-        title="${st}">${String(n).padStart(pad,'0')}</span>`;
+      const st=numbers[String(n)]?.status||'';
+      return `<span class="num-sm${st==='reserved'?' res-num':''}">${String(n).padStart(pad,'0')}</span>`;
     }).join('');
-
-    const badges={
-      paid:   '<span class="status-badge s-paid">✅ Pago</span>',
+    const badges={paid:'<span class="status-badge s-paid">✅ Pago</span>',
       pending:'<span class="status-badge s-pend">⏳ Pendente</span>',
-      reserved:'<span class="status-badge s-res">🔒 Reservado</span>',
-      cancelled:'<span class="status-badge s-canc">❌ Cancelado</span>',
-    };
+      reserved:'<span class="status-badge s-res">🔒 Reservado</span>'};
     const badge=badges[b.status]||badges.pending;
-
-    // Botões de ação
     let actions='';
     if(b.status==='reserved'){
-      actions=`<button class="btn-xs btn-xs-red" onclick="updateStatus('${b.phone}','cancelled')">Cancelar reserva</button>`;
-    } else if(b.status==='pending'){
-      actions=`<button class="btn-xs btn-xs-green" onclick="updateStatus('${b.phone}','paid')">Marcar pago</button>
+      actions=`<button class="btn-xs btn-xs-red" onclick="updateStatus('${b.phone}','cancelled')">Cancelar</button>`;
+    }else if(b.status==='pending'){
+      actions=`<button class="btn-xs btn-xs-green" onclick="updateStatus('${b.phone}','paid')">Pago ✓</button>
                <button class="btn-xs btn-xs-red" onclick="updateStatus('${b.phone}','cancelled')">Cancelar</button>`;
-    } else if(b.status==='paid'){
+    }else if(b.status==='paid'){
       actions=`<button class="btn-xs btn-xs-yellow" onclick="updateStatus('${b.phone}','pending')">Reverter</button>`;
-    } else if(b.status==='cancelled'){
-      actions=b.nums.map(n=>`<button class="btn-xs btn-xs-red" onclick="cancelNumber(${n})">Liberar nº${String(n).padStart(pad,'0')}</button>`).join('');
     }
-
     return `<tr>
       <td>${b.name}</td><td>${b.phone}</td>
       <td><div class="num-list">${nh}</div></td>
@@ -1354,7 +1342,6 @@ function renderBuyers(){
       <td><div class="action-btns">${actions}</div></td>
     </tr>`;
   }).join('');
-
   container.innerHTML=`<table class="buyers-table">
     <thead><tr><th>Nome</th><th>Telefone</th><th>Números</th><th>Total</th><th>Status</th><th>Ações</th></tr></thead>
     <tbody>${rows}</tbody></table>`;
@@ -1369,27 +1356,55 @@ function drawWinner(){
   let i=0;
   const iv=setInterval(()=>{
     ne.textContent=String(sold[Math.floor(Math.random()*sold.length)]).padStart(pad,'0');
-    if(++i>26){
-      clearInterval(iv);
+    if(++i>26){clearInterval(iv);
       const w=sold[Math.floor(Math.random()*sold.length)];
       ne.textContent=String(w).padStart(pad,'0');
       nm.textContent='🏆 '+numbers[String(w)].name+' ('+numbers[String(w)].phone+')';
-      showToast('🎉 Ganhador sorteado!');
-    }
+      showToast('🎉 Ganhador sorteado!');}
   },80);
 }
 
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════
 // UTILS
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════
 function fmt(n){return parseFloat(n||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
-function fmtDate(d){try{const[y,m,dy]=d.split('-');return`${dy}/${m}/${y}`;}catch{return d;}}
 let toastTimer;
 function showToast(msg,type='green'){
   const t=document.getElementById('toast');
   t.textContent=msg;t.style.background=type==='red'?'var(--red)':'var(--green)';
   t.classList.add('show');clearTimeout(toastTimer);
   toastTimer=setTimeout(()=>t.classList.remove('show'),3800);
+}
+
+// ════════════════════════════════════════════════════
+// SERVICE WORKER (PWA offline + instalável)
+// ════════════════════════════════════════════════════
+if('serviceWorker' in navigator){
+  const swCode=`
+const CACHE='rifafacil-v1';
+const ASSETS=['./'];
+self.addEventListener('install',e=>{
+  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));
+  self.skipWaiting();
+});
+self.addEventListener('activate',e=>{
+  e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));
+  self.clients.claim();
+});
+self.addEventListener('fetch',e=>{
+  if(e.request.url.includes('script.google.com')||e.request.url.includes('fonts.googleapis')){
+    e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)));
+    return;
+  }
+  e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(res=>{
+    const clone=res.clone();
+    caches.open(CACHE).then(c=>c.put(e.request,clone));
+    return res;
+  })));
+});`;
+  const blob=new Blob([swCode],{type:'application/javascript'});
+  const swUrl=URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl).catch(()=>{});
 }
 </script>
 </body>
