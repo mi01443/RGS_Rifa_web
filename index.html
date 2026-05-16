@@ -317,6 +317,7 @@ select.form-input option{background:var(--surface2);}
 .btn-xs-green{background:rgba(34,197,94,.15);color:var(--green);}
 .btn-xs-red{background:rgba(239,68,68,.12);color:var(--red);}
 .btn-xs-yellow{background:rgba(245,197,66,.15);color:var(--accent);}
+.btn-xs-wa{background:rgba(37,211,102,.15);color:#25d366;}
 
 .draw-section{text-align:center;padding:5px 0;}
 .btn-draw{padding:11px 26px;border-radius:11px;border:2px solid var(--accent2);
@@ -1317,18 +1318,60 @@ async function saveSettings(){
   }catch(e){showToast('Erro: '+e.message,'red');}
 }
 
-async function updateStatus(phone,status){
-  try{
-    await apiPost({action:'updateStatus',phone,status});
-    // Se cancelou, remove do objeto local
-    if(status==='cancelled'){
-      Object.keys(numbers).forEach(k=>{if(numbers[k].phone===phone) delete numbers[k];});
+async function updateStatus(phone, status) {
+  try {
+    await apiPost({ action:'updateStatus', phone, status });
+
+    if (status === 'cancelled') {
+      Object.keys(numbers).forEach(k => { if (numbers[k].phone === phone) delete numbers[k]; });
     } else {
-      Object.keys(numbers).forEach(k=>{if(numbers[k].phone===phone) numbers[k].status=status;});
+      Object.keys(numbers).forEach(k => { if (numbers[k].phone === phone) numbers[k].status = status; });
     }
-    renderBuyers();updateStats();renderHero();
-    showToast('Status atualizado!');
-  }catch(e){showToast('Erro: '+e.message,'red');}
+
+    renderBuyers(); updateStats(); renderHero();
+
+    if (status === 'paid') {
+      // Coleta dados do comprador para WhatsApp
+      const entries = Object.entries(numbers).filter(([,v]) => v.phone === phone && (v.status||'').toLowerCase() === 'paid');
+      if (entries.length > 0) {
+        const buyerName = entries[0][1].name;
+        openWhatsAppConfirmation(phone, buyerName);
+      }
+    } else {
+      showToast('Status atualizado!');
+    }
+  } catch(e) { showToast('Erro: ' + e.message, 'red'); }
+}
+
+function openWhatsAppConfirmation(phone, name) {
+  const pad   = cfg.qty >= 100 ? 3 : 2;
+  const paidNums = Object.entries(numbers)
+    .filter(([,v]) => v.phone === phone && (v.status||'').toLowerCase() === 'paid')
+    .map(([k]) => String(parseInt(k)).padStart(pad,'0'))
+    .sort((a,b) => parseInt(a)-parseInt(b));
+  const total    = paidNums.length * cfg.price;
+  const dataSort = cfg.date ? fmtDate(cfg.date) : 'a definir';
+
+  const msg = [
+    '✅ *Pagamento Confirmado!*',
+    '',
+    'Olá, *' + name + '*! 🎉',
+    '',
+    'Seu pagamento foi confirmado com sucesso!',
+    '',
+    '🏆 *Rifa:* ' + cfg.title,
+    '🎟️ *Número(s):* ' + paidNums.join(', '),
+    '💰 *Valor pago:* R$ ' + fmt(total),
+    '📅 *Data do sorteio:* ' + dataSort,
+    '',
+    'Boa sorte! 🍀',
+    '_RifaFácil_'
+  ].join('\n');
+
+  const fone    = phone.replace(/\D/g,'');
+  const foneInt = fone.startsWith('55') ? fone : '55' + fone;
+  window.open('https://wa.me/' + foneInt + '?text=' + encodeURIComponent(msg), '_blank');
+  showToast('✅ Pago! WhatsApp aberto para confirmação.');
 }
 
 async function cancelNumber(num){
@@ -1351,6 +1394,20 @@ async function confirmReset(){
   }catch(e){showToast('Erro: '+e.message,'red');}
 }
 
+function fmtDateTime(iso) {
+  if (!iso) return '--';
+  try {
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return '--';
+    const dd  = String(d.getDate()).padStart(2,'0');
+    const mm  = String(d.getMonth()+1).padStart(2,'0');
+    const yy  = d.getFullYear();
+    const hh  = String(d.getHours()).padStart(2,'0');
+    const min = String(d.getMinutes()).padStart(2,'0');
+    return dd+'/'+mm+'/'+yy+' '+hh+':'+min;
+  } catch { return '--'; }
+}
+
 function renderBuyers(){
   const container=document.getElementById('buyersContainer');
   const entries=Object.entries(numbers);
@@ -1359,10 +1416,12 @@ function renderBuyers(){
   entries.forEach(([k,info])=>{
     const key = info.phone||'?';
     const st  = (info.status||'').trim().toLowerCase();
-    if(!buyers[key]) buyers[key]={name:info.name,phone:info.phone,status:st,nums:[]};
+    if(!buyers[key]) buyers[key]={name:info.name,phone:info.phone,status:st,nums:[],date:info.date||''};
     buyers[key].nums.push(parseInt(k));
     const pri={paid:4,pending:3,reserved:2};
     if((pri[st]||0)>(pri[buyers[key].status]||0)) buyers[key].status=st;
+    // Guarda a data mais recente
+    if(info.date && (!buyers[key].date || info.date > buyers[key].date)) buyers[key].date=info.date;
   });
   const pad=cfg.qty>=100?3:2;
   const rows=Object.values(buyers).map(b=>{
@@ -1370,30 +1429,37 @@ function renderBuyers(){
       const st=(numbers[String(n)]?.status||'').toLowerCase();
       return `<span class="num-sm${st==='reserved'?' res-num':''}">${String(n).padStart(pad,'0')}</span>`;
     }).join('');
-    const badges={paid:'<span class="status-badge s-paid">✅ Pago</span>',
-      pending:'<span class="status-badge s-pend">⏳ Pendente</span>',
-      reserved:'<span class="status-badge s-res">🔒 Reservado</span>'};
+    const badges={
+      paid:    '<span class="status-badge s-paid">✅ Pago</span>',
+      pending: '<span class="status-badge s-pend">⏳ Pendente</span>',
+      reserved:'<span class="status-badge s-res">🔒 Reservado</span>'
+    };
     const badge=badges[b.status]||badges.pending;
+    const phoneEsc = b.phone.replace(/'/g,"\\'");
+    const nameEsc  = b.name.replace(/'/g,"\\'");
     let actions='';
     if(b.status==='reserved'){
-      actions=`<button class="btn-xs btn-xs-red" onclick="updateStatus('${b.phone}','cancelled')">Cancelar</button>`;
-    }else if(b.status==='pending'){
-      actions=`<button class="btn-xs btn-xs-green" onclick="updateStatus('${b.phone}','paid')">Pago ✓</button>
-               <button class="btn-xs btn-xs-red" onclick="updateStatus('${b.phone}','cancelled')">Cancelar</button>`;
-    }else if(b.status==='paid'){
-      actions=`<button class="btn-xs btn-xs-yellow" onclick="updateStatus('${b.phone}','pending')">Reverter</button>`;
+      actions=`<button class="btn-xs btn-xs-red" onclick="updateStatus('${phoneEsc}','cancelled')">❌ Cancelar</button>`;
+    } else if(b.status==='pending'){
+      actions=`<button class="btn-xs btn-xs-green" onclick="updateStatus('${phoneEsc}','paid')">✅ Confirmar Pago</button>
+               <button class="btn-xs btn-xs-red" onclick="updateStatus('${phoneEsc}','cancelled')">❌ Cancelar</button>`;
+    } else if(b.status==='paid'){
+      actions=`<button class="btn-xs btn-xs-wa" onclick="openWhatsAppConfirmation('${phoneEsc}','${nameEsc}')">💬 WhatsApp</button>
+               <button class="btn-xs btn-xs-yellow" onclick="updateStatus('${phoneEsc}','pending')">↩ Reverter</button>`;
     }
     return `<tr>
-      <td>${b.name}</td><td>${b.phone}</td>
+      <td><b style="font-size:.8rem">${b.name}</b></td>
+      <td>${b.phone}</td>
       <td><div class="num-list">${nh}</div></td>
       <td>R$ ${fmt(b.nums.length*cfg.price)}</td>
+      <td style="white-space:nowrap;font-size:.7rem;color:var(--muted)">${fmtDateTime(b.date)}</td>
       <td>${badge}</td>
       <td><div class="action-btns">${actions}</div></td>
     </tr>`;
   }).join('');
-  container.innerHTML=`<table class="buyers-table">
-    <thead><tr><th>Nome</th><th>Telefone</th><th>Números</th><th>Total</th><th>Status</th><th>Ações</th></tr></thead>
-    <tbody>${rows}</tbody></table>`;
+  container.innerHTML=`<div style="overflow-x:auto"><table class="buyers-table">
+    <thead><tr><th>Nome</th><th>Telefone</th><th>Números</th><th>Total</th><th>Data/Hora</th><th>Status</th><th>Ações</th></tr></thead>
+    <tbody>${rows}</tbody></table></div>`;
 }
 
 function drawWinner(){
