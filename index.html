@@ -38,7 +38,7 @@
 <!-- Apple touch icons inline -->
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='36' fill='%230a0a0f'/><text y='125' x='90' text-anchor='middle' font-size='100' font-family='serif'>🎟️</text></svg>">
 
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#0a0a0f;--surface:#12121a;--surface2:#1a1a26;--border:#2a2a3d;
@@ -135,7 +135,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:12px 1
   justify-content:center;font-size:2.5rem;overflow:hidden;}
 .raffle-img-wrap img{width:100%;height:100%;object-fit:cover;display:none;}
 .raffle-meta{flex:1;min-width:175px;}
-.raffle-meta h1{font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;margin-bottom:4px;}
+.raffle-meta h1{font-family:'Playfair Display',Georgia,serif;font-weight:800;font-size:1.45rem;margin-bottom:4px;letter-spacing:-.01em;line-height:1.2;}
 .desc{color:var(--muted);font-size:.86rem;margin-bottom:9px;line-height:1.5;}
 .badges{display:flex;flex-wrap:wrap;gap:5px;}
 .badge{padding:4px 10px;border-radius:20px;font-size:.72rem;font-weight:500;}
@@ -1015,119 +1015,134 @@ function handleExpired(){
 }
 
 // ════════════════════════════════════════════════════
-// CONTACT MODAL — reserva ao abrir
+// FLUXO DE COMPRA
+// PASSO 1: Abre formulário (só exibe — ainda não reserva)
+// PASSO 2: proceedToPix → reserva com nome/tel reais → vai pro Pix
+// PASSO 3: confirmPayment → muda status reserved→pending
 // ════════════════════════════════════════════════════
-async function openContactModal() {
-  if(!selected.length) return;
-  const btn=document.getElementById('btnBuy');
-  btn.textContent='⏳ Reservando...'; btn.disabled=true;
+
+function openContactModal() {
+  if (!selected.length) return;
+  const pad = cfg.qty >= 100 ? 3 : 2;
+  // Mostra os números selecionados
+  document.getElementById('numsPreview').innerHTML =
+    [...selected].sort((a,b) => parseInt(a)-parseInt(b))
+      .map(k => `<span class="num-chip">${String(k).padStart(pad,'0')}</span>`).join('');
+  document.getElementById('modalTotal').textContent = 'R$ ' + fmt(selected.length * cfg.price);
+  document.getElementById('buyerName').value  = '';
+  document.getElementById('buyerPhone').value = '';
+  // Esconde timer (ainda não reservou)
+  document.getElementById('resTimerContact').style.display = 'none';
+  openModal('modalContact');
+}
+
+// PASSO 2 — chamado ao clicar "Ir para Pagamento"
+// Aqui sim faz a reserva com nome e telefone reais
+async function proceedToPix() {
+  const nome  = document.getElementById('buyerName').value.trim();
+  const fone  = document.getElementById('buyerPhone').value.trim();
+  if (!nome || !fone) { showToast('Preencha nome e telefone!', 'red'); return; }
+
+  buyerName  = nome;
+  buyerPhone = fone;
+
+  const btn = document.querySelector('#modalContact .btn-buy');
+  if (btn) { btn.textContent = '⏳ Reservando...'; btn.disabled = true; }
+
   try {
-    const numsInt=selected.map(k=>parseInt(k));
-    const result=await apiPost({action:'reserveNumbers',numbers:numsInt,name:'Reservado',phone:'pendente'});
-    if(result.conflicts&&result.conflicts.length>0){
-      const pad=cfg.qty>=100?3:2;
-      showToast('❌ Número(s) '+result.conflicts.map(n=>String(n).padStart(pad,'0')).join(', ')+' indisponível!','red');
+    const numsInt = selected.map(k => parseInt(k, 10));
+    // Envia nome e telefone REAIS para o Apps Script gravar no Sheets
+    const result = await apiPost({
+      action: 'reserveNumbers',
+      numbers: numsInt,
+      name:  nome,
+      phone: fone,
+    });
+
+    if (result.conflicts && result.conflicts.length > 0) {
+      const pad = cfg.qty >= 100 ? 3 : 2;
+      showToast('❌ Número(s) ' + result.conflicts.map(n => String(n).padStart(pad,'0')).join(', ') + ' indisponível!', 'red');
       await syncNow();
-      btn.textContent='Comprar 🛒'; btn.disabled=selected.length===0;
+      if (btn) { btn.textContent = 'Ir para Pagamento →'; btn.disabled = false; }
       return;
     }
-    myReservedNums=[...selected];
-    if(result.expiresAt) startReservationTimer(result.expiresAt);
-    myReservedNums.forEach(k=>{ numbers[k]={name:'Reservado',phone:'pendente',status:'reserved',date:''}; });
+
+    // Reserva feita com sucesso
+    myReservedNums = [...selected];
+    if (result.expiresAt) startReservationTimer(result.expiresAt);
+
+    // Atualiza estado local com dados reais
+    myReservedNums.forEach(k => {
+      numbers[k] = { name: nome, phone: fone, status: 'reserved', date: new Date().toISOString(), reservedUntil: result.expiresAt || '' };
+    });
     refreshGridClasses();
-    const pad=cfg.qty>=100?3:2;
-    document.getElementById('numsPreview').innerHTML=
-      [...selected].sort((a,b)=>parseInt(a)-parseInt(b))
-        .map(k=>`<span class="num-chip">${String(k).padStart(pad,'0')}</span>`).join('');
-    document.getElementById('modalTotal').textContent='R$ '+fmt(selected.length*cfg.price);
-    document.getElementById('buyerName').value='';
-    document.getElementById('buyerPhone').value='';
-    openModal('modalContact');
-  } catch(e){showToast('Erro ao reservar: '+e.message,'red');}
-  btn.textContent='Comprar 🛒'; btn.disabled=false;
+
+    // Mostra timer no modal de contato
+    document.getElementById('resTimerContact').style.display = 'flex';
+
+    closeModal('modalContact');
+    openPixModal();
+
+  } catch(e) {
+    showToast('Erro ao reservar: ' + e.message, 'red');
+    if (btn) { btn.textContent = 'Ir para Pagamento →'; btn.disabled = false; }
+  }
+  if (btn) { btn.textContent = 'Ir para Pagamento →'; btn.disabled = false; }
 }
 
 async function cancelReservationAndClose() {
-  if(myReservedNums.length>0){
-    try{ await apiPost({action:'cancelReservation',numbers:myReservedNums.map(k=>parseInt(k))}); }catch{}
-    myReservedNums.forEach(k=>{delete numbers[k];});
-    myReservedNums=[];selected=[];stopReservationTimer();
-    refreshGridClasses();renderHero();updateSummary();updateStats();
+  if (myReservedNums.length > 0) {
+    try { await apiPost({ action: 'cancelReservation', numbers: myReservedNums.map(k => parseInt(k, 10)) }); } catch {}
+    myReservedNums.forEach(k => { delete numbers[k]; });
+    myReservedNums = []; selected = []; stopReservationTimer();
+    refreshGridClasses(); renderHero(); updateSummary(); updateStats();
   }
-  closeModal('modalContact');closeModal('modalPix');
-}
-
-function proceedToPix() {
-  const name =document.getElementById('buyerName').value.trim();
-  const phone=document.getElementById('buyerPhone').value.trim();
-  if(!name||!phone){showToast('Preencha nome e telefone!','red');return;}
-  buyerName=name;buyerPhone=phone;
-  closeModal('modalContact');openPixModal();
+  closeModal('modalContact'); closeModal('modalPix');
 }
 
 function openPixModal() {
-  const total=selected.length*cfg.price;
-  const pad=cfg.qty>=100?3:2;
-  document.getElementById('pixNumsLabel').textContent=
-    'Números: '+[...selected].sort((a,b)=>parseInt(a)-parseInt(b)).map(k=>String(k).padStart(pad,'0')).join(', ');
-  document.getElementById('pixAmountLabel').textContent='R$ '+fmt(total);
-  document.getElementById('pixKeyDisplay').textContent=(pixCfg.type||'PIX')+': '+(pixCfg.key||'Não configurado');
-  generateQR(pixCfg.key||'',total);
+  const total = myReservedNums.length * cfg.price;
+  const pad   = cfg.qty >= 100 ? 3 : 2;
+  document.getElementById('pixNumsLabel').textContent =
+    'Números: ' + [...myReservedNums].sort((a,b) => parseInt(a)-parseInt(b)).map(k => String(k).padStart(pad,'0')).join(', ');
+  document.getElementById('pixAmountLabel').textContent = 'R$ ' + fmt(total);
+  document.getElementById('pixKeyDisplay').textContent  =
+    (pixCfg.type || 'PIX') + ': ' + (pixCfg.key || 'Não configurado');
+  generateQR(pixCfg.key || '', total);
   openModal('modalPix');
 }
 
+// PASSO 3 — confirma pagamento, muda reserved→pending
 async function confirmPayment() {
-  const btn=document.getElementById('btnConfirm');
-  btn.textContent='⏳ Confirmando...'; btn.disabled=true;
+  const btn = document.getElementById('btnConfirm');
+  btn.textContent = '⏳ Confirmando...'; btn.disabled = true;
 
-  // Garante que temos nome e telefone
-  const nomeFinal  = (buyerName  || '').trim();
-  const foneFinal  = (buyerPhone || '').trim();
-  if (!nomeFinal || !foneFinal) {
-    showToast('Nome ou telefone não preenchido!', 'red');
-    btn.textContent='✅ Confirmar Pagamento'; btn.disabled=false;
+  if (!myReservedNums.length) {
+    showToast('Nenhuma reserva ativa.', 'red');
+    btn.textContent = '✅ Confirmar Pagamento'; btn.disabled = false;
     return;
   }
 
   try {
-    const numsInt = myReservedNums.map(k => parseInt(k));
-    // Apps Script irá: deletar linhas reservadas → inserir novas com status "pending" e dados reais
-    await apiPost({
-      action:  'confirmNumbers',
-      numbers: numsInt,
-      name:    nomeFinal,
-      phone:   foneFinal,
-    });
+    const numsInt = myReservedNums.map(k => parseInt(k, 10));
+    await apiPost({ action: 'confirmNumbers', numbers: numsInt });
 
     const count = myReservedNums.length;
 
-    // Atualiza estado local imediatamente com dados corretos
+    // Atualiza estado local: mantém nome/fone reais, muda status
     myReservedNums.forEach(k => {
-      numbers[k] = {
-        name:   nomeFinal,
-        phone:  foneFinal,
-        status: 'pending',
-        date:   new Date().toISOString(),
-        reservedUntil: '',
-      };
+      if (numbers[k]) numbers[k].status = 'pending';
     });
 
-    myReservedNums = [];
-    selected = [];
-    stopReservationTimer();
+    myReservedNums = []; selected = []; stopReservationTimer();
     closeModal('modalPix');
-    refreshGridClasses();
-    renderHero();
-    updateSummary();
-    updateStats();
+    refreshGridClasses(); renderHero(); updateSummary(); updateStats();
     if (adminAuthed) renderBuyers();
     showToast(`✅ ${count} número(s) confirmado(s)! Aguardando confirmação do pagamento.`);
-    // Sync para garantir consistência com o Sheets
     setTimeout(() => syncNow(false), 2000);
-  } catch(e) {
-    showToast('Erro ao confirmar: ' + e.message, 'red');
-  }
-  btn.textContent='✅ Confirmar Pagamento'; btn.disabled=false;
+
+  } catch(e) { showToast('Erro ao confirmar: ' + e.message, 'red'); }
+  btn.textContent = '✅ Confirmar Pagamento'; btn.disabled = false;
 }
 
 function openModal(id){document.getElementById(id).classList.add('open');}
