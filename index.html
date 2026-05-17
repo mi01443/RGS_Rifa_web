@@ -736,21 +736,60 @@ function dismissInstall() {
 // ════════════════════════════════════════════════════
 // API
 // ════════════════════════════════════════════════════
+// Todas as chamadas usam GET para evitar o problema de redirect 302 do Apps Script
+// O body do POST é perdido no redirect — GET com params é mais confiável
 async function apiFetch(params) {
   const res  = await fetch(API_URL + '?' + params + '&t=' + Date.now(), { redirect:'follow' });
-  const json = await res.json();
-  if (!json.ok) throw new Error(json.error || 'Erro na API');
-  return json.data;
+  const text = await res.text();
+  try {
+    const json = JSON.parse(text);
+    if (!json.ok) throw new Error(json.error || 'Erro na API');
+    return json.data;
+  } catch(parseErr) {
+    throw new Error('Resposta inválida do servidor. Verifique a URL e permissões.');
+  }
 }
+
+// apiPost: tenta GET com payload primeiro (evita redirect 302 que perde o body)
+// Para payloads grandes (ex: upload de imagem), usa POST com text/plain
 async function apiPost(body) {
+  const bodyStr = JSON.stringify(body);
+
+  // Upload de imagem é grande demais para URL — usa POST direto
+  if (body.action === 'uploadImage') {
+    return apiPostRaw(bodyStr);
+  }
+
+  // Para todas as outras ações, usa GET com payload (confiável no Apps Script)
+  const payload = encodeURIComponent(bodyStr);
+  const url     = API_URL + '?payload=' + payload + '&t=' + Date.now();
+
+  const res  = await fetch(url, { redirect:'follow' });
+  const text = await res.text();
+  try {
+    const json = JSON.parse(text);
+    if (!json.ok) throw new Error(json.error || 'Erro na API');
+    return json.data;
+  } catch(parseErr) {
+    throw new Error('Resposta inválida. Verifique a URL e permissões do Web App.');
+  }
+}
+
+// Fallback POST direto (para payloads grandes como imagens)
+async function apiPostRaw(bodyStr) {
   const res  = await fetch(API_URL, {
-    method:'POST', redirect:'follow',
-    headers:{'Content-Type':'text/plain'},
-    body: JSON.stringify(body),
+    method: 'POST', redirect: 'follow',
+    headers: { 'Content-Type': 'text/plain' },
+    body: bodyStr,
   });
-  const json = await res.json();
-  if (!json.ok) throw new Error(json.error || 'Erro na API');
-  return json.data;
+  const text = await res.text();
+  try {
+    const json = JSON.parse(text);
+    if (!json.ok) throw new Error(json.error || 'Erro na API');
+    return json.data;
+  } catch(parseErr) {
+    throw new Error('Resposta inválida do servidor.');
+  }
 }
 function normalizeNumbers(raw) {
   if (!raw || typeof raw !== 'object') return {};
