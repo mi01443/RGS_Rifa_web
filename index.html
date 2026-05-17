@@ -7,355 +7,257 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="RifaFácil">
-<meta name="description" content="Sistema de gerenciamento de rifas online">
 <title>RifaFácil</title>
-
-<!-- PWA Manifest inline via blob (funciona sem servidor) -->
 <script>
 (function(){
-  const manifest = {
-    name: "RifaFácil",
-    short_name: "RifaFácil",
-    description: "Sistema de gerenciamento de rifas online",
-    start_url: "./",
-    display: "standalone",
-    background_color: "#0a0a0f",
-    theme_color: "#f5c542",
-    orientation: "portrait-primary",
-    icons: [
-      { src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='40' fill='%230a0a0f'/><text y='130' x='96' text-anchor='middle' font-size='110' font-family='serif'>🎟️</text></svg>", sizes: "192x192", type: "image/svg+xml" },
-      { src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%230a0a0f'/><text y='360' x='256' text-anchor='middle' font-size='300' font-family='serif'>🎟️</text></svg>", sizes: "512x512", type: "image/svg+xml" }
-    ]
-  };
-  const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
-  const url  = URL.createObjectURL(blob);
-  const link = document.createElement('link');
-  link.rel='manifest'; link.href=url;
-  document.head.appendChild(link);
+  const m={name:"RifaFácil",short_name:"RifaFácil",start_url:"./",display:"standalone",
+    background_color:"#0a0a0f",theme_color:"#f5c542",
+    icons:[{src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='40' fill='%230a0a0f'/><text y='130' x='96' text-anchor='middle' font-size='110'>🎟️</text></svg>",sizes:"192x192",type:"image/svg+xml"}]};
+  const b=new Blob([JSON.stringify(m)],{type:'application/json'});
+  const l=document.createElement('link');l.rel='manifest';l.href=URL.createObjectURL(b);
+  document.head.appendChild(l);
 })();
 </script>
-
-<!-- Apple touch icons inline -->
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='36' fill='%230a0a0f'/><text y='125' x='90' text-anchor='middle' font-size='100' font-family='serif'>🎟️</text></svg>">
-
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='36' fill='%230a0a0f'/><text y='125' x='90' text-anchor='middle' font-size='100'>🎟️</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
 <style>
-:root{
-  --bg:#0a0a0f;--surface:#12121a;--surface2:#1a1a26;--border:#2a2a3d;
-  --accent:#f5c542;--accent2:#ff6b35;--green:#22c55e;--red:#ef4444;
-  --blue:#3b82f6;--purple:#a855f7;
-  --text:#f0f0f5;--muted:#7878a0;--radius:14px;
-}
+:root{--bg:#0a0a0f;--sf:#12121a;--sf2:#1a1a26;--bd:#2a2a3d;--ac:#f5c542;--ac2:#ff6b35;--gn:#22c55e;--rd:#ef4444;--bl:#3b82f6;--tx:#f0f0f5;--mu:#7878a0;--r:14px;}
 *{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);
-  min-height:100vh;overflow-x:hidden;
-  padding-top:env(safe-area-inset-top);
-  padding-bottom:env(safe-area-inset-bottom);}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden;padding-top:env(safe-area-inset-top);}
 
-/* ── FIRST RUN ── */
-#firstRunScreen{position:fixed;inset:0;background:var(--bg);z-index:9999;
-  display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto;}
-.firstrun-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;
-  max-width:420px;width:100%;padding:32px;text-align:center;}
-.firstrun-icon{font-size:3rem;margin-bottom:12px;}
-.firstrun-card h1{font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;
-  color:var(--accent);margin-bottom:8px;}
-.firstrun-card p{color:var(--muted);font-size:.85rem;line-height:1.65;margin-bottom:20px;}
-.fr-input{width:100%;padding:11px 14px;border-radius:10px;background:var(--surface2);
-  border:1.5px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;
-  font-size:.88rem;outline:none;transition:border-color .2s;margin-bottom:10px;}
-.fr-input:focus{border-color:var(--accent);}
-.fr-input::placeholder{color:var(--muted);}
-.btn-primary{width:100%;padding:13px;border-radius:12px;border:none;
-  background:linear-gradient(135deg,var(--accent),#f0a500);color:#000;
-  font-family:'Syne',sans-serif;font-weight:800;font-size:.95rem;cursor:pointer;transition:all .2s;}
-.btn-primary:hover{transform:scale(1.02);}
-.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none;}
-.fr-msg{border-radius:8px;padding:10px 13px;font-size:.8rem;margin-top:10px;
-  display:none;line-height:1.5;white-space:pre-line;text-align:left;}
-.fr-msg.err{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:var(--red);}
-.fr-msg.ok{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:var(--green);}
-.fr-hint{font-size:.74rem;color:var(--muted);margin-top:14px;line-height:1.7;text-align:left;}
-.fr-hint a{color:var(--accent);}
+/* FIRST RUN */
+#frScreen{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto;}
+.frCard{background:var(--sf);border:1px solid var(--bd);border-radius:20px;max-width:440px;width:100%;padding:30px;text-align:center;}
+.frCard h1{font-family:'Syne',sans-serif;font-weight:800;font-size:1.25rem;color:var(--ac);margin-bottom:6px;}
+.frCard p{color:var(--mu);font-size:.83rem;line-height:1.7;margin-bottom:18px;}
+.frInput{width:100%;padding:11px 14px;border-radius:10px;background:var(--sf2);border:1.5px solid var(--bd);color:var(--tx);font-family:'DM Sans',sans-serif;font-size:.87rem;outline:none;margin-bottom:10px;transition:border-color .2s;}
+.frInput:focus{border-color:var(--ac);}
+.frInput::placeholder{color:var(--mu);}
+.btnPrimary{width:100%;padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--ac),#f0a500);color:#000;font-family:'Syne',sans-serif;font-weight:800;font-size:.95rem;cursor:pointer;transition:all .2s;}
+.btnPrimary:hover{transform:scale(1.02);}
+.btnPrimary:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.frMsg{border-radius:8px;padding:10px 13px;font-size:.79rem;margin-top:10px;display:none;line-height:1.6;text-align:left;white-space:pre-wrap;}
+.frMsg.err{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:var(--rd);}
+.frMsg.ok{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:var(--gn);}
+.frHint{font-size:.73rem;color:var(--mu);margin-top:14px;line-height:1.75;text-align:left;}
+.frHint a{color:var(--ac);}
+.frHint code{background:rgba(245,197,66,.12);color:var(--ac);padding:1px 5px;border-radius:3px;font-size:.72rem;}
 
-/* ── INSTALL BANNER ── */
-#installBanner{display:none;background:linear-gradient(135deg,rgba(245,197,66,.15),rgba(168,85,247,.1));
-  border-bottom:1px solid rgba(245,197,66,.3);padding:10px 17px;
-  align-items:center;gap:10px;justify-content:space-between;}
-.install-text{font-size:.78rem;color:var(--text);}
-.install-text b{color:var(--accent);}
-.btn-install{padding:7px 14px;border-radius:8px;border:none;background:var(--accent);color:#000;
-  font-family:'Syne',sans-serif;font-weight:700;font-size:.76rem;cursor:pointer;white-space:nowrap;}
-.btn-dismiss{padding:5px 9px;border-radius:7px;border:1px solid var(--border);
-  background:transparent;color:var(--muted);font-size:.72rem;cursor:pointer;}
-
-/* ── LOADING ── */
-#loadingScreen{position:fixed;inset:0;background:var(--bg);z-index:8888;
-  display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;}
-.loader{width:42px;height:42px;border:3px solid var(--border);
-  border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;}
+/* LOADING */
+#ldScreen{position:fixed;inset:0;background:var(--bg);z-index:8888;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;}
+.loader{width:42px;height:42px;border:3px solid var(--bd);border-top-color:var(--ac);border-radius:50%;animation:spin 1s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg)}}
-.loader-text{font-family:'Syne',sans-serif;color:var(--muted);font-size:.87rem;}
+.ldTxt{font-family:'Syne',sans-serif;color:var(--mu);font-size:.87rem;}
 
-/* ── APP ── */
+/* APP */
 #app{display:none;}
-nav{display:flex;align-items:center;justify-content:space-between;padding:12px 17px;
-  background:rgba(10,10,15,.97);backdrop-filter:blur(12px);
-  border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;}
-.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.18rem;color:var(--accent);}
-.logo span{color:var(--text);}
-.nav-right{display:flex;align-items:center;gap:4px;}
-.sync-wrap{display:flex;align-items:center;gap:5px;margin-right:4px;cursor:pointer;
-  padding:4px 8px;border-radius:7px;transition:background .2s;}
-.sync-wrap:hover{background:var(--surface2);}
-.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--green);}
-.sync-dot.syncing{background:var(--accent);animation:blink 1s infinite;}
-.sync-dot.err{background:var(--red);}
+nav{display:flex;align-items:center;justify-content:space-between;padding:12px 17px;background:rgba(10,10,15,.97);backdrop-filter:blur(12px);border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:100;}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.18rem;color:var(--ac);}
+.logo span{color:var(--tx);}
+.navR{display:flex;align-items:center;gap:4px;}
+.syncWrap{display:flex;align-items:center;gap:5px;margin-right:4px;cursor:pointer;padding:4px 8px;border-radius:7px;transition:background .2s;}
+.syncWrap:hover{background:var(--sf2);}
+.syncDot{width:7px;height:7px;border-radius:50%;background:var(--gn);}
+.syncDot.spin{background:var(--ac);animation:blink 1s infinite;}
+.syncDot.err{background:var(--rd);}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
-.sync-label{font-size:.68rem;color:var(--muted);}
-.nav-tab{padding:7px 11px;border-radius:8px;border:none;cursor:pointer;
-  font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:500;
-  background:transparent;color:var(--muted);transition:all .2s;}
-.nav-tab.active,.nav-tab:hover{background:var(--surface2);color:var(--text);}
-.nav-tab.active{color:var(--accent);}
+.syncLbl{font-size:.68rem;color:var(--mu);}
+.navTab{padding:7px 11px;border-radius:8px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:500;background:transparent;color:var(--mu);transition:all .2s;}
+.navTab.active,.navTab:hover{background:var(--sf2);color:var(--tx);}
+.navTab.active{color:var(--ac);}
 
 .page{display:none;animation:fadeIn .3s ease;}
 .page.active{display:block;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
 
 /* HERO */
-.raffle-hero{background:linear-gradient(135deg,var(--surface),#180e1f);
-  border-bottom:1px solid var(--border);padding:20px 17px;position:relative;overflow:hidden;}
-.raffle-hero::before{content:'';position:absolute;top:-50px;right:-50px;width:200px;height:200px;
-  background:radial-gradient(circle,rgba(245,197,66,.09),transparent 70%);border-radius:50%;}
-.raffle-info{display:flex;gap:15px;align-items:flex-start;flex-wrap:wrap;}
-.raffle-img-wrap{width:108px;height:108px;border-radius:12px;border:2px solid var(--border);
-  flex-shrink:0;background:var(--surface2);display:flex;align-items:center;
-  justify-content:center;font-size:2.5rem;overflow:hidden;}
-.raffle-img-wrap img{width:100%;height:100%;object-fit:cover;display:none;}
-.raffle-meta{flex:1;min-width:175px;}
-.raffle-meta h1{font-family:'Playfair Display',Georgia,serif;font-weight:800;font-size:1.45rem;margin-bottom:4px;letter-spacing:-.01em;line-height:1.2;}
-.desc{color:var(--muted);font-size:.86rem;margin-bottom:9px;line-height:1.5;}
+.hero{background:linear-gradient(135deg,var(--sf),#180e1f);border-bottom:1px solid var(--bd);padding:20px 17px;position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;top:-50px;right:-50px;width:200px;height:200px;background:radial-gradient(circle,rgba(245,197,66,.09),transparent 70%);border-radius:50%;}
+.heroInfo{display:flex;gap:15px;align-items:flex-start;flex-wrap:wrap;}
+.heroImgWrap{width:108px;height:108px;border-radius:12px;border:2px solid var(--bd);flex-shrink:0;background:var(--sf2);display:flex;align-items:center;justify-content:center;font-size:2.5rem;overflow:hidden;}
+.heroImgWrap img{width:100%;height:100%;object-fit:cover;display:none;}
+.heroMeta{flex:1;min-width:175px;}
+.heroMeta h1{font-family:'Playfair Display',Georgia,serif;font-weight:800;font-size:1.4rem;margin-bottom:4px;letter-spacing:-.01em;line-height:1.2;}
+.heroDesc{color:var(--mu);font-size:.86rem;margin-bottom:9px;line-height:1.5;}
 .badges{display:flex;flex-wrap:wrap;gap:5px;}
 .badge{padding:4px 10px;border-radius:20px;font-size:.72rem;font-weight:500;}
-.by{background:rgba(245,197,66,.15);color:var(--accent);border:1px solid rgba(245,197,66,.3);}
-.bg{background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.25);}
-.br{background:rgba(255,107,53,.12);color:var(--accent2);border:1px solid rgba(255,107,53,.25);}
-.progress-wrap{margin-top:9px;}
-.progress-label{display:flex;justify-content:space-between;font-size:.69rem;color:var(--muted);margin-bottom:3px;}
-.progress-bar{height:5px;background:var(--surface2);border-radius:3px;overflow:hidden;}
-.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));
-  border-radius:3px;transition:width .7s ease;}
+.by{background:rgba(245,197,66,.15);color:var(--ac);border:1px solid rgba(245,197,66,.3);}
+.bg{background:rgba(34,197,94,.12);color:var(--gn);border:1px solid rgba(34,197,94,.25);}
+.br{background:rgba(255,107,53,.12);color:var(--ac2);border:1px solid rgba(255,107,53,.25);}
+.progWrap{margin-top:9px;}
+.progLabel{display:flex;justify-content:space-between;font-size:.69rem;color:var(--mu);margin-bottom:3px;}
+.progBar{height:5px;background:var(--sf2);border-radius:3px;overflow:hidden;}
+.progFill{height:100%;background:linear-gradient(90deg,var(--ac),var(--ac2));border-radius:3px;transition:width .7s ease;}
 
-.summary-bar{background:var(--surface);border-bottom:1px solid var(--border);
-  padding:10px 17px;display:flex;align-items:center;justify-content:space-between;
-  flex-wrap:wrap;gap:7px;position:sticky;top:49px;z-index:90;}
-.summary-left{display:flex;align-items:center;gap:11px;flex-wrap:wrap;}
-.summary-item{font-size:.77rem;color:var(--muted);}
-.summary-item b{color:var(--text);font-size:.89rem;}
-.total-price{font-family:'Syne',sans-serif;font-weight:700;font-size:.98rem;color:var(--accent);}
-.btn-buy{background:linear-gradient(135deg,var(--accent),#f0a500);color:#000;border:none;
-  padding:9px 19px;border-radius:10px;font-family:'Syne',sans-serif;font-weight:700;
-  font-size:.85rem;cursor:pointer;transition:all .2s;white-space:nowrap;}
-.btn-buy:hover{transform:scale(1.04);box-shadow:0 4px 16px rgba(245,197,66,.35);}
-.btn-buy:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+/* SUMMARY BAR */
+.sumBar{background:var(--sf);border-bottom:1px solid var(--bd);padding:10px 17px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:7px;position:sticky;top:49px;z-index:90;}
+.sumL{display:flex;align-items:center;gap:11px;flex-wrap:wrap;}
+.sumItem{font-size:.77rem;color:var(--mu);}
+.sumItem b{color:var(--tx);font-size:.89rem;}
+.totPrice{font-family:'Syne',sans-serif;font-weight:700;font-size:.98rem;color:var(--ac);}
+.btnBuy{background:linear-gradient(135deg,var(--ac),#f0a500);color:#000;border:none;padding:9px 19px;border-radius:10px;font-family:'Syne',sans-serif;font-weight:700;font-size:.85rem;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.btnBuy:hover{transform:scale(1.04);box-shadow:0 4px 16px rgba(245,197,66,.35);}
+.btnBuy:disabled{opacity:.4;cursor:not-allowed;transform:none;}
 
+/* LEGEND */
 .legend{display:flex;gap:10px;padding:11px 17px 7px;flex-wrap:wrap;}
-.legend-item{display:flex;align-items:center;gap:5px;font-size:.72rem;color:var(--muted);}
+.li{display:flex;align-items:center;gap:5px;font-size:.72rem;color:var(--mu);}
 .ld{width:10px;height:10px;border-radius:3px;}
-.ld-free{background:var(--surface2);border:1px solid var(--border);}
-.ld-sel{background:var(--accent);}
+.ld-free{background:var(--sf2);border:1px solid var(--bd);}
+.ld-sel{background:var(--ac);}
 .ld-res{background:rgba(59,130,246,.22);border:1px solid rgba(59,130,246,.4);}
 .ld-sold{background:rgba(239,68,68,.22);border:1px solid rgba(239,68,68,.3);}
 
-.grid-section{padding:7px 17px 30px;}
-.grid-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.86rem;
-  margin-bottom:10px;color:var(--muted);}
-.grid-title span{color:var(--text);}
-.numbers-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:6px;}
-.num-btn{aspect-ratio:1;border-radius:10px;border:1.5px solid var(--border);
-  background:var(--surface2);color:var(--text);font-family:'Syne',sans-serif;
-  font-weight:600;font-size:.78rem;cursor:pointer;transition:all .14s;
-  display:flex;align-items:center;justify-content:center;position:relative;user-select:none;}
-.num-btn:hover:not(.sold):not(.selected):not(.reserved){border-color:var(--accent);
-  color:var(--accent);background:rgba(245,197,66,.07);transform:scale(1.07);}
-.num-btn.selected{background:linear-gradient(135deg,var(--accent),#f0a500);
-  border-color:transparent;color:#000;transform:scale(1.05);
-  box-shadow:0 3px 12px rgba(245,197,66,.4);}
-.num-btn.sold{background:rgba(239,68,68,.05);border-color:rgba(239,68,68,.2);
-  color:rgba(239,68,68,.65);cursor:not-allowed;opacity:.75;}
-.num-btn.sold::after{content:'✕';position:absolute;top:1px;right:3px;font-size:.42rem;opacity:.6;}
-.num-btn.reserved{background:rgba(59,130,246,.08);border-color:rgba(59,130,246,.35);
-  color:rgba(59,130,246,.8);cursor:not-allowed;opacity:.8;}
-.num-btn.reserved::after{content:'🔒';position:absolute;top:0;right:2px;font-size:.38rem;}
+/* GRID */
+.gridSec{padding:7px 17px 30px;}
+.gridTitle{font-family:'Syne',sans-serif;font-weight:700;font-size:.86rem;margin-bottom:10px;color:var(--mu);}
+.gridTitle span{color:var(--tx);}
+.numGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:6px;}
+.nBtn{aspect-ratio:1;border-radius:10px;border:1.5px solid var(--bd);background:var(--sf2);color:var(--tx);font-family:'Syne',sans-serif;font-weight:600;font-size:.78rem;cursor:pointer;transition:all .14s;display:flex;align-items:center;justify-content:center;position:relative;user-select:none;}
+.nBtn:hover:not(.sold):not(.selected):not(.reserved){border-color:var(--ac);color:var(--ac);background:rgba(245,197,66,.07);transform:scale(1.07);}
+.nBtn.selected{background:linear-gradient(135deg,var(--ac),#f0a500);border-color:transparent;color:#000;transform:scale(1.05);box-shadow:0 3px 12px rgba(245,197,66,.4);}
+.nBtn.sold{background:rgba(239,68,68,.05);border-color:rgba(239,68,68,.2);color:rgba(239,68,68,.65);cursor:not-allowed;opacity:.75;}
+.nBtn.sold::after{content:'✕';position:absolute;top:1px;right:3px;font-size:.42rem;opacity:.6;}
+.nBtn.reserved{background:rgba(59,130,246,.08);border-color:rgba(59,130,246,.35);color:rgba(59,130,246,.8);cursor:not-allowed;opacity:.8;}
+.nBtn.reserved::after{content:'🔒';position:absolute;top:0;right:2px;font-size:.38rem;}
 
 /* MODALS */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);
-  backdrop-filter:blur(7px);z-index:500;align-items:center;justify-content:center;padding:16px;}
-.modal-overlay.open{display:flex;animation:fadeIn .22s ease;}
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:20px;
-  max-width:415px;width:100%;max-height:92vh;overflow-y:auto;}
-.modal-header{padding:17px 19px 12px;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;}
-.modal-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.97rem;}
-.modal-close{width:27px;height:27px;border-radius:6px;border:1px solid var(--border);
-  background:transparent;color:var(--muted);cursor:pointer;
-  display:flex;align-items:center;justify-content:center;transition:all .2s;font-size:.82rem;}
-.modal-close:hover{background:var(--surface2);color:var(--text);}
-.modal-body{padding:17px 19px;}
+.mOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);backdrop-filter:blur(7px);z-index:500;align-items:center;justify-content:center;padding:16px;}
+.mOverlay.open{display:flex;animation:fadeIn .22s ease;}
+.modal{background:var(--sf);border:1px solid var(--bd);border-radius:20px;max-width:415px;width:100%;max-height:92vh;overflow-y:auto;}
+.mHead{padding:17px 19px 12px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;}
+.mTitle{font-family:'Syne',sans-serif;font-weight:700;font-size:.97rem;}
+.mClose{width:27px;height:27px;border-radius:6px;border:1px solid var(--bd);background:transparent;color:var(--mu);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;font-size:.82rem;}
+.mClose:hover{background:var(--sf2);color:var(--tx);}
+.mBody{padding:17px 19px;}
 
-.reservation-timer{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3);
-  border-radius:10px;padding:10px 14px;margin-bottom:13px;
-  display:flex;align-items:center;gap:9px;}
-.timer-icon{font-size:1.1rem;}
-.timer-text{font-size:.76rem;color:var(--blue);flex:1;line-height:1.4;}
-.timer-countdown{font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;
-  color:var(--accent);white-space:nowrap;}
-.timer-countdown.urgent{color:var(--red);animation:blink .7s infinite;}
+/* TIMER */
+.resTimer{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3);border-radius:10px;padding:10px 14px;margin-bottom:13px;display:flex;align-items:center;gap:9px;}
+.timerTxt{font-size:.76rem;color:var(--bl);flex:1;line-height:1.4;}
+.timerCnt{font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;color:var(--ac);white-space:nowrap;}
+.timerCnt.urgent{color:var(--rd);animation:blink .7s infinite;}
 
-.pix-section{text-align:center;}
-.pix-qr{width:174px;height:174px;margin:0 auto 12px;background:#fff;border-radius:12px;overflow:hidden;}
-.pix-qr canvas{width:100%;height:100%;}
-.pix-key-box{background:var(--surface2);border:1px solid var(--border);border-radius:10px;
-  padding:11px;margin:11px 0;display:flex;align-items:center;justify-content:space-between;gap:8px;}
-.pix-key{font-family:monospace;font-size:.79rem;color:var(--accent);word-break:break-all;text-align:left;}
-.btn-copy{padding:5px 10px;border-radius:7px;border:1px solid var(--border);background:var(--surface);
-  color:var(--text);cursor:pointer;font-size:.72rem;white-space:nowrap;}
-.btn-copy:hover{background:var(--surface2);}
-.pix-amount{font-family:'Syne',sans-serif;font-size:1.65rem;font-weight:800;color:var(--accent);margin:6px 0;}
-.pix-nums{font-size:.77rem;color:var(--muted);margin-bottom:3px;}
-.pix-instructions{font-size:.74rem;color:var(--muted);line-height:1.65;margin-top:9px;text-align:left;}
-.btn-confirm{width:100%;padding:11px;border-radius:11px;border:none;margin-top:12px;
-  background:linear-gradient(135deg,var(--green),#16a34a);color:#fff;
-  font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;transition:all .2s;}
-.btn-confirm:hover{transform:scale(1.02);}
-.btn-confirm:disabled{opacity:.5;cursor:not-allowed;transform:none;}
-.btn-cancel-res{width:100%;padding:9px;border-radius:10px;border:1px solid rgba(239,68,68,.3);
-  background:rgba(239,68,68,.07);color:var(--red);font-size:.8rem;cursor:pointer;margin-top:8px;}
-.btn-cancel-res:hover{background:rgba(239,68,68,.14);}
+/* PIX */
+.pixSec{text-align:center;}
+.pixQr{width:174px;height:174px;margin:0 auto 12px;background:#fff;border-radius:12px;overflow:hidden;}
+.pixQr canvas{width:100%;height:100%;}
+.pixKeyBox{background:var(--sf2);border:1px solid var(--bd);border-radius:10px;padding:11px;margin:11px 0;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.pixKey{font-family:monospace;font-size:.79rem;color:var(--ac);word-break:break-all;text-align:left;}
+.btnCopy{padding:5px 10px;border-radius:7px;border:1px solid var(--bd);background:var(--sf);color:var(--tx);cursor:pointer;font-size:.72rem;white-space:nowrap;}
+.btnCopy:hover{background:var(--sf2);}
+.pixAmt{font-family:'Syne',sans-serif;font-size:1.65rem;font-weight:800;color:var(--ac);margin:6px 0;}
+.pixNums{font-size:.77rem;color:var(--mu);margin-bottom:3px;}
+.pixInstr{font-size:.74rem;color:var(--mu);line-height:1.65;margin-top:9px;text-align:left;}
+.btnConfirm{width:100%;padding:11px;border-radius:11px;border:none;margin-top:12px;background:linear-gradient(135deg,var(--gn),#16a34a);color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;transition:all .2s;}
+.btnConfirm:hover{transform:scale(1.02);}
+.btnConfirm:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.btnCancelRes{width:100%;padding:9px;border-radius:10px;border:1px solid rgba(239,68,68,.3);background:rgba(239,68,68,.07);color:var(--rd);font-size:.8rem;cursor:pointer;margin-top:8px;}
+.btnCancelRes:hover{background:rgba(239,68,68,.14);}
 
-.form-group{margin-bottom:11px;}
-.form-label{display:block;font-size:.77rem;color:var(--muted);margin-bottom:4px;}
-.form-input{width:100%;padding:9px 12px;border-radius:9px;background:var(--surface2);
-  border:1.5px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;
-  font-size:.85rem;transition:border-color .2s;outline:none;}
-.form-input:focus{border-color:var(--accent);}
-select.form-input option{background:var(--surface2);}
-.nums-preview{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;}
-.num-chip{padding:3px 7px;background:rgba(245,197,66,.15);color:var(--accent);
-  border-radius:5px;font-size:.72rem;font-weight:600;}
-.sep{height:1px;background:var(--border);margin:12px 0;}
+/* FORMS */
+.fGroup{margin-bottom:11px;}
+.fLabel{display:block;font-size:.77rem;color:var(--mu);margin-bottom:4px;}
+.fInput{width:100%;padding:9px 12px;border-radius:9px;background:var(--sf2);border:1.5px solid var(--bd);color:var(--tx);font-family:'DM Sans',sans-serif;font-size:.85rem;transition:border-color .2s;outline:none;}
+.fInput:focus{border-color:var(--ac);}
+select.fInput option{background:var(--sf2);}
+.numsPrev{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;}
+.numChip{padding:3px 7px;background:rgba(245,197,66,.15);color:var(--ac);border-radius:5px;font-size:.72rem;font-weight:600;}
+.sep{height:1px;background:var(--bd);margin:12px 0;}
 
 /* ADMIN */
-.admin-tabs{display:flex;gap:3px;padding:14px 17px 0;border-bottom:1px solid var(--border);
-  overflow-x:auto;scrollbar-width:none;}
-.admin-tabs::-webkit-scrollbar{display:none;}
-.admin-tab{padding:7px 13px;border-radius:8px 8px 0 0;border:none;cursor:pointer;
-  font-family:'DM Sans',sans-serif;font-size:.77rem;font-weight:500;
-  background:transparent;color:var(--muted);transition:all .2s;white-space:nowrap;margin-bottom:-1px;}
-.admin-tab.active{background:var(--surface);color:var(--accent);
-  border:1px solid var(--border);border-bottom-color:var(--surface);}
-.admin-tab:hover:not(.active){color:var(--text);}
-.admin-tab-panel{display:none;}
-.admin-tab-panel.active{display:block;}
+.adminTabs{display:flex;gap:3px;padding:14px 17px 0;border-bottom:1px solid var(--bd);overflow-x:auto;scrollbar-width:none;}
+.adminTabs::-webkit-scrollbar{display:none;}
+.aTab{padding:7px 13px;border-radius:8px 8px 0 0;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.77rem;font-weight:500;background:transparent;color:var(--mu);transition:all .2s;white-space:nowrap;margin-bottom:-1px;}
+.aTab.active{background:var(--sf);color:var(--ac);border:1px solid var(--bd);border-bottom-color:var(--sf);}
+.aTab:hover:not(.active){color:var(--tx);}
+.aTabPanel{display:none;}
+.aTabPanel.active{display:block;}
+.loginWrap{display:flex;align-items:center;justify-content:center;min-height:65vh;padding:20px;}
+.loginCard{background:var(--sf);border:1px solid var(--bd);border-radius:20px;padding:26px;max-width:305px;width:100%;text-align:center;}
+.loginCard h2{font-family:'Syne',sans-serif;font-weight:800;font-size:1.08rem;margin-bottom:5px;}
+.loginCard p{color:var(--mu);font-size:.81rem;margin-bottom:16px;}
+.adminHdr{padding:20px 17px 9px;border-bottom:1px solid var(--bd);}
+.adminHdr h1{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;margin-bottom:3px;}
+.adminHdr p{color:var(--mu);font-size:.81rem;}
+.adminBody{padding:17px;display:grid;gap:15px;max-width:700px;}
+.aCard{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:17px;}
+.aCard h2{font-family:'Syne',sans-serif;font-weight:700;font-size:.86rem;margin-bottom:12px;color:var(--ac);}
+.aGrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+@media(max-width:480px){.aGrid{grid-template-columns:1fr;}}
+.statsGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;}
+@media(max-width:400px){.statsGrid{grid-template-columns:repeat(2,1fr);}}
+.statCard{background:var(--sf2);border-radius:9px;padding:11px;text-align:center;}
+.statNum{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;}
+.statLbl{font-size:.63rem;color:var(--mu);margin-top:2px;}
+.sg{color:var(--gn);}.sy{color:var(--ac);}.sr{color:var(--ac2);}.sb{color:var(--bl);}
 
-.admin-login-wrap{display:flex;align-items:center;justify-content:center;min-height:65vh;padding:20px;}
-.admin-login-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;
-  padding:26px;max-width:305px;width:100%;text-align:center;}
-.admin-login-card h2{font-family:'Syne',sans-serif;font-weight:800;font-size:1.08rem;margin-bottom:5px;}
-.admin-login-card p{color:var(--muted);font-size:.81rem;margin-bottom:16px;}
-.admin-body{padding:17px;display:grid;gap:15px;max-width:700px;}
-.admin-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:17px;}
-.admin-card h2{font-family:'Syne',sans-serif;font-weight:700;font-size:.86rem;margin-bottom:12px;color:var(--accent);}
-.admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
-@media(max-width:480px){.admin-grid{grid-template-columns:1fr;}}
+/* IMAGE UPLOAD */
+.imgArea{border:2px dashed var(--bd);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all .2s;position:relative;}
+.imgArea:hover{border-color:var(--ac);background:rgba(245,197,66,.04);}
+.imgArea input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.imgAreaIcon{font-size:1.9rem;margin-bottom:5px;}
+.imgAreaTxt{font-size:.77rem;color:var(--mu);}
+.imgAreaHint{font-size:.69rem;color:var(--mu);opacity:.65;margin-top:3px;}
+.imgPrevWrap{position:relative;margin-top:9px;display:none;}
+.imgPrevWrap img{width:100%;max-height:175px;border-radius:10px;object-fit:cover;}
+.imgRm{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.65);color:#fff;border:none;border-radius:50%;width:25px;height:25px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.8rem;}
+.upBarWrap{height:4px;background:var(--bd);border-radius:2px;margin-top:7px;display:none;}
+.upBar{height:100%;background:var(--ac);border-radius:2px;width:0;transition:width .25s;}
 
-.img-upload-area{border:2px dashed var(--border);border-radius:12px;padding:20px;
-  text-align:center;cursor:pointer;transition:all .2s;position:relative;}
-.img-upload-area:hover{border-color:var(--accent);background:rgba(245,197,66,.04);}
-.img-upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
-.img-upload-icon{font-size:1.9rem;margin-bottom:5px;}
-.img-upload-text{font-size:.77rem;color:var(--muted);}
-.img-upload-hint{font-size:.69rem;color:var(--muted);opacity:.65;margin-top:3px;}
-.img-preview-wrap{position:relative;margin-top:9px;display:none;}
-.img-preview-wrap img{width:100%;max-height:175px;border-radius:10px;object-fit:cover;}
-.img-remove{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.65);color:#fff;
-  border:none;border-radius:50%;width:25px;height:25px;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;font-size:.8rem;}
-.upload-bar-wrap{height:4px;background:var(--border);border-radius:2px;margin-top:7px;display:none;}
-.upload-bar{height:100%;background:var(--accent);border-radius:2px;width:0;transition:width .25s;}
+.btnSave{width:100%;padding:11px;border-radius:11px;border:none;margin-top:5px;background:linear-gradient(135deg,var(--ac),#f0a500);color:#000;font-family:'Syne',sans-serif;font-weight:700;font-size:.86rem;cursor:pointer;transition:all .2s;}
+.btnSave:hover{transform:scale(1.02);}
+.btnSave:disabled{opacity:.5;cursor:not-allowed;transform:none;}
 
-.btn-save{width:100%;padding:11px;border-radius:11px;border:none;margin-top:5px;
-  background:linear-gradient(135deg,var(--accent),#f0a500);color:#000;
-  font-family:'Syne',sans-serif;font-weight:700;font-size:.86rem;cursor:pointer;transition:all .2s;}
-.btn-save:hover{transform:scale(1.02);}
-.btn-save:disabled{opacity:.5;cursor:not-allowed;transform:none;}
-.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;}
-@media(max-width:400px){.stats-grid{grid-template-columns:repeat(2,1fr);}}
-.stat-card{background:var(--surface2);border-radius:9px;padding:11px;text-align:center;}
-.stat-num{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;}
-.stat-label{font-size:.63rem;color:var(--muted);margin-top:2px;}
-.sg{color:var(--green);}.sy{color:var(--accent);}.sr{color:var(--accent2);}.sb{color:var(--blue);}
+/* BUYERS TABLE */
+.secHdr{display:flex;align-items:center;justify-content:space-between;padding:9px 13px;border-radius:9px;font-family:'Syne',sans-serif;font-weight:700;font-size:.8rem;margin-bottom:8px;}
+.secPend{background:rgba(245,197,66,.08);border:1px solid rgba(245,197,66,.2);color:var(--ac);}
+.secPaid{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);color:var(--gn);}
+.secHdrCount{background:var(--sf2);border-radius:20px;padding:2px 9px;font-size:.72rem;font-weight:700;}
+.bTable{width:100%;border-collapse:collapse;font-size:.75rem;}
+.bTable th{text-align:left;padding:7px 8px;color:var(--mu);border-bottom:1px solid var(--bd);font-weight:500;white-space:nowrap;}
+.bTable td{padding:7px 8px;border-bottom:1px solid rgba(42,42,61,.3);vertical-align:middle;}
+.bTable tr:last-child td{border-bottom:none;}
+.sBadge{padding:3px 7px;border-radius:4px;font-size:.65rem;font-weight:600;display:inline-block;}
+.s-paid{background:rgba(34,197,94,.15);color:var(--gn);}
+.s-pend{background:rgba(245,197,66,.15);color:var(--ac);}
+.s-res{background:rgba(59,130,246,.15);color:var(--bl);}
+.numList{display:flex;gap:3px;flex-wrap:wrap;}
+.numSm{padding:2px 5px;background:var(--sf);border:1px solid var(--bd);border-radius:3px;font-size:.64rem;}
+.numSm.res{border-color:rgba(59,130,246,.4);color:var(--bl);}
+.actBtns{display:flex;gap:4px;flex-wrap:wrap;}
+.bx{padding:4px 9px;border-radius:5px;border:none;font-size:.65rem;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;transition:all .2s;white-space:nowrap;}
+.bx:hover{opacity:.8;}
+.bx-gn{background:rgba(34,197,94,.15);color:var(--gn);}
+.bx-rd{background:rgba(239,68,68,.12);color:var(--rd);}
+.bx-yw{background:rgba(245,197,66,.15);color:var(--ac);}
+.bx-wa{background:rgba(37,211,102,.15);color:#25d366;}
+.emptyState{text-align:center;padding:22px;color:var(--mu);font-size:.82rem;}
 
-.buyers-table{width:100%;border-collapse:collapse;font-size:.75rem;}
-.buyers-table th{text-align:left;padding:7px 8px;color:var(--muted);
-  border-bottom:1px solid var(--border);font-weight:500;white-space:nowrap;}
-.buyers-table td{padding:7px 8px;border-bottom:1px solid rgba(42,42,61,.3);vertical-align:middle;}
-.buyers-table tr:last-child td{border-bottom:none;}
-.status-badge{padding:3px 7px;border-radius:4px;font-size:.65rem;font-weight:600;display:inline-block;}
-.s-paid{background:rgba(34,197,94,.15);color:var(--green);}
-.s-pend{background:rgba(245,197,66,.15);color:var(--accent);}
-.s-res{background:rgba(59,130,246,.15);color:var(--blue);}
-.num-list{display:flex;gap:3px;flex-wrap:wrap;}
-.num-sm{padding:2px 5px;background:var(--surface);border:1px solid var(--border);border-radius:3px;font-size:.64rem;}
-.num-sm.res-num{border-color:rgba(59,130,246,.4);color:var(--blue);}
-.action-btns{display:flex;gap:4px;flex-wrap:wrap;}
-.btn-xs{padding:3px 8px;border-radius:5px;border:none;font-size:.64rem;cursor:pointer;
-  font-family:'DM Sans',sans-serif;font-weight:600;transition:all .2s;white-space:nowrap;}
-.btn-xs:hover{opacity:.8;}
-.btn-xs-green{background:rgba(34,197,94,.15);color:var(--green);}
-.btn-xs-red{background:rgba(239,68,68,.12);color:var(--red);}
-.btn-xs-yellow{background:rgba(245,197,66,.15);color:var(--accent);}
-.btn-xs-wa{background:rgba(37,211,102,.15);color:#25d366;}
-.buyers-section-header{display:flex;align-items:center;justify-content:space-between;
-  padding:9px 13px;border-radius:9px;font-family:'Syne',sans-serif;font-weight:700;font-size:.8rem;margin-bottom:8px;}
-.pending-header{background:rgba(245,197,66,.08);border:1px solid rgba(245,197,66,.2);color:var(--accent);}
-.paid-header{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);color:var(--green);}
-.buyers-section-count{background:var(--surface2);border-radius:20px;padding:2px 9px;
-  font-size:.72rem;font-weight:700;}
+/* DRAW */
+.drawSec{text-align:center;padding:5px 0;}
+.btnDraw{padding:11px 26px;border-radius:11px;border:2px solid var(--ac2);background:transparent;color:var(--ac2);font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;cursor:pointer;transition:all .2s;}
+.btnDraw:hover{background:rgba(255,107,53,.1);}
+.drawResult{margin-top:12px;padding:15px;background:var(--sf2);border-radius:11px;border:1px solid var(--ac2);display:none;animation:fadeIn .4s ease;}
+.drawWinner{font-family:'Syne',sans-serif;font-size:1.85rem;font-weight:800;color:var(--ac);}
+.drawName{font-size:.86rem;color:var(--tx);margin-top:3px;}
+.btnDanger{width:100%;padding:9px;border-radius:9px;border:1px solid rgba(239,68,68,.3);background:rgba(239,68,68,.07);color:var(--rd);font-family:'DM Sans',sans-serif;font-size:.79rem;cursor:pointer;margin-top:9px;transition:all .2s;}
+.btnDanger:hover{background:rgba(239,68,68,.13);}
 
-.draw-section{text-align:center;padding:5px 0;}
-.btn-draw{padding:11px 26px;border-radius:11px;border:2px solid var(--accent2);
-  background:transparent;color:var(--accent2);font-family:'Syne',sans-serif;
-  font-weight:700;font-size:.9rem;cursor:pointer;transition:all .2s;}
-.btn-draw:hover{background:rgba(255,107,53,.1);}
-.draw-result{margin-top:12px;padding:15px;background:var(--surface2);border-radius:11px;
-  border:1px solid var(--accent2);display:none;animation:fadeIn .4s ease;}
-.draw-winner{font-family:'Syne',sans-serif;font-size:1.85rem;font-weight:800;color:var(--accent);}
-.draw-name{font-size:.86rem;color:var(--text);margin-top:3px;}
-.btn-danger{width:100%;padding:9px;border-radius:9px;border:1px solid rgba(239,68,68,.3);
-  background:rgba(239,68,68,.07);color:var(--red);font-family:'DM Sans',sans-serif;
-  font-size:.79rem;cursor:pointer;margin-top:9px;transition:all .2s;}
-.btn-danger:hover{background:rgba(239,68,68,.13);}
+/* URL CONFIG */
+.urlCard{background:linear-gradient(135deg,rgba(59,130,246,.07),rgba(168,85,247,.07));border-color:rgba(59,130,246,.25);}
+.urlCard h2{color:var(--bl);}
+.urlStatus{display:flex;align-items:flex-start;gap:8px;font-size:.76rem;color:var(--mu);margin-top:8px;line-height:1.5;}
+.urlDot{width:8px;height:8px;border-radius:50%;background:var(--gn);flex-shrink:0;margin-top:3px;}
+.urlDot.bad{background:var(--rd);}
 
-.url-config-card{background:linear-gradient(135deg,rgba(59,130,246,.07),rgba(168,85,247,.07));
-  border-color:rgba(59,130,246,.25);}
-.url-config-card h2{color:var(--blue);}
-.url-status{display:flex;align-items:flex-start;gap:8px;font-size:.76rem;color:var(--muted);
-  margin-top:8px;line-height:1.5;}
-.url-status-dot{width:8px;height:8px;border-radius:50%;background:var(--green);
-  flex-shrink:0;margin-top:3px;}
-.url-status-dot.bad{background:var(--red);}
-
-.toast{position:fixed;bottom:19px;right:19px;background:var(--green);color:#fff;
-  padding:10px 16px;border-radius:9px;font-size:.8rem;font-weight:500;z-index:9999;
-  transform:translateY(60px);opacity:0;transition:all .3s;box-shadow:0 4px 16px rgba(0,0,0,.3);}
+/* TOAST */
+.toast{position:fixed;bottom:19px;right:19px;background:var(--gn);color:#fff;padding:10px 16px;border-radius:9px;font-size:.8rem;font-weight:500;z-index:9999;transform:translateY(60px);opacity:0;transition:all .3s;box-shadow:0 4px 16px rgba(0,0,0,.3);}
 .toast.show{transform:translateY(0);opacity:1;}
 
 @media(max-width:500px){
-  .numbers-grid{grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:5px;}
-  .num-btn{font-size:.7rem;}
+  .numGrid{grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:5px;}
+  .nBtn{font-size:.7rem;}
   nav{padding:10px 13px;}
 }
 </style>
@@ -363,256 +265,242 @@ select.form-input option{background:var(--surface2);}
 <body>
 
 <!-- FIRST RUN -->
-<div id="firstRunScreen">
-  <div class="firstrun-card">
-    <div class="firstrun-icon">🎟️</div>
+<div id="frScreen">
+  <div class="frCard">
+    <div style="font-size:2.8rem;margin-bottom:10px">🎟️</div>
     <h1>Bem-vindo ao RifaFácil!</h1>
-    <p>Para começar, o administrador deve conectar o Google Sheets uma única vez.<br>
-    Depois, todos os usuários conectam automaticamente.</p>
-    <input class="fr-input" id="frUrl"
-      placeholder="https://script.google.com/macros/s/XXXXX/exec"
-      onkeydown="if(event.key==='Enter')firstConnect()">
-    <button class="btn-primary" id="frBtn" onclick="firstConnect()">🚀 Conectar</button>
-    <div class="fr-msg" id="frMsg"></div>
-    <div class="fr-hint">
-      <b style="color:var(--text)">Como obter a URL:</b><br>
-      1. Acesse <a href="https://sheets.google.com" target="_blank">sheets.google.com</a> → crie planilha<br>
-      2. Extensões → Apps Script → cole o <code style="background:rgba(245,197,66,.12);color:var(--accent);padding:1px 5px;border-radius:3px">apps-script.gs</code><br>
-      3. Execute a função <code style="background:rgba(245,197,66,.12);color:var(--accent);padding:1px 5px;border-radius:3px">setup</code><br>
-      4. Implante → App da Web → Acesso: <b style="color:var(--text)">Qualquer pessoa</b><br>
+    <p>Cole a URL do seu Google Apps Script abaixo.<br>Após conectar, todos os usuários acessarão automaticamente.</p>
+    <input class="frInput" id="frUrl" placeholder="https://script.google.com/macros/s/XXXXX/exec" onkeydown="if(event.key==='Enter')firstConnect()">
+    <button class="btnPrimary" id="frBtn" onclick="firstConnect()">🚀 Conectar</button>
+    <div class="frMsg" id="frMsg"></div>
+    <div class="frHint">
+      <b style="color:var(--tx)">Como configurar:</b><br>
+      1. <a href="https://sheets.google.com" target="_blank">sheets.google.com</a> → nova planilha<br>
+      2. Extensões → Apps Script → cole o <code>apps-script.gs</code><br>
+      3. Execute a função <code>setup</code><br>
+      4. Implantar → App da Web → Acesso: <b style="color:var(--tx)">Qualquer pessoa</b><br>
       5. Copie a URL e cole acima
     </div>
   </div>
 </div>
 
-<!-- INSTALL BANNER -->
-<div id="installBanner">
-  <div class="install-text">📲 <b>Instalar RifaFácil</b> no seu dispositivo</div>
-  <div style="display:flex;gap:6px">
-    <button class="btn-install" onclick="installApp()">Instalar</button>
-    <button class="btn-dismiss" onclick="dismissInstall()">✕</button>
-  </div>
-</div>
-
 <!-- LOADING -->
-<div id="loadingScreen">
+<div id="ldScreen">
   <div class="loader"></div>
-  <div class="loader-text" id="loadingText">Carregando...</div>
+  <div class="ldTxt" id="ldTxt">Carregando...</div>
 </div>
 
 <!-- APP -->
 <div id="app">
 <nav>
   <div class="logo">Rifa<span>Fácil</span></div>
-  <div class="nav-right">
-    <div class="sync-wrap" onclick="syncNow(true)" title="Clique para atualizar">
-      <span class="sync-dot" id="syncDot"></span>
-      <span class="sync-label" id="syncLabel">ao vivo</span>
+  <div class="navR">
+    <div class="syncWrap" onclick="syncNow(true)" title="Atualizar">
+      <span class="syncDot" id="syncDot"></span>
+      <span class="syncLbl" id="syncLbl">ao vivo</span>
     </div>
-    <button class="nav-tab active" id="tabBuyer" onclick="showPage('buyer')">🎟️ Rifa</button>
-    <button class="nav-tab" id="tabAdmin" onclick="showPage('admin')">⚙️ Admin</button>
+    <button class="navTab active" id="tabBuyer" onclick="showPage('buyer')">🎟️ Rifa</button>
+    <button class="navTab" id="tabAdmin" onclick="showPage('admin')">⚙️ Admin</button>
   </div>
 </nav>
 
-<!-- BUYER -->
+<!-- BUYER PAGE -->
 <div id="page-buyer" class="page active">
-  <div class="raffle-hero">
-    <div class="raffle-info">
-      <div class="raffle-img-wrap"><img id="heroImg" alt=""><span id="heroEmoji">🏆</span></div>
-      <div class="raffle-meta">
+  <div class="hero">
+    <div class="heroInfo">
+      <div class="heroImgWrap"><img id="heroImg" alt=""><span id="heroEmoji">🏆</span></div>
+      <div class="heroMeta">
         <h1 id="heroTitle">Carregando...</h1>
-        <div class="desc" id="heroDesc"></div>
+        <div class="heroDesc" id="heroDesc"></div>
         <div class="badges">
           <span class="badge by">💰 R$ <span id="heroPriceVal">--</span>/nº</span>
           <span class="badge bg">📅 <span id="heroDateVal">--</span></span>
           <span class="badge br">🔥 <span id="heroSoldVal">0</span> vendidos</span>
         </div>
-        <div class="progress-wrap">
-          <div class="progress-label"><span>Progresso</span><span id="progressPct">0%</span></div>
-          <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+        <div class="progWrap">
+          <div class="progLabel"><span>Progresso</span><span id="progPct">0%</span></div>
+          <div class="progBar"><div class="progFill" id="progFill" style="width:0%"></div></div>
         </div>
       </div>
     </div>
   </div>
-  <div class="summary-bar">
-    <div class="summary-left">
-      <div class="summary-item">Selecionados: <b id="selCount">0</b></div>
-      <div class="summary-item">Total: <b class="total-price" id="totalPrice">R$ 0,00</b></div>
+  <div class="sumBar">
+    <div class="sumL">
+      <div class="sumItem">Selecionados: <b id="selCount">0</b></div>
+      <div class="sumItem">Total: <b class="totPrice" id="totalPrice">R$ 0,00</b></div>
     </div>
-    <button class="btn-buy" id="btnBuy" onclick="openContactModal()" disabled>Comprar 🛒</button>
+    <button class="btnBuy" id="btnBuy" onclick="openContactModal()" disabled>Comprar 🛒</button>
   </div>
   <div class="legend">
-    <div class="legend-item"><div class="ld ld-free"></div>Disponível</div>
-    <div class="legend-item"><div class="ld ld-sel"></div>Selecionado</div>
-    <div class="legend-item"><div class="ld ld-res"></div>🔒 Reservado</div>
-    <div class="legend-item"><div class="ld ld-sold"></div>Vendido</div>
+    <div class="li"><div class="ld ld-free"></div>Disponível</div>
+    <div class="li"><div class="ld ld-sel"></div>Selecionado</div>
+    <div class="li"><div class="ld ld-res"></div>🔒 Reservado</div>
+    <div class="li"><div class="ld ld-sold"></div>Vendido</div>
   </div>
-  <div class="grid-section">
-    <div class="grid-title"><span id="gridTitle">Escolha seus números</span></div>
-    <div class="numbers-grid" id="numbersGrid"></div>
+  <div class="gridSec">
+    <div class="gridTitle"><span id="gridTitle">Escolha seus números</span></div>
+    <div class="numGrid" id="numGrid"></div>
   </div>
 </div>
 
-<!-- ADMIN -->
+<!-- ADMIN PAGE -->
 <div id="page-admin" class="page">
-  <div id="adminLogin" class="admin-login-wrap">
-    <div class="admin-login-card">
+  <div id="adminLogin" class="loginWrap">
+    <div class="loginCard">
       <div style="font-size:2.1rem;margin-bottom:7px">🔐</div>
       <h2>Área do Admin</h2>
       <p>Digite a senha para acessar</p>
-      <div class="form-group">
-        <input class="form-input" type="password" id="adminPassInput"
-          placeholder="Senha" onkeydown="if(event.key==='Enter')checkAdmin()">
+      <div class="fGroup">
+        <input class="fInput" type="password" id="adminPass" placeholder="Senha" onkeydown="if(event.key==='Enter')checkAdmin()">
       </div>
-      <button class="btn-save" onclick="checkAdmin()">Entrar →</button>
+      <button class="btnSave" onclick="checkAdmin()">Entrar →</button>
     </div>
   </div>
   <div id="adminPanel" style="display:none">
-    <div class="admin-tabs">
-      <button class="admin-tab active" onclick="showAdminTab('rifa',this)">🎟️ Rifa</button>
-      <button class="admin-tab" onclick="showAdminTab('compradores',this)">👥 Compradores</button>
-      <button class="admin-tab" onclick="showAdminTab('pix',this)">💳 Pix</button>
-      <button class="admin-tab" onclick="showAdminTab('conexao',this)">🔗 Conexão</button>
+    <div class="adminTabs">
+      <button class="aTab active" onclick="showATab('rifa',this)">🎟️ Rifa</button>
+      <button class="aTab" onclick="showATab('compradores',this)">👥 Compradores</button>
+      <button class="aTab" onclick="showATab('pix',this)">💳 Pix</button>
+      <button class="aTab" onclick="showATab('conexao',this)">🔗 Conexão</button>
     </div>
 
     <!-- TAB RIFA -->
-    <div class="admin-tab-panel active" id="atab-rifa">
-      <div class="admin-body">
-        <div class="admin-card">
+    <div class="aTabPanel active" id="atab-rifa">
+      <div class="adminBody">
+        <div class="aCard">
           <h2>📊 Estatísticas</h2>
-          <div class="stats-grid">
-            <div class="stat-card"><div class="stat-num sg" id="statSold">0</div><div class="stat-label">Vendidos</div></div>
-            <div class="stat-card"><div class="stat-num sb" id="statRes">0</div><div class="stat-label">Reservados</div></div>
-            <div class="stat-card"><div class="stat-num sy" id="statAvail">--</div><div class="stat-label">Disponíveis</div></div>
-            <div class="stat-card"><div class="stat-num sr" id="statRevenue">R$0</div><div class="stat-label">Arrecadado</div></div>
+          <div class="statsGrid">
+            <div class="statCard"><div class="statNum sg" id="statSold">0</div><div class="statLbl">Vendidos</div></div>
+            <div class="statCard"><div class="statNum sb" id="statRes">0</div><div class="statLbl">Reservados</div></div>
+            <div class="statCard"><div class="statNum sy" id="statAvail">--</div><div class="statLbl">Disponíveis</div></div>
+            <div class="statCard"><div class="statNum sr" id="statRev">R$0</div><div class="statLbl">Arrecadado</div></div>
           </div>
         </div>
-        <div class="admin-card">
+        <div class="aCard">
           <h2>🎟️ Configurações da Rifa</h2>
-          <div class="admin-grid">
-            <div class="form-group" style="grid-column:1/-1">
-              <label class="form-label">Nome do Prêmio</label>
-              <input class="form-input" id="cfgTitle" placeholder="Ex: iPhone 15 Pro Max">
-            </div>
-            <div class="form-group" style="grid-column:1/-1">
-              <label class="form-label">Descrição</label>
-              <input class="form-input" id="cfgDesc" placeholder="Descrição do prêmio">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Valor por Número (R$)</label>
-              <input class="form-input" type="number" id="cfgPrice" placeholder="10" min="1">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Quantidade de Números</label>
-              <input class="form-input" type="number" id="cfgQty" placeholder="100" min="10" max="1000">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Data do Sorteio</label>
-              <input class="form-input" type="date" id="cfgDate">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Nova Senha do Admin</label>
-              <input class="form-input" type="password" id="cfgPassword" placeholder="Deixe vazio para manter">
-            </div>
+          <div class="aGrid">
+            <div class="fGroup" style="grid-column:1/-1"><label class="fLabel">Nome do Prêmio</label><input class="fInput" id="cfgTitle" placeholder="Ex: iPhone 15 Pro Max"></div>
+            <div class="fGroup" style="grid-column:1/-1"><label class="fLabel">Descrição</label><input class="fInput" id="cfgDesc" placeholder="Descrição"></div>
+            <div class="fGroup"><label class="fLabel">Valor por Número (R$)</label><input class="fInput" type="number" id="cfgPrice" placeholder="10" min="1"></div>
+            <div class="fGroup"><label class="fLabel">Quantidade de Números</label><input class="fInput" type="number" id="cfgQty" placeholder="100" min="10" max="1000"></div>
+            <div class="fGroup"><label class="fLabel">Data do Sorteio</label><input class="fInput" type="date" id="cfgDate"></div>
+            <div class="fGroup"><label class="fLabel">Nova Senha do Admin</label><input class="fInput" type="password" id="cfgPassword" placeholder="Deixe vazio para manter"></div>
           </div>
-          <div class="form-group" style="margin-top:4px">
-            <label class="form-label">📷 Foto do Prêmio</label>
-            <div class="img-upload-area" id="uploadArea">
-              <input type="file" accept="image/*" id="imgFileInput" onchange="handleImgSelect(this)">
-              <div class="img-upload-icon">📷</div>
-              <div class="img-upload-text">Toque para escolher da galeria</div>
-              <div class="img-upload-hint">ou tirar foto — máx 5 MB</div>
+          <div class="fGroup" style="margin-top:4px">
+            <label class="fLabel">📷 Foto do Prêmio</label>
+            <div class="imgArea" id="imgArea">
+              <input type="file" accept="image/*" id="imgFile" onchange="handleImg(this)">
+              <div class="imgAreaIcon">📷</div>
+              <div class="imgAreaTxt">Toque para escolher da galeria</div>
+              <div class="imgAreaHint">ou tirar foto — máx 5 MB</div>
             </div>
-            <div class="img-preview-wrap" id="imgPreviewWrap">
-              <img id="imgPreview" alt="">
-              <button class="img-remove" onclick="removeImage()">✕</button>
-            </div>
-            <div class="upload-bar-wrap" id="uploadBarWrap">
-              <div class="upload-bar" id="uploadBar"></div>
-            </div>
+            <div class="imgPrevWrap" id="imgPrevWrap"><img id="imgPrev" alt=""><button class="imgRm" onclick="removeImg()">✕</button></div>
+            <div class="upBarWrap" id="upBarWrap"><div class="upBar" id="upBar"></div></div>
           </div>
-          <button class="btn-save" id="btnSaveCfg" onclick="saveConfig()">💾 Salvar Configurações</button>
+          <button class="btnSave" id="btnSaveCfg" onclick="saveConfig()">💾 Salvar Configurações</button>
         </div>
-        <div class="admin-card">
+        <div class="aCard">
           <h2>🎲 Realizar Sorteio</h2>
-          <div class="draw-section">
-            <button class="btn-draw" onclick="drawWinner()">🎰 Sortear Ganhador!</button>
-            <div class="draw-result" id="drawResult">
-              <div style="color:var(--muted);font-size:.76rem;margin-bottom:3px">🏆 Número Sorteado</div>
-              <div class="draw-winner" id="drawNumber">--</div>
-              <div class="draw-name" id="drawName"></div>
+          <div class="drawSec">
+            <button class="btnDraw" onclick="drawWinner()">🎰 Sortear Ganhador!</button>
+            <div class="drawResult" id="drawResult">
+              <div style="color:var(--mu);font-size:.76rem;margin-bottom:3px">🏆 Número Sorteado</div>
+              <div class="drawWinner" id="drawNum">--</div>
+              <div class="drawName" id="drawName"></div>
             </div>
           </div>
         </div>
-        <div class="admin-card">
+        <div class="aCard">
           <h2>⚠️ Zona de Perigo</h2>
-          <button class="btn-danger" onclick="confirmReset()">🗑️ Zerar todos os números (vendidos + reservados)</button>
+          <button class="btnDanger" onclick="confirmReset()">🗑️ Zerar todos os números vendidos e reservados</button>
         </div>
       </div>
     </div>
 
     <!-- TAB COMPRADORES -->
-    <div class="admin-tab-panel" id="atab-compradores">
-      <div class="admin-body">
-        <div class="admin-card">
+    <div class="aTabPanel" id="atab-compradores">
+      <div class="adminBody">
+        <div class="aCard">
           <h2>👥 Compradores & Reservas</h2>
-          <div id="buyersContainer"><div class="empty-state">Nenhuma compra ainda.</div></div>
+          <div id="buyersBox"><div class="emptyState">Nenhuma compra ainda.</div></div>
         </div>
       </div>
     </div>
 
     <!-- TAB PIX -->
-    <div class="admin-tab-panel" id="atab-pix">
-      <div class="admin-body">
-        <div class="admin-card">
+    <div class="aTabPanel" id="atab-pix">
+      <div class="adminBody">
+        <div class="aCard">
           <h2>💳 Configurações do Pix</h2>
-          <div class="form-group"><label class="form-label">Tipo de Chave</label>
-            <select class="form-input" id="pixType">
-              <option>CPF</option><option>CNPJ</option><option>EMAIL</option>
-              <option>TELEFONE</option><option>ALEATORIA</option>
-            </select>
+          <div class="fGroup"><label class="fLabel">Tipo de Chave</label>
+            <select class="fInput" id="pixType"><option>CPF</option><option>CNPJ</option><option>EMAIL</option><option>TELEFONE</option><option>ALEATORIA</option></select>
           </div>
-          <div class="form-group"><label class="form-label">Chave Pix</label>
-            <input class="form-input" id="pixKey" placeholder="Sua chave Pix"></div>
-          <div class="form-group"><label class="form-label">Nome do Beneficiário</label>
-            <input class="form-input" id="pixName" placeholder="Nome no Pix"></div>
-          <div class="form-group"><label class="form-label">Cidade</label>
-            <input class="form-input" id="pixCity" placeholder="Ex: São Paulo"></div>
-          <button class="btn-save" onclick="savePixConfig()">💾 Salvar Pix</button>
+          <div class="fGroup"><label class="fLabel">Chave Pix</label><input class="fInput" id="pixKey" placeholder="Sua chave Pix"></div>
+          <div class="fGroup"><label class="fLabel">Nome do Beneficiário</label><input class="fInput" id="pixName" placeholder="Nome no Pix"></div>
+          <div class="fGroup"><label class="fLabel">Cidade</label><input class="fInput" id="pixCity" placeholder="Ex: São Paulo"></div>
+          <button class="btnSave" onclick="savePixConfig()">💾 Salvar Pix</button>
         </div>
       </div>
     </div>
 
     <!-- TAB CONEXÃO -->
-    <div class="admin-tab-panel" id="atab-conexao">
-      <div class="admin-body">
-        <div class="admin-card url-config-card">
-          <h2>🔗 URL do Google Apps Script</h2>
-          <p style="font-size:.79rem;color:var(--muted);margin-bottom:12px;line-height:1.6">
-            A URL é salva no Google Sheets e carregada automaticamente para todos os usuários.
-          </p>
-          <div class="form-group"><label class="form-label">URL do Web App</label>
-            <input class="form-input" id="settingsUrl" placeholder="https://script.google.com/macros/s/XXXXX/exec">
+    <div class="aTabPanel" id="atab-conexao">
+      <div class="adminBody">
+
+        <!-- STATUS ATUAL -->
+        <div class="aCard urlCard">
+          <h2>🔗 Conexão Atual</h2>
+          <div class="urlStatus" style="margin-bottom:14px">
+            <span class="urlDot" id="urlDot"></span>
+            <span id="urlTxt" style="word-break:break-all">Verificando...</span>
           </div>
-          <div class="url-status">
-            <span class="url-status-dot" id="urlStatusDot"></span>
-            <span id="urlStatusText">Verificando...</span>
+          <div class="fGroup">
+            <label class="fLabel">URL do Web App (alterar)</label>
+            <input class="fInput" id="settingsUrl" placeholder="https://script.google.com/macros/s/XXXXX/exec">
           </div>
-          <button class="btn-save" onclick="saveSettings()" style="margin-top:12px">💾 Salvar URL</button>
+          <button class="btnSave" onclick="saveSettings()" style="margin-top:8px">💾 Atualizar URL</button>
         </div>
-        <div class="admin-card">
-          <h2>📲 Instalar como App</h2>
-          <p style="font-size:.79rem;color:var(--muted);margin-bottom:12px;line-height:1.6">
-            Instale o RifaFácil como aplicativo no seu dispositivo para acesso rápido sem abrir o navegador.
+
+        <!-- CONFIG.JSON -->
+        <div class="aCard" style="border-color:rgba(34,197,94,.25);background:linear-gradient(135deg,rgba(34,197,94,.06),rgba(59,130,246,.04))">
+          <h2 style="color:var(--gn)">📄 config.json — Conexão Automática</h2>
+          <p style="font-size:.79rem;color:var(--mu);line-height:1.7;margin-bottom:14px">
+            O arquivo <code style="background:rgba(34,197,94,.12);color:var(--gn);padding:1px 6px;border-radius:3px">config.json</code>
+            fica no repositório do GitHub junto com o <code style="background:rgba(34,197,94,.12);color:var(--gn);padding:1px 6px;border-radius:3px">index.html</code>.
+            Quando qualquer pessoa abre o app pela primeira vez, ele lê este arquivo e conecta automaticamente — <b style="color:var(--tx)">sem precisar digitar nada</b>.
           </p>
-          <button class="btn-save" id="btnInstallAdmin" onclick="installApp()" style="background:linear-gradient(135deg,var(--blue),#2563eb)">
-            📲 Instalar no Dispositivo
-          </button>
-          <p style="font-size:.72rem;color:var(--muted);margin-top:8px;line-height:1.5">
-            <b style="color:var(--text)">iOS (Safari):</b> Toque em Compartilhar → "Adicionar à Tela de Início"<br>
-            <b style="color:var(--text)">Android/Chrome:</b> Toque nos 3 pontos → "Adicionar à tela inicial"
+
+          <div style="background:var(--sf2);border:1px solid var(--bd);border-radius:10px;padding:14px;margin-bottom:14px">
+            <div style="font-size:.72rem;color:var(--mu);margin-bottom:6px;font-family:'Syne',sans-serif;font-weight:700">Conteúdo do config.json:</div>
+            <pre id="configJsonPreview" style="font-family:monospace;font-size:.78rem;color:var(--ac);line-height:1.6;white-space:pre-wrap;word-break:break-all">{
+  "apiUrl": "..."
+}</pre>
+          </div>
+
+          <p style="font-size:.76rem;color:var(--mu);line-height:1.65;margin-bottom:12px">
+            <b style="color:var(--tx)">Como atualizar o config.json:</b><br>
+            1. Copie o conteúdo acima<br>
+            2. No GitHub, abra o arquivo <code style="background:rgba(34,197,94,.12);color:var(--gn);padding:1px 5px;border-radius:3px">config.json</code><br>
+            3. Clique em ✏️ editar → cole o conteúdo → clique em <b style="color:var(--tx)">Commit changes</b>
           </p>
+
+          <button class="btnSave" onclick="copyConfigJson()" style="background:linear-gradient(135deg,var(--gn),#16a34a)">📋 Copiar conteúdo do config.json</button>
         </div>
+
+        <!-- INSTRUÇÕES COMPLETAS -->
+        <div class="aCard">
+          <h2>📋 Como hospedar no GitHub Pages</h2>
+          <div style="font-size:.78rem;color:var(--mu);line-height:1.85">
+            <b style="color:var(--tx)">1.</b> Crie um repositório público no GitHub (ex: <code style="background:rgba(245,197,66,.12);color:var(--ac);padding:1px 5px;border-radius:3px">minha-rifa</code>)<br>
+            <b style="color:var(--tx)">2.</b> Faça upload dos dois arquivos:<br>
+            &nbsp;&nbsp;&nbsp;• <code style="background:rgba(245,197,66,.12);color:var(--ac);padding:1px 5px;border-radius:3px">index.html</code> (renomeie o rifa.html)<br>
+            &nbsp;&nbsp;&nbsp;• <code style="background:rgba(245,197,66,.12);color:var(--ac);padding:1px 5px;border-radius:3px">config.json</code> (com a URL do Apps Script)<br>
+            <b style="color:var(--tx)">3.</b> Vá em <b style="color:var(--tx)">Settings → Pages → Branch: main → Save</b><br>
+            <b style="color:var(--tx)">4.</b> Seu link: <code style="background:rgba(245,197,66,.12);color:var(--ac);padding:1px 5px;border-radius:3px">https://seu-usuario.github.io/minha-rifa</code><br>
+            <b style="color:var(--tx)">5.</b> Quando mudar o Apps Script, só atualiza o <code style="background:rgba(245,197,66,.12);color:var(--ac);padding:1px 5px;border-radius:3px">config.json</code>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -620,71 +508,38 @@ select.form-input option{background:var(--surface2);}
 </div><!-- #app -->
 
 <!-- CONTACT MODAL -->
-<div class="modal-overlay" id="modalContact">
+<div class="mOverlay" id="mContact">
   <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">📋 Seus Dados</div>
-      <button class="modal-close" onclick="cancelReservationAndClose()">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="reservation-timer" id="resTimerContact">
-        <div class="timer-icon">⏱️</div>
-        <div class="timer-text">Números reservados por</div>
-        <div class="timer-countdown" id="timerA">15:00</div>
-      </div>
-      <p style="color:var(--muted);font-size:.8rem;margin-bottom:12px">Preencha seus dados para confirmar.</p>
-      <div class="form-group">
-        <label class="form-label">Nome Completo *</label>
-        <input class="form-input" id="buyerName" placeholder="Seu nome completo">
-      </div>
-      <div class="form-group">
-        <label class="form-label">WhatsApp *</label>
-        <input class="form-input" type="tel" id="buyerPhone" placeholder="(00) 00000-0000">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Números Selecionados</label>
-        <div class="nums-preview" id="numsPreview"></div>
-      </div>
+    <div class="mHead"><div class="mTitle">📋 Seus Dados</div><button class="mClose" onclick="cancelAndClose()">✕</button></div>
+    <div class="mBody">
+      <p style="color:var(--mu);font-size:.8rem;margin-bottom:12px">Preencha seus dados para reservar os números.</p>
+      <div class="fGroup"><label class="fLabel">Nome Completo *</label><input class="fInput" id="buyerName" placeholder="Seu nome completo"></div>
+      <div class="fGroup"><label class="fLabel">WhatsApp *</label><input class="fInput" type="tel" id="buyerPhone" placeholder="(00) 00000-0000"></div>
+      <div class="fGroup"><label class="fLabel">Números Selecionados</label><div class="numsPrev" id="numsPrev"></div></div>
       <div class="sep"></div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <span style="font-size:.85rem;color:var(--muted)">Total:</span>
-        <span class="total-price" id="modalTotal">R$ 0,00</span>
+        <span style="font-size:.85rem;color:var(--mu)">Total:</span>
+        <span class="totPrice" id="mTotal">R$ 0,00</span>
       </div>
-      <button class="btn-buy" style="width:100%;padding:11px" onclick="proceedToPix()">Ir para Pagamento →</button>
-      <button class="btn-cancel-res" onclick="cancelReservationAndClose()">❌ Cancelar e liberar números</button>
+      <button class="btnBuy" style="width:100%;padding:11px" id="btnGoToPix" onclick="proceedToPix()">Ir para Pagamento →</button>
     </div>
   </div>
 </div>
 
 <!-- PIX MODAL -->
-<div class="modal-overlay" id="modalPix">
+<div class="mOverlay" id="mPix">
   <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">💳 Pagar via Pix</div>
-      <button class="modal-close" onclick="cancelReservationAndClose()">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="pix-section">
-        <div class="reservation-timer">
-          <div class="timer-icon">⏱️</div>
-          <div class="timer-text">Reserva expira em</div>
-          <div class="timer-countdown" id="timerB">15:00</div>
-        </div>
-        <div class="pix-nums" id="pixNumsLabel"></div>
-        <div class="pix-amount" id="pixAmountLabel"></div>
-        <div class="pix-qr"><canvas id="qrCanvas" width="174" height="174"></canvas></div>
-        <div class="pix-key-box">
-          <div class="pix-key" id="pixKeyDisplay">—</div>
-          <button class="btn-copy" onclick="copyPix()">📋 Copiar</button>
-        </div>
-        <div class="pix-instructions">
-          1. Abra seu banco ou carteira digital<br>
-          2. Escaneie o QR Code <b>ou</b> copie a chave Pix<br>
-          3. Confirme o valor e finalize o pagamento<br>
-          4. Clique em <b>"Confirmar Pagamento"</b> abaixo
-        </div>
-        <button class="btn-confirm" id="btnConfirm" onclick="confirmPayment()">✅ Confirmar Pagamento</button>
-        <button class="btn-cancel-res" onclick="cancelReservationAndClose()">❌ Cancelar e liberar números</button>
+    <div class="mHead"><div class="mTitle">💳 Pagar via Pix</div><button class="mClose" onclick="cancelAndClose()">✕</button></div>
+    <div class="mBody">
+      <div class="pixSec">
+        <div class="resTimer"><span style="font-size:1.1rem">⏱️</span><div class="timerTxt">Reserva expira em</div><div class="timerCnt" id="timerCnt">15:00</div></div>
+        <div class="pixNums" id="pixNums"></div>
+        <div class="pixAmt" id="pixAmt"></div>
+        <div class="pixQr"><canvas id="qrCanvas" width="174" height="174"></canvas></div>
+        <div class="pixKeyBox"><div class="pixKey" id="pixKeyDisp">—</div><button class="btnCopy" onclick="copyPix()">📋 Copiar</button></div>
+        <div class="pixInstr">1. Abra seu banco ou carteira digital<br>2. Escaneie o QR Code <b>ou</b> copie a chave Pix<br>3. Confirme o valor e finalize o pagamento<br>4. Clique em <b>"Confirmar Pagamento"</b> abaixo</div>
+        <button class="btnConfirm" id="btnConfirm" onclick="confirmPayment()">✅ Confirmar Pagamento</button>
+        <button class="btnCancelRes" onclick="cancelAndClose()">❌ Cancelar e liberar números</button>
       </div>
     </div>
   </div>
@@ -694,186 +549,151 @@ select.form-input option{background:var(--surface2);}
 
 <script>
 // ════════════════════════════════════════════════════
-// ESTADO
+// STATE
 // ════════════════════════════════════════════════════
 let API_URL = '';
-let numbers  = {};
-let cfg      = {title:'Minha Rifa',desc:'',price:10,qty:100,date:'',imgUrl:'',password:'admin123'};
-let pixCfg   = {type:'CPF',key:'',name:'Organizador',city:'Brasil'};
+let numbers = {}, cfg = {title:'Minha Rifa',desc:'',price:10,qty:100,date:'',imgUrl:'',password:'admin123'};
+let pixCfg  = {type:'CPF',key:'',name:'Organizador',city:'Brasil'};
 let settings = {};
-let selected = [];
-let buyerName='', buyerPhone='';
-let adminAuthed = false;
-let pendingImgFile = null;
-let gridBuiltQty = 0;
-let myReservedNums = [];
-let myPedidoId = '';           // ID único do pedido atual
-let reservationExpiresAt = null;
-let reservationTimerInterval = null;
+let selected = [], buyerName = '', buyerPhone = '';
+let adminAuthed = false, pendingImg = null, gridQty = 0;
+let myReserved = [], myPid = '';
+let resExpiry = null, resTimer = null;
 
 // PWA
-let deferredInstallPrompt = null;
-window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault();
-  deferredInstallPrompt = e;
-  if (!localStorage.getItem('rfInstallDismissed')) {
-    document.getElementById('installBanner').style.display = 'flex';
-  }
-});
-function installApp() {
-  if (deferredInstallPrompt) {
-    deferredInstallPrompt.prompt();
-    deferredInstallPrompt.userChoice.then(() => { deferredInstallPrompt = null; dismissInstall(); });
-  } else {
-    showToast('Use o menu do navegador para instalar (Adicionar à tela inicial)');
-  }
-}
-function dismissInstall() {
-  document.getElementById('installBanner').style.display = 'none';
-  localStorage.setItem('rfInstallDismissed', '1');
-}
+let deferredInstall = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredInstall = e; });
 
 // ════════════════════════════════════════════════════
-// API
+// API — todos os calls via GET (sem POST, sem redirect)
 // ════════════════════════════════════════════════════
-// Todas as chamadas usam GET para evitar o problema de redirect 302 do Apps Script
-// O body do POST é perdido no redirect — GET com params é mais confiável
-async function apiFetch(params) {
-  const res  = await fetch(API_URL + '?' + params + '&t=' + Date.now(), { redirect:'follow' });
-  const text = await res.text();
-  try {
-    const json = JSON.parse(text);
-    if (!json.ok) throw new Error(json.error || 'Erro na API');
-    return json.data;
-  } catch(parseErr) {
-    throw new Error('Resposta inválida do servidor. Verifique a URL e permissões.');
-  }
-}
-
-// apiPost: tenta GET com payload primeiro (evita redirect 302 que perde o body)
-// Para payloads grandes (ex: upload de imagem), usa POST com text/plain
-async function apiPost(body) {
-  const bodyStr = JSON.stringify(body);
-
-  // Upload de imagem é grande demais para URL — usa POST direto
-  if (body.action === 'uploadImage') {
-    return apiPostRaw(bodyStr);
-  }
-
-  // Para todas as outras ações, usa GET com payload (confiável no Apps Script)
-  const payload = encodeURIComponent(bodyStr);
-  const url     = API_URL + '?payload=' + payload + '&t=' + Date.now();
-
+async function apiGet(params) {
+  const url  = API_URL + '?' + params + '&t=' + Date.now();
   const res  = await fetch(url, { redirect:'follow' });
   const text = await res.text();
-  try {
-    const json = JSON.parse(text);
-    if (!json.ok) throw new Error(json.error || 'Erro na API');
-    return json.data;
-  } catch(parseErr) {
-    throw new Error('Resposta inválida. Verifique a URL e permissões do Web App.');
-  }
+  let json;
+  try { json = JSON.parse(text); } catch { throw new Error('Resposta inválida do servidor. Verifique a URL e permissões.'); }
+  if (!json.ok) throw new Error(json.error || 'Erro na API');
+  return json.data;
 }
 
-// Fallback POST direto (para payloads grandes como imagens)
-async function apiPostRaw(bodyStr) {
+// Serializa objeto como parâmetros GET individuais
+// Cada valor é encodeURIComponent para segurança
+function apiParams(obj) {
+  return Object.entries(obj)
+    .map(([k, v]) => {
+      const val = (typeof v === 'object') ? JSON.stringify(v) : String(v);
+      return encodeURIComponent(k) + '=' + encodeURIComponent(val);
+    })
+    .join('&');
+}
+
+async function apiCall(params) {
+  return apiGet(apiParams(params));
+}
+
+// Upload de imagem via POST (base64 é grande demais para URL)
+async function apiUpload(base64, ext) {
   const res  = await fetch(API_URL, {
-    method: 'POST', redirect: 'follow',
-    headers: { 'Content-Type': 'text/plain' },
-    body: bodyStr,
+    method:'POST', redirect:'follow',
+    headers:{'Content-Type':'text/plain'},
+    body: JSON.stringify({action:'uploadImage', base64, ext}),
   });
   const text = await res.text();
-  try {
-    const json = JSON.parse(text);
-    if (!json.ok) throw new Error(json.error || 'Erro na API');
-    return json.data;
-  } catch(parseErr) {
-    throw new Error('Resposta inválida do servidor.');
-  }
+  let json;
+  try { json = JSON.parse(text); } catch { throw new Error('Erro no upload da imagem.'); }
+  if (!json.ok) throw new Error(json.error);
+  return json.data;
 }
-function normalizeNumbers(raw) {
-  if (!raw || typeof raw !== 'object') return {};
-  const out = {};
-  Object.keys(raw).forEach(k => { out[String(k)] = raw[k]; });
-  return out;
+
+function norm(raw) {
+  if (!raw||typeof raw!=='object') return {};
+  const o = {};
+  Object.keys(raw).forEach(k => { o[String(k)] = raw[k]; });
+  return o;
 }
 
 // ════════════════════════════════════════════════════
-// DATE HELPERS — corrige vários formatos possíveis
-// ════════════════════════════════════════════════════
-function parseDate(val) {
-  // Já está no formato YYYY-MM-DD
-  if (!val || val === 'undefined' || val === 'null' || val === '') return '';
-  if (/^\d{4}-\d{2}-\d{2}$/.test(val)) return val;
-  // Formato DD/MM/YYYY
-  if (/^\d{2}\/\d{2}\/\d{4}$/.test(val)) {
-    const [d,m,y] = val.split('/');
-    return `${y}-${m}-${d}`;
-  }
-  // Objeto Date serializado ou ISO
-  try {
-    const d = new Date(val);
-    if (!isNaN(d.getTime())) {
-      const y  = d.getFullYear();
-      const mo = String(d.getMonth()+1).padStart(2,'0');
-      const dy = String(d.getDate()).padStart(2,'0');
-      return `${y}-${mo}-${dy}`;
-    }
-  } catch {}
-  return '';
-}
-
-function fmtDate(val) {
-  const iso = parseDate(val);
-  if (!iso) return '--';
-  const [y,m,d] = iso.split('-');
-  return `${d}/${m}/${y}`;
-}
-
-// ════════════════════════════════════════════════════
-// FIRST RUN
+// FIRST RUN / BOOT
 // ════════════════════════════════════════════════════
 async function firstConnect() {
   const url = document.getElementById('frUrl').value.trim();
   if (!url.includes('script.google.com')) {
-    showFrMsg('Cole a URL completa do Web App\n(https://script.google.com/macros/s/...)', 'err'); return;
+    showFrMsg('Cole a URL completa do Web App
+(https://script.google.com/macros/s/...)', 'err'); return;
   }
   API_URL = url;
   const btn = document.getElementById('frBtn');
-  btn.disabled=true; btn.textContent='⏳ Conectando...';
+  btn.disabled = true; btn.textContent = '⏳ Conectando...';
   showFrMsg('Conectando ao Google Sheets...', 'ok');
   try {
-    const data = await apiFetch('action=all');
+    const data = await apiGet('action=all');
     applyAll(data);
-    localStorage.setItem('rfApiUrl', url);
-    apiPost({action:'saveSettings', data:{apiUrl:url}}).catch(()=>{});
-    launchApp();
+    localStorage.setItem('rfUrl', url);
+    // Salva no Sheets para outros usuários que não têm o config.json
+    apiCall({action:'saveSettings', data:{apiUrl:url}}).catch(()=>{});
+    launch();
+    // Avisa o admin para atualizar o config.json
+    setTimeout(() => {
+      showToast('✅ Conectado! Lembre de atualizar o config.json no repositório.');
+    }, 1000);
   } catch(e) {
-    showFrMsg('❌ '+e.message+'\n\nVerifique:\n• URL correta\n• Acesso "Qualquer pessoa"\n• Permissões autorizadas', 'err');
-    btn.disabled=false; btn.textContent='🚀 Conectar';
+    showFrMsg('❌ ' + e.message + '
+
+Verifique:
+• URL correta
+• Acesso "Qualquer pessoa"
+• Permissões autorizadas', 'err');
+    btn.disabled = false; btn.textContent = '🚀 Conectar';
   }
 }
-function showFrMsg(msg, type) {
-  const el=document.getElementById('frMsg');
-  el.textContent=msg; el.className='fr-msg '+type; el.style.display='block';
-}
+function showFrMsg(m, t) { const e=document.getElementById('frMsg'); e.textContent=m; e.className='frMsg '+t; e.style.display='block'; }
 
-// Boot automático
 (async function boot() {
-  const local = localStorage.getItem('rfApiUrl');
-  if (!local) return; // mostra first run
-  API_URL = local;
-  document.getElementById('apiUrl') && (document.getElementById('apiUrl').value = local);
-  showLoading('Carregando...');
+  showLoad('Carregando...');
+
+  // 1. Tenta ler config.json do repositório (fonte de verdade)
+  //    O arquivo fica na mesma pasta do index.html no GitHub Pages
   try {
-    const data = await apiFetch('action=all');
+    const cfgRes  = await fetch('./config.json?t=' + Date.now());
+    if (cfgRes.ok) {
+      const cfgJson = await cfgRes.json();
+      if (cfgJson.apiUrl && cfgJson.apiUrl !== 'COLE_AQUI_A_URL_DO_SEU_APPS_SCRIPT') {
+        API_URL = cfgJson.apiUrl;
+        localStorage.setItem('rfUrl', API_URL); // sincroniza localStorage
+      }
+    }
+  } catch {} // silencioso — pode não ter o arquivo ou rodar localmente
+
+  // 2. Fallback: usa URL salva no localStorage
+  if (!API_URL) {
+    const saved = localStorage.getItem('rfUrl');
+    if (saved) API_URL = saved;
+  }
+
+  // 3. Sem URL configurada → mostra tela de primeiro acesso
+  if (!API_URL) {
+    hideLoad();
+    document.getElementById('frScreen').style.display = 'flex';
+    return;
+  }
+
+  document.getElementById('frUrl').value = API_URL;
+
+  // 4. Conecta ao Sheets
+  try {
+    const data = await apiGet('action=all');
     applyAll(data);
-    launchApp();
-  } catch {
-    hideLoading();
-    document.getElementById('firstRunScreen').style.display='flex';
-    localStorage.removeItem('rfApiUrl');
-    showFrMsg('Não foi possível reconectar.\nCole a URL novamente.','err');
+    launch();
+  } catch(e) {
+    hideLoad();
+    document.getElementById('frScreen').style.display = 'flex';
+    // Não remove localStorage — pode ser erro temporário de rede
+    showFrMsg('Não foi possível conectar ao Google Sheets.
+
+Verifique se a URL está correta e se o Web App está publicado como "Qualquer pessoa".
+
+Erro: ' + e.message, 'err');
   }
 })();
 
@@ -881,341 +701,268 @@ function applyAll(data) {
   if (data.settings) settings = data.settings;
   if (data.config) {
     const c = data.config;
-    cfg = {
-      title:    c.title    || 'Minha Rifa',
-      desc:     c.desc     || '',
-      price:    parseFloat(c.price)  || 10,
-      qty:      parseInt(c.qty)      || 100,
-      date:     parseDate(c.date),   // ← normaliza aqui
-      imgUrl:   c.imgUrl   || '',
-      password: c.password || 'admin123',
-    };
+    cfg = { title:c.title||'Minha Rifa', desc:c.desc||'', price:parseFloat(c.price)||10, qty:parseInt(c.qty)||100, date:parseDate(c.date), imgUrl:c.imgUrl||'', password:c.password||'admin123' };
   }
-  if (data.pix) pixCfg={type:data.pix.type||'CPF',key:data.pix.key||'',name:data.pix.name||'',city:data.pix.city||''};
-  if (data.numbers) numbers=normalizeNumbers(data.numbers);
+  if (data.pix) pixCfg = {type:data.pix.type||'CPF',key:data.pix.key||'',name:data.pix.name||'',city:data.pix.city||''};
+  if (data.numbers) numbers = norm(data.numbers);
 }
-
-function launchApp() {
-  document.getElementById('firstRunScreen').style.display='none';
-  hideLoading();
+function launch() {
+  document.getElementById('frScreen').style.display='none';
+  hideLoad();
   document.getElementById('app').style.display='block';
   buildGrid(); renderAll(); startSync();
 }
-function showLoading(t) { document.getElementById('loadingText').textContent=t; document.getElementById('loadingScreen').style.display='flex'; document.getElementById('firstRunScreen').style.display='none'; }
-function hideLoading() { document.getElementById('loadingScreen').style.display='none'; }
+function showLoad(t) { document.getElementById('ldTxt').textContent=t; document.getElementById('ldScreen').style.display='flex'; document.getElementById('frScreen').style.display='none'; }
+function hideLoad() { document.getElementById('ldScreen').style.display='none'; }
 
 // ════════════════════════════════════════════════════
 // SYNC
 // ════════════════════════════════════════════════════
 function startSync() { setInterval(()=>syncNow(false), 10000); }
-
 async function syncNow(manual=false) {
-  setSyncState('syncing');
+  setSyncState('spin');
   try {
-    const data = await apiFetch('action=numbers');
-    const fresh = normalizeNumbers(data.numbers||{});
-    const mySet = new Set(myReservedNums);
-    // Só remove da seleção os que foram vendidos por OUTROS (não minha reserva)
+    const data = await apiGet('action=numbers');
+    const fresh = norm(data.numbers||{});
+    const mySet = new Set(myReserved);
     selected = selected.filter(k => !fresh[k] || mySet.has(k));
     numbers = fresh;
-    refreshGridClasses(); renderHero(); updateSummary(); updateStats();
+    refreshGrid(); renderHero(); updateSummary(); updateStats();
     if (adminAuthed) renderBuyers();
     setSyncState('ok');
     if (manual) showToast('🔄 Atualizado!');
   } catch { setSyncState('err'); }
 }
-
 function setSyncState(s) {
-  const d=document.getElementById('syncDot'),l=document.getElementById('syncLabel');
-  d.className='sync-dot'+(s==='syncing'?' syncing':s==='err'?' err':'');
-  l.textContent=s==='syncing'?'atualizando':s==='err'?'sem conexão':'ao vivo ✓';
+  const d=document.getElementById('syncDot'),l=document.getElementById('syncLbl');
+  d.className='syncDot'+(s==='spin'?' spin':s==='err'?' err':'');
+  l.textContent=s==='spin'?'atualizando':s==='err'?'sem conexão':'ao vivo ✓';
 }
 
 // ════════════════════════════════════════════════════
-// PAGES / ADMIN TABS
+// PAGES / TABS
 // ════════════════════════════════════════════════════
-function showPage(page) {
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('page-'+page).classList.add('active');
-  document.getElementById('tab'+page[0].toUpperCase()+page.slice(1)).classList.add('active');
-  if(page==='admin'&&adminAuthed){syncAdminFields();renderBuyers();updateStats();}
+function showPage(p) {
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.navTab').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  document.getElementById('tab'+p[0].toUpperCase()+p.slice(1)).classList.add('active');
+  if (p==='admin'&&adminAuthed) { syncAdminFields(); renderBuyers(); updateStats(); }
 }
-function showAdminTab(tab, el) {
-  document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.admin-tab-panel').forEach(p=>p.classList.remove('active'));
+function showATab(t, el) {
+  document.querySelectorAll('.aTab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.aTabPanel').forEach(x=>x.classList.remove('active'));
   el.classList.add('active');
-  document.getElementById('atab-'+tab).classList.add('active');
-  if(tab==='compradores') renderBuyers();
+  document.getElementById('atab-'+t).classList.add('active');
+  if (t==='compradores') renderBuyers();
 }
 
 // ════════════════════════════════════════════════════
 // RENDER
 // ════════════════════════════════════════════════════
-function renderAll() { renderHero(); refreshGridClasses(); updateSummary(); updateStats(); }
+function renderAll() { renderHero(); refreshGrid(); updateSummary(); updateStats(); }
 
 function renderHero() {
-  document.getElementById('heroTitle').textContent    = cfg.title||'Rifa';
-  document.getElementById('heroDesc').textContent     = cfg.desc||'';
+  document.getElementById('heroTitle').textContent = cfg.title||'Rifa';
+  document.getElementById('heroDesc').textContent  = cfg.desc||'';
   document.getElementById('heroPriceVal').textContent = fmt(cfg.price);
-  // ← usa fmtDate corrigido
   document.getElementById('heroDateVal').textContent  = cfg.date ? fmtDate(cfg.date) : '--';
-  const sold = Object.values(numbers).filter(n=>{const s=(n.status||'').toLowerCase();return s==='pending'||s==='paid';}).length;
-  document.getElementById('heroSoldVal').textContent  = sold;
-  const total = Object.keys(numbers).length;
-  const pct   = cfg.qty>0 ? Math.round(total/cfg.qty*100) : 0;
-  document.getElementById('progressFill').style.width = pct+'%';
-  document.getElementById('progressPct').textContent  = pct+'%';
+  const sold = Object.values(numbers).filter(n=>(n.status||'').toLowerCase()==='pending'||(n.status||'').toLowerCase()==='paid').length;
+  document.getElementById('heroSoldVal').textContent = sold;
+  const pct = cfg.qty>0 ? Math.round(Object.keys(numbers).length/cfg.qty*100) : 0;
+  document.getElementById('progFill').style.width = pct+'%';
+  document.getElementById('progPct').textContent  = pct+'%';
   const img=document.getElementById('heroImg'),em=document.getElementById('heroEmoji');
-  if(cfg.imgUrl){img.src=cfg.imgUrl;img.style.display='block';em.style.display='none';}
-  else{img.style.display='none';em.style.display='block';}
+  if (cfg.imgUrl) { img.src=cfg.imgUrl; img.style.display='block'; em.style.display='none'; }
+  else { img.style.display='none'; em.style.display='block'; }
 }
 
 function buildGrid() {
-  const grid = document.getElementById('numbersGrid');
+  const grid = document.getElementById('numGrid');
   const qty  = Math.max(10,Math.min(1000,cfg.qty||100));
-  if (gridBuiltQty===qty) { refreshGridClasses(); return; }
-  const pad=qty>=100?3:2;
-  document.getElementById('gridTitle').textContent=`Escolha seus números (1 – ${qty})`;
-  grid.innerHTML='';
-  for(let i=1;i<=qty;i++){
+  if (gridQty===qty) { refreshGrid(); return; }
+  const pad = qty>=100?3:2;
+  document.getElementById('gridTitle').textContent = `Escolha seus números (1 – ${qty})`;
+  grid.innerHTML = '';
+  for (let i=1;i<=qty;i++) {
     const b=document.createElement('button');
-    b.className='num-btn'; b.textContent=String(i).padStart(pad,'0');
+    b.className='nBtn'; b.textContent=String(i).padStart(pad,'0');
     b.dataset.k=String(i); b.onclick=()=>toggleNum(String(i));
     grid.appendChild(b);
   }
-  gridBuiltQty=qty; refreshGridClasses();
+  gridQty=qty; refreshGrid();
 }
 
-function refreshGridClasses() {
-  const mySet=new Set(myReservedNums);
-  Array.from(document.getElementById('numbersGrid').children).forEach(b=>{
-    const k=b.dataset.k;
-    b.className='num-btn'; b.disabled=false; b.title='';
+function refreshGrid() {
+  const mySet=new Set(myReserved);
+  Array.from(document.getElementById('numGrid').children).forEach(b=>{
+    const k=b.dataset.k; b.className='nBtn'; b.disabled=false; b.title='';
     const e=numbers[k];
-    if(e){
-      const st=(e.status||'').trim().toLowerCase();
-      if(st==='reserved'){
-        if(mySet.has(k)){b.classList.add('selected');}
-        else{b.classList.add('reserved');b.disabled=true;b.title='Reservado momentaneamente';}
-      } else {
-        b.classList.add('sold');b.disabled=true;b.title='Vendido: '+e.name;
-      }
-    } else if(selected.includes(k)){b.classList.add('selected');}
+    if (e) {
+      const st=(e.status||'').toLowerCase();
+      if (st==='reserved') {
+        if (mySet.has(k)) b.classList.add('selected');
+        else { b.classList.add('reserved'); b.disabled=true; b.title='Reservado momentaneamente'; }
+      } else { b.classList.add('sold'); b.disabled=true; b.title='Vendido: '+e.name; }
+    } else if (selected.includes(k)) b.classList.add('selected');
   });
 }
 
 function updateSummary() {
   const c=selected.length;
-  document.getElementById('selCount').textContent  =c;
-  document.getElementById('totalPrice').textContent='R$ '+fmt(c*cfg.price);
-  document.getElementById('btnBuy').disabled       =c===0;
+  document.getElementById('selCount').textContent  = c;
+  document.getElementById('totalPrice').textContent = 'R$ '+fmt(c*cfg.price);
+  document.getElementById('btnBuy').disabled        = c===0;
 }
 
 function updateStats() {
   const el=document.getElementById('statSold'); if(!el) return;
-  const sold = Object.values(numbers).filter(n=>{const s=(n.status||'').toLowerCase();return s==='pending'||s==='paid';}).length;
-  const res  = Object.values(numbers).filter(n=>(n.status||'').toLowerCase()==='reserved').length;
+  const vals=Object.values(numbers);
+  const sold=vals.filter(n=>['pending','paid'].includes((n.status||'').toLowerCase())).length;
+  const res =vals.filter(n=>(n.status||'').toLowerCase()==='reserved').length;
   const avail=Math.max(0,(cfg.qty||100)-Object.keys(numbers).length);
   el.textContent=sold;
-  document.getElementById('statRes').textContent    =res;
-  document.getElementById('statAvail').textContent  =avail;
-  document.getElementById('statRevenue').textContent='R$'+fmt(sold*(cfg.price||0));
+  document.getElementById('statRes').textContent  =res;
+  document.getElementById('statAvail').textContent=avail;
+  document.getElementById('statRev').textContent  ='R$'+fmt(sold*(cfg.price||0));
 }
 
 // ════════════════════════════════════════════════════
 // TOGGLE
 // ════════════════════════════════════════════════════
 function toggleNum(k) {
-  if(numbers[k]&&!myReservedNums.includes(k)) return;
-  if(myReservedNums.length>0) return;
+  if (numbers[k]&&!myReserved.includes(k)) return;
+  if (myReserved.length>0) return;
   const idx=selected.indexOf(k);
-  if(idx===-1) selected.push(k); else selected.splice(idx,1);
-  const b=document.querySelector(`.num-btn[data-k="${k}"]`);
-  if(b){if(selected.includes(k))b.classList.add('selected');else b.classList.remove('selected');}
+  if (idx===-1) selected.push(k); else selected.splice(idx,1);
+  const b=document.querySelector(`.nBtn[data-k="${k}"]`);
+  if (b) { if (selected.includes(k)) b.classList.add('selected'); else b.classList.remove('selected'); }
   updateSummary();
 }
 
 // ════════════════════════════════════════════════════
-// RESERVATION TIMER
+// TIMER DE RESERVA
 // ════════════════════════════════════════════════════
-function startReservationTimer(expiresAt) {
-  reservationExpiresAt=new Date(expiresAt);
-  clearInterval(reservationTimerInterval);
-  reservationTimerInterval=setInterval(()=>{
-    const rem=reservationExpiresAt-new Date();
-    if(rem<=0){clearInterval(reservationTimerInterval);handleExpired();return;}
-    const m=Math.floor(rem/60000),s=Math.floor((rem%60000)/1000);
+function startTimer(expiry) {
+  resExpiry=new Date(expiry); clearInterval(resTimer);
+  resTimer=setInterval(()=>{
+    const rem=resExpiry-new Date();
+    if (rem<=0) { clearInterval(resTimer); handleExpired(); return; }
+    const m=Math.floor(rem/60000), s=Math.floor((rem%60000)/1000);
     const txt=m+':'+(s<10?'0':'')+s;
-    const urgent=rem<120000; // vermelho nos últimos 2min
-    ['timerA','timerB'].forEach(id=>{
-      const el=document.getElementById(id);
-      if(el){el.textContent=txt;el.className='timer-countdown'+(urgent?' urgent':'');}
-    });
+    const urgent=rem<120000;
+    ['timerCnt'].forEach(id=>{ const el=document.getElementById(id); if(el){el.textContent=txt;el.className='timerCnt'+(urgent?' urgent':'');} });
   },1000);
 }
-function stopReservationTimer(){clearInterval(reservationTimerInterval);reservationTimerInterval=null;reservationExpiresAt=null;}
-function handleExpired(){
-  myReservedNums=[];myPedidoId='';selected=[];stopReservationTimer();
-  closeModal('modalContact');closeModal('modalPix');
-  syncNow();showToast('⏱️ Reserva expirada! Números liberados.','red');
+function stopTimer() { clearInterval(resTimer); resTimer=null; resExpiry=null; }
+function handleExpired() {
+  myReserved=[]; myPid=''; selected=[]; stopTimer();
+  closeModal('mContact'); closeModal('mPix');
+  syncNow(); showToast('⏱️ Reserva expirada! Números liberados.','red');
 }
 
 // ════════════════════════════════════════════════════
-// ════════════════════════════════════════════════════
 // FLUXO DE COMPRA
-// P1: openContactModal  → exibe formulário (sem tocar no Sheets)
-// P2: proceedToPix      → reserva com nome/tel + gera pedidoId
-// P3: confirmPayment    → muda reserved→pending (pedido aguarda admin)
+// P1: openContactModal → formulário (sem tocar no Sheets)
+// P2: proceedToPix → reserva com dados reais → tela Pix
+// P3: confirmPayment → reserved→pending
 // ════════════════════════════════════════════════════
-
 function openContactModal() {
   if (!selected.length) return;
-  const pad = cfg.qty >= 100 ? 3 : 2;
-  document.getElementById('numsPreview').innerHTML =
-    [...selected].sort((a,b) => parseInt(a)-parseInt(b))
-      .map(k => `<span class="num-chip">${String(k).padStart(pad,'0')}</span>`).join('');
-  document.getElementById('modalTotal').textContent = 'R$ ' + fmt(selected.length * cfg.price);
-  document.getElementById('buyerName').value  = '';
-  document.getElementById('buyerPhone').value = '';
-  document.getElementById('resTimerContact').style.display = 'none';
-  openModal('modalContact');
+  const pad=cfg.qty>=100?3:2;
+  document.getElementById('numsPrev').innerHTML=
+    [...selected].sort((a,b)=>parseInt(a)-parseInt(b))
+      .map(k=>`<span class="numChip">${String(k).padStart(pad,'0')}</span>`).join('');
+  document.getElementById('mTotal').textContent='R$ '+fmt(selected.length*cfg.price);
+  document.getElementById('buyerName').value='';
+  document.getElementById('buyerPhone').value='';
+  openModal('mContact');
 }
 
 async function proceedToPix() {
-  const nome = document.getElementById('buyerName').value.trim();
-  const fone = document.getElementById('buyerPhone').value.trim();
-  if (!nome || !fone) { showToast('Preencha nome e telefone!', 'red'); return; }
-  buyerName = nome; buyerPhone = fone;
-
-  const btn = document.querySelector('#modalContact .btn-buy');
-  if (btn) { btn.textContent = '⏳ Reservando...'; btn.disabled = true; }
-
+  const nome=document.getElementById('buyerName').value.trim();
+  const fone=document.getElementById('buyerPhone').value.trim();
+  if (!nome||!fone) { showToast('Preencha nome e telefone!','red'); return; }
+  buyerName=nome; buyerPhone=fone;
+  const btn=document.getElementById('btnGoToPix');
+  btn.textContent='⏳ Reservando...'; btn.disabled=true;
   try {
-    const numsInt = selected.map(k => parseInt(k, 10));
-    const result  = await apiPost({
-      action: 'reserveNumbers', numbers: numsInt, name: nome, phone: fone,
+    const result = await apiCall({
+      action: 'reserveNumbers',
+      numbers: JSON.stringify(selected.map(k=>parseInt(k,10))),
+      name:  nome,
+      phone: fone,
     });
-
-    if (result.conflicts && result.conflicts.length > 0) {
-      const pad = cfg.qty >= 100 ? 3 : 2;
-      showToast('❌ Número(s) ' + result.conflicts.map(n => String(n).padStart(pad,'0')).join(', ') + ' indisponível!', 'red');
+    if (result.conflicts&&result.conflicts.length>0) {
+      const pad=cfg.qty>=100?3:2;
+      showToast('❌ Número(s) '+result.conflicts.map(n=>String(n).padStart(pad,'0')).join(', ')+' indisponível!','red');
       await syncNow();
-      if (btn) { btn.textContent = 'Ir para Pagamento →'; btn.disabled = false; }
-      return;
+      btn.textContent='Ir para Pagamento →'; btn.disabled=false; return;
     }
-
-    // Guarda o pedidoId único desta reserva
-    myPedidoId     = result.pedidoId || '';
-    myReservedNums = [...selected];
-    if (result.expiresAt) startReservationTimer(result.expiresAt);
-
-    const now = new Date().toISOString();
-    myReservedNums.forEach(k => {
-      numbers[k] = { name: nome, phone: fone, status: 'reserved',
-                     date: now, reservedUntil: result.expiresAt||'', pedidoId: myPedidoId };
-    });
-    refreshGridClasses();
-    document.getElementById('resTimerContact').style.display = 'flex';
-    closeModal('modalContact');
+    myPid=result.pedidoId||''; myReserved=[...selected];
+    if (result.expiresAt) startTimer(result.expiresAt);
+    const now=new Date().toISOString();
+    myReserved.forEach(k=>{ numbers[k]={name:nome,phone:fone,status:'reserved',date:now,reservedUntil:result.expiresAt||'',pedidoId:myPid}; });
+    refreshGrid();
+    closeModal('mContact');
     openPixModal();
-
-  } catch(e) { showToast('Erro ao reservar: ' + e.message, 'red'); }
-  if (btn) { btn.textContent = 'Ir para Pagamento →'; btn.disabled = false; }
+  } catch(e) { showToast('Erro ao reservar: '+e.message,'red'); }
+  btn.textContent='Ir para Pagamento →'; btn.disabled=false;
 }
 
-async function cancelReservationAndClose() {
-  if (myReservedNums.length > 0 || myPedidoId) {
-    try {
-      await apiPost({
-        action: 'cancelReservation',
-        pedidoId: myPedidoId,
-        numbers: myReservedNums.map(k => parseInt(k, 10)),
-      });
-    } catch {}
-    myReservedNums.forEach(k => { delete numbers[k]; });
-    myReservedNums = []; myPedidoId = ''; selected = []; stopReservationTimer();
-    refreshGridClasses(); renderHero(); updateSummary(); updateStats();
+async function cancelAndClose() {
+  if (myReserved.length>0||myPid) {
+    try { await apiCall({action:'cancelReservation',pedidoId:myPid}); } catch {}
+    myReserved.forEach(k=>{delete numbers[k];});
+    myReserved=[]; myPid=''; selected=[]; stopTimer();
+    refreshGrid(); renderHero(); updateSummary(); updateStats();
   }
-  closeModal('modalContact'); closeModal('modalPix');
+  closeModal('mContact'); closeModal('mPix');
 }
 
 function openPixModal() {
-  const total = myReservedNums.length * cfg.price;
-  const pad   = cfg.qty >= 100 ? 3 : 2;
-  document.getElementById('pixNumsLabel').textContent =
-    'Números: ' + [...myReservedNums].sort((a,b) => parseInt(a)-parseInt(b))
-      .map(k => String(k).padStart(pad,'0')).join(', ');
-  document.getElementById('pixAmountLabel').textContent = 'R$ ' + fmt(total);
-  document.getElementById('pixKeyDisplay').textContent  =
-    (pixCfg.type||'PIX') + ': ' + (pixCfg.key||'Não configurado');
-  generateQR(pixCfg.key||'', total);
-  openModal('modalPix');
+  const total=myReserved.length*cfg.price;
+  const pad=cfg.qty>=100?3:2;
+  document.getElementById('pixNums').textContent='Números: '+[...myReserved].sort((a,b)=>parseInt(a)-parseInt(b)).map(k=>String(k).padStart(pad,'0')).join(', ');
+  document.getElementById('pixAmt').textContent='R$ '+fmt(total);
+  document.getElementById('pixKeyDisp').textContent=(pixCfg.type||'PIX')+': '+(pixCfg.key||'Não configurado');
+  generateQR(pixCfg.key||'',total);
+  openModal('mPix');
 }
 
 async function confirmPayment() {
-  const btn = document.getElementById('btnConfirm');
-  btn.textContent = '⏳ Confirmando...'; btn.disabled = true;
-  if (!myReservedNums.length) {
-    showToast('Nenhuma reserva ativa.', 'red');
-    btn.textContent = '✅ Confirmar Pagamento'; btn.disabled = false; return;
-  }
+  const btn=document.getElementById('btnConfirm');
+  btn.textContent='⏳ Confirmando...'; btn.disabled=true;
+  if (!myReserved.length) { showToast('Nenhuma reserva ativa.','red'); btn.textContent='✅ Confirmar Pagamento'; btn.disabled=false; return; }
   try {
-    await apiPost({
-      action: 'confirmNumbers',
-      pedidoId: myPedidoId,
-      numbers: myReservedNums.map(k => parseInt(k, 10)),
-    });
-    const count = myReservedNums.length;
-    myReservedNums.forEach(k => { if (numbers[k]) numbers[k].status = 'pending'; });
-    myReservedNums = []; myPedidoId = ''; selected = []; stopReservationTimer();
-    closeModal('modalPix');
-    refreshGridClasses(); renderHero(); updateSummary(); updateStats();
+    await apiCall({action:'confirmNumbers', pedidoId:myPid, numbers:JSON.stringify(myReserved.map(k=>parseInt(k,10)))});
+    const count=myReserved.length;
+    myReserved.forEach(k=>{ if(numbers[k]) numbers[k].status='pending'; });
+    myReserved=[]; myPid=''; selected=[]; stopTimer();
+    closeModal('mPix');
+    refreshGrid(); renderHero(); updateSummary(); updateStats();
     if (adminAuthed) renderBuyers();
-    showToast(`✅ ${count} número(s) enviado(s) para confirmação de pagamento!`);
-    setTimeout(() => syncNow(false), 2000);
-  } catch(e) { showToast('Erro ao confirmar: ' + e.message, 'red'); }
-  btn.textContent = '✅ Confirmar Pagamento'; btn.disabled = false;
+    showToast(`✅ ${count} número(s) enviado(s)! Aguardando confirmação do pagamento.`);
+    setTimeout(()=>syncNow(false),2000);
+  } catch(e) { showToast('Erro: '+e.message,'red'); }
+  btn.textContent='✅ Confirmar Pagamento'; btn.disabled=false;
 }
 
 function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
-document.querySelectorAll('.modal-overlay').forEach(o=>
-  o.addEventListener('click',e=>{if(e.target===o)cancelReservationAndClose();}));
-
-// ── Delegação de eventos para botões da tabela de compradores ──
-// Evita problemas de escape de strings em onclick inline
-document.addEventListener('click', function(e) {
-  const btn = e.target.closest('.pedido-btn');
-  if (!btn) return;
-  const action = btn.dataset.action;
-  const pid    = decodeURIComponent(btn.dataset.pid || '');
-  if (!pid) return;
-  if (action === 'confirmar') { confirmarPedido(pid); }
-  else if (action === 'cancelar')  { cancelarPedido(pid); }
-  else if (action === 'reverter')  { reverterPedido(pid); }
-  else if (action === 'whatsapp')  {
-    const phone = decodeURIComponent(btn.dataset.phone || '');
-    const name  = decodeURIComponent(btn.dataset.name  || '');
-    openWhatsAppConfirmation(pid, phone, name);
-  }
-});
+document.querySelectorAll('.mOverlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)cancelAndClose();}));
 
 // ════════════════════════════════════════════════════
-// QR CODE
+// QR CODE PIX (EMV visual)
 // ════════════════════════════════════════════════════
-function generateQR(key,amount){
-  const cv=document.getElementById('qrCanvas'),ctx=cv.getContext('2d');
-  drawQR(ctx,buildPixPayload(key,amount),174);
-}
-function buildPixPayload(key,amount){
+function generateQR(key,amount){const cv=document.getElementById('qrCanvas'),ctx=cv.getContext('2d');drawQR(ctx,buildPix(key,amount),174);}
+function buildPix(key,amount){
   function tlv(id,v){return id+String(v.length).padStart(2,'0')+v;}
   const mai=tlv('26',tlv('00','BR.GOV.BCB.PIX')+tlv('01',key||'00000000000'));
   const n=(pixCfg.name||'RIFA').substring(0,25).toUpperCase();
   const c=(pixCfg.city||'BRASIL').substring(0,15).toUpperCase();
   const a=parseFloat(amount||0).toFixed(2);
-  const p=tlv('00','01')+mai+tlv('52','0000')+tlv('53','986')+tlv('54',a)+
-    tlv('58','BR')+tlv('59',n)+tlv('60',c)+tlv('62',tlv('05','***'));
+  const p=tlv('00','01')+mai+tlv('52','0000')+tlv('53','986')+tlv('54',a)+tlv('58','BR')+tlv('59',n)+tlv('60',c)+tlv('62',tlv('05','***'));
   let crc=0xFFFF;
   for(const ch of p+'6304'){crc^=ch.charCodeAt(0)<<8;for(let j=0;j<8;j++)crc=(crc&0x8000)?(crc<<1)^0x1021:crc<<1;}
   return p+'6304'+((crc&0xFFFF).toString(16).toUpperCase().padStart(4,'0'));
@@ -1223,76 +970,50 @@ function buildPixPayload(key,amount){
 function drawQR(ctx,data,size){
   ctx.fillStyle='#fff';ctx.fillRect(0,0,size,size);
   const M=25,ms=size/M;
-  const finder=(ox,oy)=>{
-    ctx.fillStyle='#000';ctx.fillRect(ox*ms,oy*ms,7*ms,7*ms);
-    ctx.fillStyle='#fff';ctx.fillRect((ox+1)*ms,(oy+1)*ms,5*ms,5*ms);
-    ctx.fillStyle='#000';ctx.fillRect((ox+2)*ms,(oy+2)*ms,3*ms,3*ms);
-  };
-  finder(0,0);finder(M-7,0);finder(0,M-7);
-  ctx.fillStyle='#000';
+  const f=(ox,oy)=>{ctx.fillStyle='#000';ctx.fillRect(ox*ms,oy*ms,7*ms,7*ms);ctx.fillStyle='#fff';ctx.fillRect((ox+1)*ms,(oy+1)*ms,5*ms,5*ms);ctx.fillStyle='#000';ctx.fillRect((ox+2)*ms,(oy+2)*ms,3*ms,3*ms);};
+  f(0,0);f(M-7,0);f(0,M-7);ctx.fillStyle='#000';
   let s=data.split('').reduce((a,c)=>a+c.charCodeAt(0),0)|1;
-  for(let r=0;r<M;r++) for(let c=0;c<M;c++){
-    if((r<8&&c<8)||(r<8&&c>=M-8)||(r>=M-8&&c<8)) continue;
-    s=(s*1664525+1013904223)&0xffffffff;
-    if(s&1)ctx.fillRect(c*ms,r*ms,ms,ms);
-  }
+  for(let r=0;r<M;r++)for(let c=0;c<M;c++){if((r<8&&c<8)||(r<8&&c>=M-8)||(r>=M-8&&c<8))continue;s=(s*1664525+1013904223)&0xffffffff;if(s&1)ctx.fillRect(c*ms,r*ms,ms,ms);}
 }
 function copyPix(){
   if(!pixCfg.key){showToast('Chave Pix não configurada!','red');return;}
   try{navigator.clipboard.writeText(pixCfg.key).then(()=>showToast('Chave Pix copiada! ✓'));}
-  catch{const ta=document.createElement('textarea');ta.value=pixCfg.key;
-    document.body.appendChild(ta);ta.select();document.execCommand('copy');
-    document.body.removeChild(ta);showToast('Chave Pix copiada! ✓');}
+  catch{const t=document.createElement('textarea');t.value=pixCfg.key;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);showToast('Chave Pix copiada! ✓');}
 }
 
 // ════════════════════════════════════════════════════
 // IMAGE UPLOAD
 // ════════════════════════════════════════════════════
-function handleImgSelect(input){
+function handleImg(input){
   const file=input.files[0];if(!file)return;
   if(file.size>5*1024*1024){showToast('Imagem muito grande! Máx 5MB.','red');return;}
-  pendingImgFile=file;
-  const r=new FileReader();
-  r.onload=e=>{
-    document.getElementById('imgPreview').src=e.target.result;
-    document.getElementById('imgPreviewWrap').style.display='block';
-    document.getElementById('uploadArea').style.display='none';
-  };
-  r.readAsDataURL(file);
+  pendingImg=file;
+  const r=new FileReader();r.onload=e=>{document.getElementById('imgPrev').src=e.target.result;document.getElementById('imgPrevWrap').style.display='block';document.getElementById('imgArea').style.display='none';};r.readAsDataURL(file);
 }
-function removeImage(){
-  pendingImgFile=null;cfg.imgUrl='';
-  document.getElementById('imgPreviewWrap').style.display='none';
-  document.getElementById('uploadArea').style.display='block';
-  document.getElementById('imgFileInput').value='';
-}
-async function uploadImageIfNeeded(){
-  if(!pendingImgFile) return cfg.imgUrl||'';
-  const wrap=document.getElementById('uploadBarWrap'),bar=document.getElementById('uploadBar');
+function removeImg(){pendingImg=null;cfg.imgUrl='';document.getElementById('imgPrevWrap').style.display='none';document.getElementById('imgArea').style.display='block';document.getElementById('imgFile').value='';}
+async function uploadImg(){
+  if(!pendingImg) return cfg.imgUrl||'';
+  const wrap=document.getElementById('upBarWrap'),bar=document.getElementById('upBar');
   wrap.style.display='block';bar.style.width='30%';
-  const ext=(pendingImgFile.name.split('.').pop()||'jpg').toLowerCase();
-  const base64=await new Promise(res=>{
-    const r=new FileReader();r.onload=e=>res(e.target.result);r.readAsDataURL(pendingImgFile);
-  });
+  const ext=(pendingImg.name.split('.').pop()||'jpg').toLowerCase();
+  const base64=await new Promise(res=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.readAsDataURL(pendingImg);});
   bar.style.width='65%';
-  const result=await apiPost({action:'uploadImage',base64,ext});
-  bar.style.width='100%';
-  setTimeout(()=>{wrap.style.display='none';bar.style.width='0';},500);
-  pendingImgFile=null;
-  return result.url||'';
+  const result=await apiUpload(base64,ext);
+  bar.style.width='100%';setTimeout(()=>{wrap.style.display='none';bar.style.width='0';},500);
+  pendingImg=null;return result.url||'';
 }
 
 // ════════════════════════════════════════════════════
 // ADMIN
 // ════════════════════════════════════════════════════
 function checkAdmin(){
-  const pass=document.getElementById('adminPassInput').value;
+  const pass=document.getElementById('adminPass').value;
   if(pass===(cfg.password||'admin123')){
     adminAuthed=true;
     document.getElementById('adminLogin').style.display='none';
     document.getElementById('adminPanel').style.display='block';
     syncAdminFields();renderBuyers();updateStats();
-  }else{showToast('Senha incorreta!','red');document.getElementById('adminPassInput').value='';}
+  } else {showToast('Senha incorreta!','red');document.getElementById('adminPass').value='';}
 }
 
 function syncAdminFields(){
@@ -1300,7 +1021,6 @@ function syncAdminFields(){
   document.getElementById('cfgDesc').value    =cfg.desc||'';
   document.getElementById('cfgPrice').value   =cfg.price||10;
   document.getElementById('cfgQty').value     =cfg.qty||100;
-  // ← usa parseDate para garantir formato YYYY-MM-DD no input type=date
   document.getElementById('cfgDate').value    =parseDate(cfg.date)||'';
   document.getElementById('cfgPassword').value='';
   document.getElementById('pixType').value    =pixCfg.type||'CPF';
@@ -1308,358 +1028,206 @@ function syncAdminFields(){
   document.getElementById('pixName').value    =pixCfg.name||'';
   document.getElementById('pixCity').value    =pixCfg.city||'';
   document.getElementById('settingsUrl').value=API_URL||'';
-  if(cfg.imgUrl){
-    document.getElementById('imgPreview').src=cfg.imgUrl;
-    document.getElementById('imgPreviewWrap').style.display='block';
-    document.getElementById('uploadArea').style.display='none';
-  }else{
-    document.getElementById('imgPreviewWrap').style.display='none';
-    document.getElementById('uploadArea').style.display='block';
+  if(cfg.imgUrl){document.getElementById('imgPrev').src=cfg.imgUrl;document.getElementById('imgPrevWrap').style.display='block';document.getElementById('imgArea').style.display='none';}
+  else{document.getElementById('imgPrevWrap').style.display='none';document.getElementById('imgArea').style.display='block';}
+  const dot=document.getElementById('urlDot'),txt=document.getElementById('urlTxt');
+  if(API_URL){
+    dot.className='urlDot';
+    txt.textContent='Conectado: '+API_URL;
+  } else {
+    dot.className='urlDot bad';txt.textContent='Não configurado';
   }
-  const dot=document.getElementById('urlStatusDot'),txt=document.getElementById('urlStatusText');
-  if(API_URL){dot.className='url-status-dot';txt.textContent='Conectado: '+API_URL.substring(0,55)+'...';}
-  else{dot.className='url-status-dot bad';txt.textContent='Não configurado';}
+  // Atualiza preview do config.json
+  const prev=document.getElementById('configJsonPreview');
+  if(prev) prev.textContent=JSON.stringify({apiUrl:API_URL||'COLE_AQUI_A_URL_DO_SEU_APPS_SCRIPT'},null,2);
 }
 
 async function saveConfig(){
-  const btn=document.getElementById('btnSaveCfg');
-  btn.textContent='⏳ Salvando...';btn.disabled=true;
+  const btn=document.getElementById('btnSaveCfg');btn.textContent='⏳ Salvando...';btn.disabled=true;
   try{
-    const imgUrl=await uploadImageIfNeeded();
-    const newPass=document.getElementById('cfgPassword').value;
+    const imgUrl=await uploadImg();
+    const np=document.getElementById('cfgPassword').value;
     const oldQty=cfg.qty;
-    // ← salva data como YYYY-MM-DD
-    const dateVal=document.getElementById('cfgDate').value||'';
-    cfg={
-      title:    document.getElementById('cfgTitle').value||'Minha Rifa',
-      desc:     document.getElementById('cfgDesc').value||'',
-      price:    parseFloat(document.getElementById('cfgPrice').value)||10,
-      qty:      parseInt(document.getElementById('cfgQty').value)||100,
-      date:     dateVal,
-      imgUrl:   imgUrl||cfg.imgUrl||'',
-      password: newPass||cfg.password||'admin123',
-    };
-    await apiPost({action:'saveConfig',data:cfg});
-    if(cfg.qty!==oldQty){numbers={};selected=[];myReservedNums=[];buildGrid();}
-    renderAll();
-    showToast('✅ Configurações salvas!');
+    cfg={title:document.getElementById('cfgTitle').value||'Minha Rifa',desc:document.getElementById('cfgDesc').value||'',price:parseFloat(document.getElementById('cfgPrice').value)||10,qty:parseInt(document.getElementById('cfgQty').value)||100,date:document.getElementById('cfgDate').value||'',imgUrl:imgUrl||cfg.imgUrl||'',password:np||cfg.password||'admin123'};
+    await apiCall({action:'saveConfig',data:cfg});
+    if(cfg.qty!==oldQty){numbers={};selected=[];myReserved=[];myPid='';buildGrid();}
+    renderAll();showToast('✅ Configurações salvas!');
   }catch(e){showToast('Erro: '+e.message,'red');}
   btn.textContent='💾 Salvar Configurações';btn.disabled=false;
 }
 
 async function savePixConfig(){
-  pixCfg={
-    type:document.getElementById('pixType').value,
-    key: document.getElementById('pixKey').value.trim(),
-    name:document.getElementById('pixName').value.trim(),
-    city:document.getElementById('pixCity').value.trim(),
-  };
-  try{await apiPost({action:'savePix',data:pixCfg});showToast('✅ Pix salvo!');}
-  catch(e){showToast('Erro: '+e.message,'red');}
+  pixCfg={type:document.getElementById('pixType').value,key:document.getElementById('pixKey').value.trim(),name:document.getElementById('pixName').value.trim(),city:document.getElementById('pixCity').value.trim()};
+  try{await apiCall({action:'savePix',data:pixCfg});showToast('✅ Pix salvo!');}catch(e){showToast('Erro: '+e.message,'red');}
 }
 
 async function saveSettings(){
   const url=document.getElementById('settingsUrl').value.trim();
   if(!url.includes('script.google.com')){showToast('URL inválida!','red');return;}
   try{
-    await apiPost({action:'saveSettings',data:{apiUrl:url}});
-    API_URL=url;localStorage.setItem('rfApiUrl',url);
-    syncAdminFields();showToast('✅ URL salva! Todos os usuários conectarão automaticamente.');
+    await apiCall({action:'saveSettings',data:{apiUrl:url}});
+    API_URL=url;
+    localStorage.setItem('rfUrl',url);
+    syncAdminFields();
+    showToast('✅ URL atualizada! Lembre de atualizar o config.json no GitHub.');
   }catch(e){showToast('Erro: '+e.message,'red');}
 }
 
-// ══════════════════════════════════════════════════════
-// ADMIN: ações por PEDIDO (não por telefone)
-// ══════════════════════════════════════════════════════
-
-async function confirmarPedido(pedidoId) {
-  // Feedback visual imediato
-  showToast('⏳ Confirmando pagamento...');
-  try {
-    await apiPost({ action:'confirmPedido', pedidoId });
-
-    // Atualiza estado local
-    Object.keys(numbers).forEach(k => {
-      if (numbers[k].pedidoId === pedidoId) numbers[k].status = 'paid';
-    });
-
-    renderBuyers(); updateStats(); renderHero();
-
-    // Abre WhatsApp após atualizar UI
-    const entry = Object.values(numbers).find(n => n.pedidoId === pedidoId && n.status === 'paid');
-    if (entry) {
-      openWhatsAppConfirmation(pedidoId, entry.phone, entry.name);
-    } else {
-      showToast('✅ Pagamento confirmado!');
-    }
-
-    // Sync com o Sheets para garantir consistência
-    setTimeout(() => syncNow(false), 1500);
-
-  } catch(e) {
-    showToast('Erro ao confirmar: ' + e.message, 'red');
+function copyConfigJson(){
+  const json = JSON.stringify({apiUrl: API_URL}, null, 2);
+  try{
+    navigator.clipboard.writeText(json).then(()=>showToast('✅ config.json copiado! Cole no GitHub.'));
+  }catch{
+    const t=document.createElement('textarea');t.value=json;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);
+    showToast('✅ config.json copiado! Cole no GitHub.');
   }
 }
 
-async function cancelarPedido(pedidoId) {
-  if (!confirm('Cancelar este pedido? Os números voltarão a estar disponíveis.')) return;
+// ── AÇÕES POR PEDIDO ─────────────────────────────────────────
+async function confirmarPedido(pid) {
+  showToast('⏳ Confirmando...');
   try {
-    await apiPost({ action:'cancelPedido', pedidoId });
-    Object.keys(numbers).forEach(k => {
-      if (numbers[k].pedidoId === pedidoId) delete numbers[k];
-    });
-    renderBuyers(); updateStats(); renderHero(); refreshGridClasses();
-    showToast('Pedido cancelado e números liberados!');
-  } catch(e) { showToast('Erro: ' + e.message, 'red'); }
-}
-
-async function reverterPedido(pedidoId) {
-  try {
-    await apiPost({ action:'revertPedido', pedidoId });
-    Object.keys(numbers).forEach(k => {
-      if (numbers[k].pedidoId === pedidoId) numbers[k].status = 'pending';
-    });
+    await apiCall({action:'confirmPedido', pedidoId:pid});
+    Object.keys(numbers).forEach(k=>{ if(numbers[k].pedidoId===pid) numbers[k].status='paid'; });
     renderBuyers(); updateStats(); renderHero();
-    showToast('Pedido revertido para pendente.');
-  } catch(e) { showToast('Erro: ' + e.message, 'red'); }
+    const entry=Object.values(numbers).find(n=>n.pedidoId===pid&&(n.status||'').toLowerCase()==='paid');
+    if(entry) openWhatsApp(pid,entry.phone,entry.name);
+    else showToast('✅ Pagamento confirmado!');
+    setTimeout(()=>syncNow(false),1500);
+  } catch(e){showToast('Erro: '+e.message,'red');}
 }
 
-function openWhatsAppConfirmation(pedidoId, phone, name) {
-  const pad      = cfg.qty >= 100 ? 3 : 2;
-  const paidNums = Object.entries(numbers)
-    .filter(([,v]) => v.pedidoId === pedidoId && (v.status||'').toLowerCase() === 'paid')
-    .map(([k]) => String(parseInt(k)).padStart(pad,'0'))
-    .sort((a,b) => parseInt(a)-parseInt(b));
-  const total    = paidNums.length * cfg.price;
-  const dataSort = cfg.date ? fmtDate(cfg.date) : 'a definir';
+async function cancelarPedido(pid) {
+  if(!confirm('Cancelar este pedido? Os números voltarão a estar disponíveis.')) return;
+  try{
+    await apiCall({action:'cancelPedido',pedidoId:pid});
+    Object.keys(numbers).forEach(k=>{if(numbers[k].pedidoId===pid)delete numbers[k];});
+    renderBuyers();updateStats();renderHero();refreshGrid();showToast('Pedido cancelado!');
+  }catch(e){showToast('Erro: '+e.message,'red');}
+}
 
-  const msg = [
-    '✅ *Pagamento Confirmado!*',
-    '',
-    'Olá, *' + name + '*! 🎉',
-    '',
-    'Seu pagamento foi confirmado com sucesso!',
-    '',
-    '🏆 *Rifa:* ' + cfg.title,
-    '🎟️ *Número(s):* ' + paidNums.join(', '),
-    '💰 *Valor pago:* R$ ' + fmt(total),
-    '📅 *Data do sorteio:* ' + dataSort,
-    '',
-    'Boa sorte! 🍀',
-    '_RifaFácil_'
-  ].join('\n');
+async function reverterPedido(pid) {
+  try{
+    await apiCall({action:'revertPedido',pedidoId:pid});
+    Object.keys(numbers).forEach(k=>{if(numbers[k].pedidoId===pid)numbers[k].status='pending';});
+    renderBuyers();updateStats();renderHero();showToast('Pedido revertido para pendente.');
+  }catch(e){showToast('Erro: '+e.message,'red');}
+}
 
-  const fone    = phone.replace(/\D/g,'');
-  const foneInt = fone.startsWith('55') ? fone : '55' + fone;
-  window.open('https://wa.me/' + foneInt + '?text=' + encodeURIComponent(msg), '_blank');
-  showToast('✅ Pago! WhatsApp aberto para confirmação.');
+function openWhatsApp(pid, phone, name) {
+  const pad=cfg.qty>=100?3:2;
+  const paidNums=Object.entries(numbers).filter(([,v])=>v.pedidoId===pid&&(v.status||'').toLowerCase()==='paid').map(([k])=>String(parseInt(k)).padStart(pad,'0')).sort((a,b)=>parseInt(a)-parseInt(b));
+  const total=paidNums.length*cfg.price;
+  const dataSrt=cfg.date?fmtDate(cfg.date):'a definir';
+  const msg=['✅ *Pagamento Confirmado!*','','Olá, *'+name+'*! 🎉','','Seu pagamento foi confirmado com sucesso!','','🏆 *Rifa:* '+cfg.title,'🎟️ *Número(s):* '+paidNums.join(', '),'💰 *Valor pago:* R$ '+fmt(total),'📅 *Data do sorteio:* '+dataSrt,'','Boa sorte! 🍀','_RifaFácil_'].join('\n');
+  const fone=phone.replace(/\D/g,'');
+  window.open('https://wa.me/'+(fone.startsWith('55')?fone:'55'+fone)+'?text='+encodeURIComponent(msg),'_blank');
+  showToast('✅ Pago! WhatsApp aberto.');
 }
 
 async function confirmReset(){
-  if(!confirm('⚠️ Apagar TODOS os números. Tem certeza?')) return;
-  try{
-    await apiPost({action:'resetNumbers'});
-    numbers={};selected=[];myReservedNums=[];myPedidoId='';stopReservationTimer();
-    buildGrid();renderAll();renderBuyers();
-    showToast('Números zerados!');
-  }catch(e){showToast('Erro: '+e.message,'red');}
+  if(!confirm('⚠️ Apagar TODOS os números. Tem certeza?'))return;
+  try{await apiCall({action:'resetNumbers'});numbers={};selected=[];myReserved=[];myPid='';stopTimer();buildGrid();renderAll();renderBuyers();showToast('Zerado!');}catch(e){showToast('Erro: '+e.message,'red');}
 }
 
-function fmtDateTime(iso) {
-  if (!iso) return '--';
-  try {
-    const d = new Date(iso);
-    if (isNaN(d.getTime())) return '--';
-    return String(d.getDate()).padStart(2,'0') + '/' +
-           String(d.getMonth()+1).padStart(2,'0') + '/' +
-           d.getFullYear() + ' ' +
-           String(d.getHours()).padStart(2,'0') + ':' +
-           String(d.getMinutes()).padStart(2,'0');
-  } catch { return '--'; }
+// Event delegation para botões da tabela
+document.addEventListener('click', function(e) {
+  const btn=e.target.closest('.pedBtn'); if(!btn) return;
+  const action=btn.dataset.action;
+  const pid=decodeURIComponent(btn.dataset.pid||''); if(!pid) return;
+  if(action==='confirmar')    confirmarPedido(pid);
+  else if(action==='cancelar') cancelarPedido(pid);
+  else if(action==='reverter') reverterPedido(pid);
+  else if(action==='whatsapp') {
+    openWhatsApp(pid,decodeURIComponent(btn.dataset.phone||''),decodeURIComponent(btn.dataset.name||''));
+  }
+});
+
+function fmtDateTime(iso){
+  if(!iso)return'--';
+  try{const d=new Date(iso);if(isNaN(d.getTime()))return'--';
+    return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+  catch{return'--';}
 }
 
-// ══════════════════════════════════════════════════════
-// PAINEL DE COMPRADORES — duas seções separadas:
-//   1. ⏳ Confirmações Pendentes (reserved + pending)
-//   2. ✅ Compradores Confirmados (paid)
-// Agrupado por PEDIDO (pedidoId), não por telefone
-// ══════════════════════════════════════════════════════
-
-function renderBuyers() {
-  const container = document.getElementById('buyersContainer');
-  const entries   = Object.entries(numbers);
-
-  if (!entries.length) {
-    container.innerHTML = '<div class="empty-state">Nenhuma compra ainda.</div>';
-    return;
-  }
-
-  const pad = cfg.qty >= 100 ? 3 : 2;
-
-  // Agrupa por pedidoId
-  const pedidos = {};
-  entries.forEach(([k, info]) => {
-    const pid = info.pedidoId || ('sem-id-' + info.phone);
-    const st  = (info.status || '').trim().toLowerCase();
-    if (!pedidos[pid]) {
-      pedidos[pid] = {
-        pedidoId: pid,
-        name:     info.name,
-        phone:    info.phone,
-        status:   st,
-        date:     info.date || '',
-        nums:     [],
-      };
-    }
-    pedidos[pid].nums.push(parseInt(k));
-    // Status mais alto do pedido
-    const pri = { paid:4, pending:3, reserved:2 };
-    if ((pri[st]||0) > (pri[pedidos[pid].status]||0)) pedidos[pid].status = st;
-    if (info.date && (!pedidos[pid].date || info.date > pedidos[pid].date)) pedidos[pid].date = info.date;
-  });
-
-  const allPedidos = Object.values(pedidos).sort((a,b) => (b.date||'').localeCompare(a.date||''));
-
-  // Separa em pendentes e confirmados
-  const pendentes   = allPedidos.filter(p => p.status === 'pending' || p.status === 'reserved');
-  const confirmados = allPedidos.filter(p => p.status === 'paid');
-
-  // Usa data-attributes nos botões para evitar problemas de escape de strings
-  function buildRow(p) {
-    const nh = p.nums.sort((a,b)=>a-b).map(n => {
-      const st = (numbers[String(n)]?.status||'').toLowerCase();
-      return `<span class="num-sm${st==='reserved'?' res-num':''}">${String(n).padStart(pad,'0')}</span>`;
-    }).join('');
-
-    // Encode seguro para data-attributes HTML
-    const encPid   = encodeURIComponent(p.pedidoId);
-    const encPhone = encodeURIComponent(p.phone);
-    const encName  = encodeURIComponent(p.name);
-
-    let statusBadge, actions;
-    if (p.status === 'reserved') {
-      statusBadge = '<span class="status-badge s-res">🔒 Reservado</span>';
-      actions = `<button class="btn-xs btn-xs-red pedido-btn" data-action="cancelar" data-pid="${encPid}">❌ Cancelar</button>`;
-    } else if (p.status === 'pending') {
-      statusBadge = '<span class="status-badge s-pend">⏳ Aguardando pagamento</span>';
-      actions = `
-        <button class="btn-xs btn-xs-green pedido-btn" data-action="confirmar" data-pid="${encPid}">✅ Confirmar Pago</button>
-        <button class="btn-xs btn-xs-red   pedido-btn" data-action="cancelar"  data-pid="${encPid}">❌ Cancelar</button>`;
-    } else {
-      statusBadge = '<span class="status-badge s-paid">✅ Pago</span>';
-      actions = `
-        <button class="btn-xs btn-xs-wa     pedido-btn" data-action="whatsapp" data-pid="${encPid}" data-phone="${encPhone}" data-name="${encName}">💬 WhatsApp</button>
-        <button class="btn-xs btn-xs-yellow pedido-btn" data-action="reverter" data-pid="${encPid}">↩ Reverter</button>`;
-    }
-
-    return `<tr>
-      <td><b>${p.name}</b></td>
-      <td>${p.phone}</td>
-      <td><div class="num-list">${nh}</div></td>
-      <td>R$ ${fmt(p.nums.length * cfg.price)}</td>
-      <td style="white-space:nowrap;font-size:.68rem;color:var(--muted)">${fmtDateTime(p.date)}</td>
-      <td>${statusBadge}</td>
-      <td><div class="action-btns">${actions}</div></td>
-    </tr>`;
-  }
-
-  const tableHead = `<thead><tr>
-    <th>Nome</th><th>Telefone</th><th>Números</th>
-    <th>Total</th><th>Data/Hora</th><th>Status</th><th>Ações</th>
-  </tr></thead>`;
-
-  let html = '';
-
-  // ── Seção 1: Pendentes ──────────────────────────────────
-  html += `
-    <div class="buyers-section-header pending-header">
-      <span>⏳ Confirmações Pendentes</span>
-      <span class="buyers-section-count">${pendentes.length}</span>
-    </div>`;
-
-  if (pendentes.length === 0) {
-    html += '<div class="empty-state" style="padding:14px">Nenhum pedido pendente.</div>';
-  } else {
-    html += `<div style="overflow-x:auto"><table class="buyers-table">
-      ${tableHead}<tbody>${pendentes.map(buildRow).join('')}</tbody>
-    </table></div>`;
-  }
-
-  // ── Seção 2: Confirmados ────────────────────────────────
-  html += `
-    <div class="buyers-section-header paid-header" style="margin-top:18px">
-      <span>✅ Compradores Confirmados</span>
-      <span class="buyers-section-count">${confirmados.length}</span>
-    </div>`;
-
-  if (confirmados.length === 0) {
-    html += '<div class="empty-state" style="padding:14px">Nenhum pagamento confirmado ainda.</div>';
-  } else {
-    html += `<div style="overflow-x:auto"><table class="buyers-table">
-      ${tableHead}<tbody>${confirmados.map(buildRow).join('')}</tbody>
-    </table></div>`;
-  }
-
-  container.innerHTML = html;
-}
-function drawWinner(){
-  const sold=Object.entries(numbers).filter(([,v])=>{const s=(v.status||'').toLowerCase();return s==='paid'||s==='pending';}).map(([k])=>parseInt(k));
-  if(!sold.length){showToast('Nenhum número vendido!','red');return;}
-  const res=document.getElementById('drawResult'),ne=document.getElementById('drawNumber'),nm=document.getElementById('drawName');
-  res.style.display='block';ne.textContent='🎲';nm.textContent='Sorteando...';
+function renderBuyers(){
+  const box=document.getElementById('buyersBox');
+  const entries=Object.entries(numbers);
+  if(!entries.length){box.innerHTML='<div class="emptyState">Nenhuma compra ainda.</div>';return;}
   const pad=cfg.qty>=100?3:2;
-  let i=0;
-  const iv=setInterval(()=>{
-    ne.textContent=String(sold[Math.floor(Math.random()*sold.length)]).padStart(pad,'0');
-    if(++i>26){clearInterval(iv);
-      const w=sold[Math.floor(Math.random()*sold.length)];
-      ne.textContent=String(w).padStart(pad,'0');
-      nm.textContent='🏆 '+numbers[String(w)].name+' ('+numbers[String(w)].phone+')';
-      showToast('🎉 Ganhador sorteado!');}
-  },80);
+  const pedidos={};
+  entries.forEach(([k,info])=>{
+    const pid=info.pedidoId||('no-pid-'+info.phone);
+    const st=(info.status||'').trim().toLowerCase();
+    if(!pedidos[pid]) pedidos[pid]={pid,name:info.name,phone:info.phone,status:st,date:info.date||'',nums:[]};
+    pedidos[pid].nums.push(parseInt(k));
+    const pri={paid:4,pending:3,reserved:2};
+    if((pri[st]||0)>(pri[pedidos[pid].status]||0)) pedidos[pid].status=st;
+    if(info.date&&(!pedidos[pid].date||info.date>pedidos[pid].date)) pedidos[pid].date=info.date;
+  });
+  const all=Object.values(pedidos).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const pend=all.filter(p=>p.status==='pending'||p.status==='reserved');
+  const paid=all.filter(p=>p.status==='paid');
+
+  function row(p){
+    const nh=p.nums.sort((a,b)=>a-b).map(n=>{const st=(numbers[String(n)]?.status||'').toLowerCase();return`<span class="numSm${st==='reserved'?' res':''}">${String(n).padStart(pad,'0')}</span>`;}).join('');
+    const ep=encodeURIComponent(p.pid),ePhone=encodeURIComponent(p.phone),eName=encodeURIComponent(p.name);
+    let badge,acts;
+    if(p.status==='reserved'){
+      badge='<span class="sBadge s-res">🔒 Reservado</span>';
+      acts=`<button class="bx bx-rd pedBtn" data-action="cancelar" data-pid="${ep}">❌ Cancelar</button>`;
+    } else if(p.status==='pending'){
+      badge='<span class="sBadge s-pend">⏳ Ag. pagamento</span>';
+      acts=`<button class="bx bx-gn pedBtn" data-action="confirmar" data-pid="${ep}">✅ Confirmar Pago</button>
+            <button class="bx bx-rd pedBtn" data-action="cancelar"  data-pid="${ep}">❌ Cancelar</button>`;
+    } else {
+      badge='<span class="sBadge s-paid">✅ Pago</span>';
+      acts=`<button class="bx bx-wa pedBtn" data-action="whatsapp" data-pid="${ep}" data-phone="${ePhone}" data-name="${eName}">💬 WhatsApp</button>
+            <button class="bx bx-yw pedBtn" data-action="reverter"  data-pid="${ep}">↩ Reverter</button>`;
+    }
+    return`<tr><td><b>${p.name}</b></td><td>${p.phone}</td><td><div class="numList">${nh}</div></td><td>R$ ${fmt(p.nums.length*cfg.price)}</td><td style="white-space:nowrap;font-size:.68rem;color:var(--mu)">${fmtDateTime(p.date)}</td><td>${badge}</td><td><div class="actBtns">${acts}</div></td></tr>`;
+  }
+
+  const thead=`<thead><tr><th>Nome</th><th>Telefone</th><th>Números</th><th>Total</th><th>Data/Hora</th><th>Status</th><th>Ações</th></tr></thead>`;
+  let html='';
+  html+=`<div class="secHdr secPend"><span>⏳ Confirmações Pendentes</span><span class="secHdrCount">${pend.length}</span></div>`;
+  html+=pend.length?`<div style="overflow-x:auto"><table class="bTable">${thead}<tbody>${pend.map(row).join('')}</tbody></table></div>`:`<div class="emptyState" style="padding:13px">Nenhum pedido pendente.</div>`;
+  html+=`<div class="secHdr secPaid" style="margin-top:18px"><span>✅ Compradores Confirmados</span><span class="secHdrCount">${paid.length}</span></div>`;
+  html+=paid.length?`<div style="overflow-x:auto"><table class="bTable">${thead}<tbody>${paid.map(row).join('')}</tbody></table></div>`:`<div class="emptyState" style="padding:13px">Nenhum pagamento confirmado ainda.</div>`;
+  box.innerHTML=html;
+}
+
+function drawWinner(){
+  const sold=Object.entries(numbers).filter(([,v])=>['paid','pending'].includes((v.status||'').toLowerCase())).map(([k])=>parseInt(k));
+  if(!sold.length){showToast('Nenhum número vendido!','red');return;}
+  const r=document.getElementById('drawResult'),ne=document.getElementById('drawNum'),nm=document.getElementById('drawName');
+  r.style.display='block';ne.textContent='🎲';nm.textContent='Sorteando...';
+  const pad=cfg.qty>=100?3:2;let i=0;
+  const iv=setInterval(()=>{ne.textContent=String(sold[Math.floor(Math.random()*sold.length)]).padStart(pad,'0');if(++i>26){clearInterval(iv);const w=sold[Math.floor(Math.random()*sold.length)];ne.textContent=String(w).padStart(pad,'0');nm.textContent='🏆 '+numbers[String(w)].name+' ('+numbers[String(w)].phone+')';showToast('🎉 Ganhador sorteado!');}},80);
 }
 
 // ════════════════════════════════════════════════════
 // UTILS
 // ════════════════════════════════════════════════════
 function fmt(n){return parseFloat(n||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function parseDate(v){
+  if(!v||v==='undefined'||v==='null'||v==='')return'';
+  if(/^\d{4}-\d{2}-\d{2}$/.test(v))return v;
+  if(/^\d{2}\/\d{2}\/\d{4}$/.test(v)){const[d,m,y]=v.split('/');return`${y}-${m}-${d}`;}
+  try{const d=new Date(v);if(!isNaN(d.getTime()))return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}catch{}return'';
+}
+function fmtDate(v){const iso=parseDate(v);if(!iso)return'--';const[y,m,d]=iso.split('-');return`${d}/${m}/${y}`;}
 let toastTimer;
 function showToast(msg,type='green'){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.style.background=type==='red'?'var(--red)':'var(--green)';
-  t.classList.add('show');clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>t.classList.remove('show'),3800);
+  const t=document.getElementById('toast');t.textContent=msg;t.style.background=type==='red'?'var(--rd)':'var(--gn)';
+  t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),3800);
 }
 
-// ════════════════════════════════════════════════════
-// SERVICE WORKER (PWA offline + instalável)
-// ════════════════════════════════════════════════════
+// SERVICE WORKER
 if('serviceWorker' in navigator){
-  const swCode=`
-const CACHE='rifafacil-v1';
-const ASSETS=['./'];
-self.addEventListener('install',e=>{
-  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));
-  self.skipWaiting();
-});
-self.addEventListener('activate',e=>{
-  e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));
-  self.clients.claim();
-});
-self.addEventListener('fetch',e=>{
-  if(e.request.url.includes('script.google.com')||e.request.url.includes('fonts.googleapis')){
-    e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)));
-    return;
-  }
-  e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(res=>{
-    const clone=res.clone();
-    caches.open(CACHE).then(c=>c.put(e.request,clone));
-    return res;
-  })));
-});`;
-  const blob=new Blob([swCode],{type:'application/javascript'});
-  const swUrl=URL.createObjectURL(blob);
-  navigator.serviceWorker.register(swUrl).catch(()=>{});
+  const sw=`const C='rf-v1';self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.add('/')));self.skipWaiting();});self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))));self.clients.claim();});self.addEventListener('fetch',e=>{if(e.request.url.includes('script.google.com')||e.request.url.includes('fonts.g')){e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)));return;}e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)));});`;
+  const b=new Blob([sw],{type:'application/javascript'});
+  navigator.serviceWorker.register(URL.createObjectURL(b)).catch(()=>{});
 }
 </script>
 </body>
