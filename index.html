@@ -549,6 +549,12 @@ select.fInput option{background:var(--sf2);}
 
 <script>
 // ════════════════════════════════════════════════════
+// ▼▼▼ CONFIGURAÇÃO — edite esta linha no GitHub ▼▼▼
+// Cole a URL do seu Google Apps Script abaixo:
+const CONFIG_API_URL = 'COLE_AQUI_A_URL_DO_SEU_APPS_SCRIPT';
+// ▲▲▲ Apenas esta linha precisa ser editada ▲▲▲
+// ════════════════════════════════════════════════════
+
 // STATE
 // ════════════════════════════════════════════════════
 let API_URL = '';
@@ -652,26 +658,40 @@ function showFrMsg(m, t) { const e=document.getElementById('frMsg'); e.textConte
 (async function boot() {
   showLoad('Carregando...');
 
-  // 1. Tenta ler config.json do repositório (fonte de verdade)
-  //    O arquivo fica na mesma pasta do index.html no GitHub Pages
-  try {
-    const cfgRes  = await fetch('./config.json?t=' + Date.now());
-    if (cfgRes.ok) {
-      const cfgJson = await cfgRes.json();
-      if (cfgJson.apiUrl && cfgJson.apiUrl !== 'COLE_AQUI_A_URL_DO_SEU_APPS_SCRIPT') {
-        API_URL = cfgJson.apiUrl;
-        localStorage.setItem('rfUrl', API_URL); // sincroniza localStorage
-      }
-    }
-  } catch {} // silencioso — pode não ter o arquivo ou rodar localmente
+  // Prioridade para encontrar a URL da API:
+  // 1. Variável CONFIG_API_URL definida no topo do HTML (editável no GitHub)
+  // 2. config.json na mesma pasta
+  // 3. localStorage (sessão anterior)
 
-  // 2. Fallback: usa URL salva no localStorage
-  if (!API_URL) {
-    const saved = localStorage.getItem('rfUrl');
-    if (saved) API_URL = saved;
+  // 1. Variável embutida no HTML
+  if (typeof CONFIG_API_URL === 'string' && CONFIG_API_URL.includes('script.google.com')) {
+    API_URL = CONFIG_API_URL;
+    localStorage.setItem('rfUrl', API_URL);
   }
 
-  // 3. Sem URL configurada → mostra tela de primeiro acesso
+  // 2. config.json
+  if (!API_URL) {
+    try {
+      const r = await fetch('./config.json?nc=' + Date.now(), {cache:'no-store'});
+      if (r.ok) {
+        const j = await r.json();
+        if (j.apiUrl && j.apiUrl.includes('script.google.com')) {
+          API_URL = j.apiUrl;
+          localStorage.setItem('rfUrl', API_URL);
+        }
+      }
+    } catch(e) {
+      console.log('config.json não encontrado:', e.message);
+    }
+  }
+
+  // 3. localStorage
+  if (!API_URL) {
+    const saved = localStorage.getItem('rfUrl');
+    if (saved && saved.includes('script.google.com')) API_URL = saved;
+  }
+
+  // Sem URL → tela de configuração
   if (!API_URL) {
     hideLoad();
     document.getElementById('frScreen').style.display = 'flex';
@@ -680,7 +700,7 @@ function showFrMsg(m, t) { const e=document.getElementById('frMsg'); e.textConte
 
   document.getElementById('frUrl').value = API_URL;
 
-  // 4. Conecta ao Sheets
+  // Conecta
   try {
     const data = await apiGet('action=all');
     applyAll(data);
@@ -688,10 +708,12 @@ function showFrMsg(m, t) { const e=document.getElementById('frMsg'); e.textConte
   } catch(e) {
     hideLoad();
     document.getElementById('frScreen').style.display = 'flex';
-    // Não remove localStorage — pode ser erro temporário de rede
     showFrMsg('Não foi possível conectar ao Google Sheets.
 
-Verifique se a URL está correta e se o Web App está publicado como "Qualquer pessoa".
+Verifique:
+• URL correta no config.json
+• Web App publicado como "Qualquer pessoa"
+• Permissões autorizadas
 
 Erro: ' + e.message, 'err');
   }
