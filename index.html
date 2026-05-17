@@ -1144,6 +1144,24 @@ function closeModal(id){document.getElementById(id).classList.remove('open');}
 document.querySelectorAll('.modal-overlay').forEach(o=>
   o.addEventListener('click',e=>{if(e.target===o)cancelReservationAndClose();}));
 
+// ── Delegação de eventos para botões da tabela de compradores ──
+// Evita problemas de escape de strings em onclick inline
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('.pedido-btn');
+  if (!btn) return;
+  const action = btn.dataset.action;
+  const pid    = decodeURIComponent(btn.dataset.pid || '');
+  if (!pid) return;
+  if (action === 'confirmar') { confirmarPedido(pid); }
+  else if (action === 'cancelar')  { cancelarPedido(pid); }
+  else if (action === 'reverter')  { reverterPedido(pid); }
+  else if (action === 'whatsapp')  {
+    const phone = decodeURIComponent(btn.dataset.phone || '');
+    const name  = decodeURIComponent(btn.dataset.name  || '');
+    openWhatsAppConfirmation(pid, phone, name);
+  }
+});
+
 // ════════════════════════════════════════════════════
 // QR CODE
 // ════════════════════════════════════════════════════
@@ -1316,16 +1334,32 @@ async function saveSettings(){
 // ══════════════════════════════════════════════════════
 
 async function confirmarPedido(pedidoId) {
+  // Feedback visual imediato
+  showToast('⏳ Confirmando pagamento...');
   try {
     await apiPost({ action:'confirmPedido', pedidoId });
+
+    // Atualiza estado local
     Object.keys(numbers).forEach(k => {
       if (numbers[k].pedidoId === pedidoId) numbers[k].status = 'paid';
     });
-    // Abre WhatsApp com confirmação
-    const entry = Object.values(numbers).find(n => n.pedidoId === pedidoId && n.status === 'paid');
-    if (entry) openWhatsAppConfirmation(pedidoId, entry.phone, entry.name);
+
     renderBuyers(); updateStats(); renderHero();
-  } catch(e) { showToast('Erro: ' + e.message, 'red'); }
+
+    // Abre WhatsApp após atualizar UI
+    const entry = Object.values(numbers).find(n => n.pedidoId === pedidoId && n.status === 'paid');
+    if (entry) {
+      openWhatsAppConfirmation(pedidoId, entry.phone, entry.name);
+    } else {
+      showToast('✅ Pagamento confirmado!');
+    }
+
+    // Sync com o Sheets para garantir consistência
+    setTimeout(() => syncNow(false), 1500);
+
+  } catch(e) {
+    showToast('Erro ao confirmar: ' + e.message, 'red');
+  }
 }
 
 async function cancelarPedido(pedidoId) {
@@ -1451,29 +1485,32 @@ function renderBuyers() {
   const pendentes   = allPedidos.filter(p => p.status === 'pending' || p.status === 'reserved');
   const confirmados = allPedidos.filter(p => p.status === 'paid');
 
+  // Usa data-attributes nos botões para evitar problemas de escape de strings
   function buildRow(p) {
     const nh = p.nums.sort((a,b)=>a-b).map(n => {
       const st = (numbers[String(n)]?.status||'').toLowerCase();
       return `<span class="num-sm${st==='reserved'?' res-num':''}">${String(n).padStart(pad,'0')}</span>`;
     }).join('');
-    const pidEsc   = p.pedidoId.replace(/'/g,"\'");
-    const phoneEsc = p.phone.replace(/'/g,"\'");
-    const nameEsc  = p.name.replace(/'/g,"\'");
+
+    // Encode seguro para data-attributes HTML
+    const encPid   = encodeURIComponent(p.pedidoId);
+    const encPhone = encodeURIComponent(p.phone);
+    const encName  = encodeURIComponent(p.name);
 
     let statusBadge, actions;
     if (p.status === 'reserved') {
       statusBadge = '<span class="status-badge s-res">🔒 Reservado</span>';
-      actions = `<button class="btn-xs btn-xs-red" onclick="cancelarPedido('${pidEsc}')">❌ Cancelar</button>`;
+      actions = `<button class="btn-xs btn-xs-red pedido-btn" data-action="cancelar" data-pid="${encPid}">❌ Cancelar</button>`;
     } else if (p.status === 'pending') {
       statusBadge = '<span class="status-badge s-pend">⏳ Aguardando pagamento</span>';
       actions = `
-        <button class="btn-xs btn-xs-green" onclick="confirmarPedido('${pidEsc}')">✅ Confirmar Pago</button>
-        <button class="btn-xs btn-xs-red"   onclick="cancelarPedido('${pidEsc}')">❌ Cancelar</button>`;
+        <button class="btn-xs btn-xs-green pedido-btn" data-action="confirmar" data-pid="${encPid}">✅ Confirmar Pago</button>
+        <button class="btn-xs btn-xs-red   pedido-btn" data-action="cancelar"  data-pid="${encPid}">❌ Cancelar</button>`;
     } else {
       statusBadge = '<span class="status-badge s-paid">✅ Pago</span>';
       actions = `
-        <button class="btn-xs btn-xs-wa"     onclick="openWhatsAppConfirmation('${pidEsc}','${phoneEsc}','${nameEsc}')">💬 WhatsApp</button>
-        <button class="btn-xs btn-xs-yellow" onclick="reverterPedido('${pidEsc}')">↩ Reverter</button>`;
+        <button class="btn-xs btn-xs-wa     pedido-btn" data-action="whatsapp" data-pid="${encPid}" data-phone="${encPhone}" data-name="${encName}">💬 WhatsApp</button>
+        <button class="btn-xs btn-xs-yellow pedido-btn" data-action="reverter" data-pid="${encPid}">↩ Reverter</button>`;
     }
 
     return `<tr>
