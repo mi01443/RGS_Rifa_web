@@ -370,7 +370,7 @@ select.form-input option{background:var(--surface2);}
     <p>Para começar, o administrador deve conectar o Google Sheets uma única vez.<br>
     Depois, todos os usuários conectam automaticamente.</p>
     <input class="fr-input" id="frUrl"
-      value="https://script.google.com/macros/s/AKfycbzSIPBFaWiuNIVWhPwCvZQ9wQn8L1f7BPiWPYZSUiq0zxiuiAyM0w7M_UetdZeMWlBxcQ/exec"
+      placeholder="https://script.google.com/macros/s/XXXXX/exec"
       onkeydown="if(event.key==='Enter')firstConnect()">
     <button class="btn-primary" id="frBtn" onclick="firstConnect()">🚀 Conectar</button>
     <div class="fr-msg" id="frMsg"></div>
@@ -589,16 +589,16 @@ select.form-input option{background:var(--surface2);}
         <div class="admin-card url-config-card">
           <h2>🔗 URL do Google Apps Script</h2>
           <p style="font-size:.79rem;color:var(--muted);margin-bottom:12px;line-height:1.6">
-            A URL é salva no Google Sheets e carregada automaticamente para todos os usuários.
+            A URL é carregada automaticamente do arquivo <code style="background:rgba(59,130,246,.12);color:var(--blue);padding:1px 6px;border-radius:3px">config.json</code> no repositório.
+            Para trocar, edite o <code style="background:rgba(59,130,246,.12);color:var(--blue);padding:1px 6px;border-radius:3px">config.json</code> no GitHub.
           </p>
-          <div class="form-group"><label class="form-label">URL do Web App</label>
-            <input class="form-input" id="settingsUrl" placeholder="https://script.google.com/macros/s/XXXXX/exec">
+          <div class="form-group"><label class="form-label">URL ativa</label>
+            <input class="form-input" id="settingsUrl" placeholder="https://script.google.com/macros/s/XXXXX/exec" readonly style="opacity:.7;cursor:default">
           </div>
           <div class="url-status">
             <span class="url-status-dot" id="urlStatusDot"></span>
             <span id="urlStatusText">Verificando...</span>
           </div>
-          <button class="btn-save" onclick="saveSettings()" style="margin-top:12px">💾 Salvar URL</button>
         </div>
         <div class="admin-card">
           <h2>📲 Instalar como App</h2>
@@ -707,7 +707,7 @@ let adminAuthed = false;
 let pendingImgFile = null;
 let gridBuiltQty = 0;
 let myReservedNums = [];
-let myPedidoId = '';           // ID único do pedido atual
+let myPedidoId = '';
 let reservationExpiresAt = null;
 let reservationTimerInterval = null;
 
@@ -736,8 +736,6 @@ function dismissInstall() {
 // ════════════════════════════════════════════════════
 // API
 // ════════════════════════════════════════════════════
-// Todas as chamadas usam GET para evitar o problema de redirect 302 do Apps Script
-// O body do POST é perdido no redirect — GET com params é mais confiável
 async function apiFetch(params) {
   const res  = await fetch(API_URL + '?' + params + '&t=' + Date.now(), { redirect:'follow' });
   const text = await res.text();
@@ -750,20 +748,11 @@ async function apiFetch(params) {
   }
 }
 
-// apiPost: tenta GET com payload primeiro (evita redirect 302 que perde o body)
-// Para payloads grandes (ex: upload de imagem), usa POST com text/plain
 async function apiPost(body) {
   const bodyStr = JSON.stringify(body);
-
-  // Upload de imagem é grande demais para URL — usa POST direto
-  if (body.action === 'uploadImage') {
-    return apiPostRaw(bodyStr);
-  }
-
-  // Para todas as outras ações, usa GET com payload (confiável no Apps Script)
+  if (body.action === 'uploadImage') return apiPostRaw(bodyStr);
   const payload = encodeURIComponent(bodyStr);
   const url     = API_URL + '?payload=' + payload + '&t=' + Date.now();
-
   const res  = await fetch(url, { redirect:'follow' });
   const text = await res.text();
   try {
@@ -775,7 +764,6 @@ async function apiPost(body) {
   }
 }
 
-// Fallback POST direto (para payloads grandes como imagens)
 async function apiPostRaw(bodyStr) {
   const res  = await fetch(API_URL, {
     method: 'POST', redirect: 'follow',
@@ -791,6 +779,7 @@ async function apiPostRaw(bodyStr) {
     throw new Error('Resposta inválida do servidor.');
   }
 }
+
 function normalizeNumbers(raw) {
   if (!raw || typeof raw !== 'object') return {};
   const out = {};
@@ -799,25 +788,19 @@ function normalizeNumbers(raw) {
 }
 
 // ════════════════════════════════════════════════════
-// DATE HELPERS — corrige vários formatos possíveis
+// DATE HELPERS
 // ════════════════════════════════════════════════════
 function parseDate(val) {
-  // Já está no formato YYYY-MM-DD
   if (!val || val === 'undefined' || val === 'null' || val === '') return '';
   if (/^\d{4}-\d{2}-\d{2}$/.test(val)) return val;
-  // Formato DD/MM/YYYY
   if (/^\d{2}\/\d{2}\/\d{4}$/.test(val)) {
     const [d,m,y] = val.split('/');
     return `${y}-${m}-${d}`;
   }
-  // Objeto Date serializado ou ISO
   try {
     const d = new Date(val);
     if (!isNaN(d.getTime())) {
-      const y  = d.getFullYear();
-      const mo = String(d.getMonth()+1).padStart(2,'0');
-      const dy = String(d.getDate()).padStart(2,'0');
-      return `${y}-${mo}-${dy}`;
+      return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
     }
   } catch {}
   return '';
@@ -858,22 +841,50 @@ function showFrMsg(msg, type) {
   el.textContent=msg; el.className='fr-msg '+type; el.style.display='block';
 }
 
-// Boot automático
+// ════════════════════════════════════════════════════
+// BOOT — lê config.json primeiro, depois localStorage
+// ════════════════════════════════════════════════════
 (async function boot() {
-  const local = localStorage.getItem('rfApiUrl');
-  if (!local) return; // mostra first run
-  API_URL = local;
-  document.getElementById('apiUrl') && (document.getElementById('apiUrl').value = local);
+
+  // 1. Tenta ler config.json (mesmo repositório do GitHub Pages)
+  try {
+    const r = await fetch('./config.json?nc=' + Date.now(), { cache: 'no-store' });
+    if (r.ok) {
+      const j = await r.json();
+      if (j.apiUrl && j.apiUrl.includes('script.google.com')) {
+        API_URL = j.apiUrl;
+        localStorage.setItem('rfApiUrl', API_URL);
+      }
+    }
+  } catch(e) {
+    console.log('config.json não encontrado:', e.message);
+  }
+
+  // 2. Fallback: localStorage
+  if (!API_URL) {
+    const local = localStorage.getItem('rfApiUrl');
+    if (local && local.includes('script.google.com')) API_URL = local;
+  }
+
+  // 3. Sem URL → mostra tela de configuração manual
+  if (!API_URL) {
+    // firstRunScreen já está visível por padrão no HTML
+    return;
+  }
+
   showLoading('Carregando...');
+
+  const frInput = document.getElementById('frUrl');
+  if (frInput) frInput.value = API_URL;
+
   try {
     const data = await apiFetch('action=all');
     applyAll(data);
     launchApp();
-  } catch {
+  } catch(e) {
     hideLoading();
-    document.getElementById('firstRunScreen').style.display='flex';
-    localStorage.removeItem('rfApiUrl');
-    showFrMsg('Não foi possível reconectar.\nCole a URL novamente.','err');
+    document.getElementById('firstRunScreen').style.display = 'flex';
+    showFrMsg('Não foi possível conectar.\n\nVerifique:\n• config.json com a URL correta\n• Web App publicado como "Qualquer pessoa"\n\nErro: ' + e.message, 'err');
   }
 })();
 
@@ -886,7 +897,7 @@ function applyAll(data) {
       desc:     c.desc     || '',
       price:    parseFloat(c.price)  || 10,
       qty:      parseInt(c.qty)      || 100,
-      date:     parseDate(c.date),   // ← normaliza aqui
+      date:     parseDate(c.date),
       imgUrl:   c.imgUrl   || '',
       password: c.password || 'admin123',
     };
@@ -915,7 +926,6 @@ async function syncNow(manual=false) {
     const data = await apiFetch('action=numbers');
     const fresh = normalizeNumbers(data.numbers||{});
     const mySet = new Set(myReservedNums);
-    // Só remove da seleção os que foram vendidos por OUTROS (não minha reserva)
     selected = selected.filter(k => !fresh[k] || mySet.has(k));
     numbers = fresh;
     refreshGridClasses(); renderHero(); updateSummary(); updateStats();
@@ -958,7 +968,6 @@ function renderHero() {
   document.getElementById('heroTitle').textContent    = cfg.title||'Rifa';
   document.getElementById('heroDesc').textContent     = cfg.desc||'';
   document.getElementById('heroPriceVal').textContent = fmt(cfg.price);
-  // ← usa fmtDate corrigido
   document.getElementById('heroDateVal').textContent  = cfg.date ? fmtDate(cfg.date) : '--';
   const sold = Object.values(numbers).filter(n=>{const s=(n.status||'').toLowerCase();return s==='pending'||s==='paid';}).length;
   document.getElementById('heroSoldVal').textContent  = sold;
@@ -1047,7 +1056,7 @@ function startReservationTimer(expiresAt) {
     if(rem<=0){clearInterval(reservationTimerInterval);handleExpired();return;}
     const m=Math.floor(rem/60000),s=Math.floor((rem%60000)/1000);
     const txt=m+':'+(s<10?'0':'')+s;
-    const urgent=rem<120000; // vermelho nos últimos 2min
+    const urgent=rem<120000;
     ['timerA','timerB'].forEach(id=>{
       const el=document.getElementById(id);
       if(el){el.textContent=txt;el.className='timer-countdown'+(urgent?' urgent':'');}
@@ -1062,13 +1071,8 @@ function handleExpired(){
 }
 
 // ════════════════════════════════════════════════════
-// ════════════════════════════════════════════════════
 // FLUXO DE COMPRA
-// P1: openContactModal  → exibe formulário (sem tocar no Sheets)
-// P2: proceedToPix      → reserva com nome/tel + gera pedidoId
-// P3: confirmPayment    → muda reserved→pending (pedido aguarda admin)
 // ════════════════════════════════════════════════════
-
 function openContactModal() {
   if (!selected.length) return;
   const pad = cfg.qty >= 100 ? 3 : 2;
@@ -1087,16 +1091,11 @@ async function proceedToPix() {
   const fone = document.getElementById('buyerPhone').value.trim();
   if (!nome || !fone) { showToast('Preencha nome e telefone!', 'red'); return; }
   buyerName = nome; buyerPhone = fone;
-
   const btn = document.querySelector('#modalContact .btn-buy');
   if (btn) { btn.textContent = '⏳ Reservando...'; btn.disabled = true; }
-
   try {
     const numsInt = selected.map(k => parseInt(k, 10));
-    const result  = await apiPost({
-      action: 'reserveNumbers', numbers: numsInt, name: nome, phone: fone,
-    });
-
+    const result  = await apiPost({ action: 'reserveNumbers', numbers: numsInt, name: nome, phone: fone });
     if (result.conflicts && result.conflicts.length > 0) {
       const pad = cfg.qty >= 100 ? 3 : 2;
       showToast('❌ Número(s) ' + result.conflicts.map(n => String(n).padStart(pad,'0')).join(', ') + ' indisponível!', 'red');
@@ -1104,35 +1103,24 @@ async function proceedToPix() {
       if (btn) { btn.textContent = 'Ir para Pagamento →'; btn.disabled = false; }
       return;
     }
-
-    // Guarda o pedidoId único desta reserva
     myPedidoId     = result.pedidoId || '';
     myReservedNums = [...selected];
     if (result.expiresAt) startReservationTimer(result.expiresAt);
-
     const now = new Date().toISOString();
     myReservedNums.forEach(k => {
-      numbers[k] = { name: nome, phone: fone, status: 'reserved',
-                     date: now, reservedUntil: result.expiresAt||'', pedidoId: myPedidoId };
+      numbers[k] = { name: nome, phone: fone, status: 'reserved', date: now, reservedUntil: result.expiresAt||'', pedidoId: myPedidoId };
     });
     refreshGridClasses();
     document.getElementById('resTimerContact').style.display = 'flex';
     closeModal('modalContact');
     openPixModal();
-
   } catch(e) { showToast('Erro ao reservar: ' + e.message, 'red'); }
   if (btn) { btn.textContent = 'Ir para Pagamento →'; btn.disabled = false; }
 }
 
 async function cancelReservationAndClose() {
   if (myReservedNums.length > 0 || myPedidoId) {
-    try {
-      await apiPost({
-        action: 'cancelReservation',
-        pedidoId: myPedidoId,
-        numbers: myReservedNums.map(k => parseInt(k, 10)),
-      });
-    } catch {}
+    try { await apiPost({ action: 'cancelReservation', pedidoId: myPedidoId, numbers: myReservedNums.map(k => parseInt(k, 10)) }); } catch {}
     myReservedNums.forEach(k => { delete numbers[k]; });
     myReservedNums = []; myPedidoId = ''; selected = []; stopReservationTimer();
     refreshGridClasses(); renderHero(); updateSummary(); updateStats();
@@ -1143,12 +1131,9 @@ async function cancelReservationAndClose() {
 function openPixModal() {
   const total = myReservedNums.length * cfg.price;
   const pad   = cfg.qty >= 100 ? 3 : 2;
-  document.getElementById('pixNumsLabel').textContent =
-    'Números: ' + [...myReservedNums].sort((a,b) => parseInt(a)-parseInt(b))
-      .map(k => String(k).padStart(pad,'0')).join(', ');
+  document.getElementById('pixNumsLabel').textContent = 'Números: ' + [...myReservedNums].sort((a,b) => parseInt(a)-parseInt(b)).map(k => String(k).padStart(pad,'0')).join(', ');
   document.getElementById('pixAmountLabel').textContent = 'R$ ' + fmt(total);
-  document.getElementById('pixKeyDisplay').textContent  =
-    (pixCfg.type||'PIX') + ': ' + (pixCfg.key||'Não configurado');
+  document.getElementById('pixKeyDisplay').textContent  = (pixCfg.type||'PIX') + ': ' + (pixCfg.key||'Não configurado');
   generateQR(pixCfg.key||'', total);
   openModal('modalPix');
 }
@@ -1156,16 +1141,9 @@ function openPixModal() {
 async function confirmPayment() {
   const btn = document.getElementById('btnConfirm');
   btn.textContent = '⏳ Confirmando...'; btn.disabled = true;
-  if (!myReservedNums.length) {
-    showToast('Nenhuma reserva ativa.', 'red');
-    btn.textContent = '✅ Confirmar Pagamento'; btn.disabled = false; return;
-  }
+  if (!myReservedNums.length) { showToast('Nenhuma reserva ativa.', 'red'); btn.textContent = '✅ Confirmar Pagamento'; btn.disabled = false; return; }
   try {
-    await apiPost({
-      action: 'confirmNumbers',
-      pedidoId: myPedidoId,
-      numbers: myReservedNums.map(k => parseInt(k, 10)),
-    });
+    await apiPost({ action: 'confirmNumbers', pedidoId: myPedidoId, numbers: myReservedNums.map(k => parseInt(k, 10)) });
     const count = myReservedNums.length;
     myReservedNums.forEach(k => { if (numbers[k]) numbers[k].status = 'pending'; });
     myReservedNums = []; myPedidoId = ''; selected = []; stopReservationTimer();
@@ -1183,39 +1161,29 @@ function closeModal(id){document.getElementById(id).classList.remove('open');}
 document.querySelectorAll('.modal-overlay').forEach(o=>
   o.addEventListener('click',e=>{if(e.target===o)cancelReservationAndClose();}));
 
-// ── Delegação de eventos para botões da tabela de compradores ──
-// Evita problemas de escape de strings em onclick inline
 document.addEventListener('click', function(e) {
   const btn = e.target.closest('.pedido-btn');
   if (!btn) return;
   const action = btn.dataset.action;
   const pid    = decodeURIComponent(btn.dataset.pid || '');
   if (!pid) return;
-  if (action === 'confirmar') { confirmarPedido(pid); }
-  else if (action === 'cancelar')  { cancelarPedido(pid); }
-  else if (action === 'reverter')  { reverterPedido(pid); }
-  else if (action === 'whatsapp')  {
-    const phone = decodeURIComponent(btn.dataset.phone || '');
-    const name  = decodeURIComponent(btn.dataset.name  || '');
-    openWhatsAppConfirmation(pid, phone, name);
-  }
+  if (action === 'confirmar')      confirmarPedido(pid);
+  else if (action === 'cancelar')  cancelarPedido(pid);
+  else if (action === 'reverter')  reverterPedido(pid);
+  else if (action === 'whatsapp')  openWhatsAppConfirmation(pid, decodeURIComponent(btn.dataset.phone||''), decodeURIComponent(btn.dataset.name||''));
 });
 
 // ════════════════════════════════════════════════════
 // QR CODE
 // ════════════════════════════════════════════════════
-function generateQR(key,amount){
-  const cv=document.getElementById('qrCanvas'),ctx=cv.getContext('2d');
-  drawQR(ctx,buildPixPayload(key,amount),174);
-}
+function generateQR(key,amount){const cv=document.getElementById('qrCanvas'),ctx=cv.getContext('2d');drawQR(ctx,buildPixPayload(key,amount),174);}
 function buildPixPayload(key,amount){
   function tlv(id,v){return id+String(v.length).padStart(2,'0')+v;}
   const mai=tlv('26',tlv('00','BR.GOV.BCB.PIX')+tlv('01',key||'00000000000'));
   const n=(pixCfg.name||'RIFA').substring(0,25).toUpperCase();
   const c=(pixCfg.city||'BRASIL').substring(0,15).toUpperCase();
   const a=parseFloat(amount||0).toFixed(2);
-  const p=tlv('00','01')+mai+tlv('52','0000')+tlv('53','986')+tlv('54',a)+
-    tlv('58','BR')+tlv('59',n)+tlv('60',c)+tlv('62',tlv('05','***'));
+  const p=tlv('00','01')+mai+tlv('52','0000')+tlv('53','986')+tlv('54',a)+tlv('58','BR')+tlv('59',n)+tlv('60',c)+tlv('62',tlv('05','***'));
   let crc=0xFFFF;
   for(const ch of p+'6304'){crc^=ch.charCodeAt(0)<<8;for(let j=0;j<8;j++)crc=(crc&0x8000)?(crc<<1)^0x1021:crc<<1;}
   return p+'6304'+((crc&0xFFFF).toString(16).toUpperCase().padStart(4,'0'));
@@ -1223,11 +1191,7 @@ function buildPixPayload(key,amount){
 function drawQR(ctx,data,size){
   ctx.fillStyle='#fff';ctx.fillRect(0,0,size,size);
   const M=25,ms=size/M;
-  const finder=(ox,oy)=>{
-    ctx.fillStyle='#000';ctx.fillRect(ox*ms,oy*ms,7*ms,7*ms);
-    ctx.fillStyle='#fff';ctx.fillRect((ox+1)*ms,(oy+1)*ms,5*ms,5*ms);
-    ctx.fillStyle='#000';ctx.fillRect((ox+2)*ms,(oy+2)*ms,3*ms,3*ms);
-  };
+  const finder=(ox,oy)=>{ctx.fillStyle='#000';ctx.fillRect(ox*ms,oy*ms,7*ms,7*ms);ctx.fillStyle='#fff';ctx.fillRect((ox+1)*ms,(oy+1)*ms,5*ms,5*ms);ctx.fillStyle='#000';ctx.fillRect((ox+2)*ms,(oy+2)*ms,3*ms,3*ms);};
   finder(0,0);finder(M-7,0);finder(0,M-7);
   ctx.fillStyle='#000';
   let s=data.split('').reduce((a,c)=>a+c.charCodeAt(0),0)|1;
@@ -1240,9 +1204,7 @@ function drawQR(ctx,data,size){
 function copyPix(){
   if(!pixCfg.key){showToast('Chave Pix não configurada!','red');return;}
   try{navigator.clipboard.writeText(pixCfg.key).then(()=>showToast('Chave Pix copiada! ✓'));}
-  catch{const ta=document.createElement('textarea');ta.value=pixCfg.key;
-    document.body.appendChild(ta);ta.select();document.execCommand('copy');
-    document.body.removeChild(ta);showToast('Chave Pix copiada! ✓');}
+  catch{const ta=document.createElement('textarea');ta.value=pixCfg.key;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('Chave Pix copiada! ✓');}
 }
 
 // ════════════════════════════════════════════════════
@@ -1252,34 +1214,19 @@ function handleImgSelect(input){
   const file=input.files[0];if(!file)return;
   if(file.size>5*1024*1024){showToast('Imagem muito grande! Máx 5MB.','red');return;}
   pendingImgFile=file;
-  const r=new FileReader();
-  r.onload=e=>{
-    document.getElementById('imgPreview').src=e.target.result;
-    document.getElementById('imgPreviewWrap').style.display='block';
-    document.getElementById('uploadArea').style.display='none';
-  };
-  r.readAsDataURL(file);
+  const r=new FileReader();r.onload=e=>{document.getElementById('imgPreview').src=e.target.result;document.getElementById('imgPreviewWrap').style.display='block';document.getElementById('uploadArea').style.display='none';};r.readAsDataURL(file);
 }
-function removeImage(){
-  pendingImgFile=null;cfg.imgUrl='';
-  document.getElementById('imgPreviewWrap').style.display='none';
-  document.getElementById('uploadArea').style.display='block';
-  document.getElementById('imgFileInput').value='';
-}
+function removeImage(){pendingImgFile=null;cfg.imgUrl='';document.getElementById('imgPreviewWrap').style.display='none';document.getElementById('uploadArea').style.display='block';document.getElementById('imgFileInput').value='';}
 async function uploadImageIfNeeded(){
   if(!pendingImgFile) return cfg.imgUrl||'';
   const wrap=document.getElementById('uploadBarWrap'),bar=document.getElementById('uploadBar');
   wrap.style.display='block';bar.style.width='30%';
   const ext=(pendingImgFile.name.split('.').pop()||'jpg').toLowerCase();
-  const base64=await new Promise(res=>{
-    const r=new FileReader();r.onload=e=>res(e.target.result);r.readAsDataURL(pendingImgFile);
-  });
+  const base64=await new Promise(res=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.readAsDataURL(pendingImgFile);});
   bar.style.width='65%';
   const result=await apiPost({action:'uploadImage',base64,ext});
-  bar.style.width='100%';
-  setTimeout(()=>{wrap.style.display='none';bar.style.width='0';},500);
-  pendingImgFile=null;
-  return result.url||'';
+  bar.style.width='100%';setTimeout(()=>{wrap.style.display='none';bar.style.width='0';},500);
+  pendingImgFile=null;return result.url||'';
 }
 
 // ════════════════════════════════════════════════════
@@ -1288,9 +1235,7 @@ async function uploadImageIfNeeded(){
 function checkAdmin(){
   const pass=document.getElementById('adminPassInput').value;
   if(pass===(cfg.password||'admin123')){
-    adminAuthed=true;
-    document.getElementById('adminLogin').style.display='none';
-    document.getElementById('adminPanel').style.display='block';
+    adminAuthed=true;document.getElementById('adminLogin').style.display='none';document.getElementById('adminPanel').style.display='block';
     syncAdminFields();renderBuyers();updateStats();
   }else{showToast('Senha incorreta!','red');document.getElementById('adminPassInput').value='';}
 }
@@ -1300,7 +1245,6 @@ function syncAdminFields(){
   document.getElementById('cfgDesc').value    =cfg.desc||'';
   document.getElementById('cfgPrice').value   =cfg.price||10;
   document.getElementById('cfgQty').value     =cfg.qty||100;
-  // ← usa parseDate para garantir formato YYYY-MM-DD no input type=date
   document.getElementById('cfgDate').value    =parseDate(cfg.date)||'';
   document.getElementById('cfgPassword').value='';
   document.getElementById('pixType').value    =pixCfg.type||'CPF';
@@ -1308,106 +1252,50 @@ function syncAdminFields(){
   document.getElementById('pixName').value    =pixCfg.name||'';
   document.getElementById('pixCity').value    =pixCfg.city||'';
   document.getElementById('settingsUrl').value=API_URL||'';
-  if(cfg.imgUrl){
-    document.getElementById('imgPreview').src=cfg.imgUrl;
-    document.getElementById('imgPreviewWrap').style.display='block';
-    document.getElementById('uploadArea').style.display='none';
-  }else{
-    document.getElementById('imgPreviewWrap').style.display='none';
-    document.getElementById('uploadArea').style.display='block';
-  }
+  if(cfg.imgUrl){document.getElementById('imgPreview').src=cfg.imgUrl;document.getElementById('imgPreviewWrap').style.display='block';document.getElementById('uploadArea').style.display='none';}
+  else{document.getElementById('imgPreviewWrap').style.display='none';document.getElementById('uploadArea').style.display='block';}
   const dot=document.getElementById('urlStatusDot'),txt=document.getElementById('urlStatusText');
-  if(API_URL){dot.className='url-status-dot';txt.textContent='Conectado: '+API_URL.substring(0,55)+'...';}
+  if(API_URL){dot.className='url-status-dot';txt.textContent='Conectado via config.json ✓';}
   else{dot.className='url-status-dot bad';txt.textContent='Não configurado';}
 }
 
 async function saveConfig(){
-  const btn=document.getElementById('btnSaveCfg');
-  btn.textContent='⏳ Salvando...';btn.disabled=true;
+  const btn=document.getElementById('btnSaveCfg');btn.textContent='⏳ Salvando...';btn.disabled=true;
   try{
     const imgUrl=await uploadImageIfNeeded();
     const newPass=document.getElementById('cfgPassword').value;
     const oldQty=cfg.qty;
-    // ← salva data como YYYY-MM-DD
-    const dateVal=document.getElementById('cfgDate').value||'';
-    cfg={
-      title:    document.getElementById('cfgTitle').value||'Minha Rifa',
-      desc:     document.getElementById('cfgDesc').value||'',
-      price:    parseFloat(document.getElementById('cfgPrice').value)||10,
-      qty:      parseInt(document.getElementById('cfgQty').value)||100,
-      date:     dateVal,
-      imgUrl:   imgUrl||cfg.imgUrl||'',
-      password: newPass||cfg.password||'admin123',
-    };
+    cfg={title:document.getElementById('cfgTitle').value||'Minha Rifa',desc:document.getElementById('cfgDesc').value||'',price:parseFloat(document.getElementById('cfgPrice').value)||10,qty:parseInt(document.getElementById('cfgQty').value)||100,date:document.getElementById('cfgDate').value||'',imgUrl:imgUrl||cfg.imgUrl||'',password:newPass||cfg.password||'admin123'};
     await apiPost({action:'saveConfig',data:cfg});
     if(cfg.qty!==oldQty){numbers={};selected=[];myReservedNums=[];buildGrid();}
-    renderAll();
-    showToast('✅ Configurações salvas!');
+    renderAll();showToast('✅ Configurações salvas!');
   }catch(e){showToast('Erro: '+e.message,'red');}
   btn.textContent='💾 Salvar Configurações';btn.disabled=false;
 }
 
 async function savePixConfig(){
-  pixCfg={
-    type:document.getElementById('pixType').value,
-    key: document.getElementById('pixKey').value.trim(),
-    name:document.getElementById('pixName').value.trim(),
-    city:document.getElementById('pixCity').value.trim(),
-  };
-  try{await apiPost({action:'savePix',data:pixCfg});showToast('✅ Pix salvo!');}
-  catch(e){showToast('Erro: '+e.message,'red');}
+  pixCfg={type:document.getElementById('pixType').value,key:document.getElementById('pixKey').value.trim(),name:document.getElementById('pixName').value.trim(),city:document.getElementById('pixCity').value.trim()};
+  try{await apiPost({action:'savePix',data:pixCfg});showToast('✅ Pix salvo!');}catch(e){showToast('Erro: '+e.message,'red');}
 }
-
-async function saveSettings(){
-  const url=document.getElementById('settingsUrl').value.trim();
-  if(!url.includes('script.google.com')){showToast('URL inválida!','red');return;}
-  try{
-    await apiPost({action:'saveSettings',data:{apiUrl:url}});
-    API_URL=url;localStorage.setItem('rfApiUrl',url);
-    syncAdminFields();showToast('✅ URL salva! Todos os usuários conectarão automaticamente.');
-  }catch(e){showToast('Erro: '+e.message,'red');}
-}
-
-// ══════════════════════════════════════════════════════
-// ADMIN: ações por PEDIDO (não por telefone)
-// ══════════════════════════════════════════════════════
 
 async function confirmarPedido(pedidoId) {
-  // Feedback visual imediato
   showToast('⏳ Confirmando pagamento...');
   try {
     await apiPost({ action:'confirmPedido', pedidoId });
-
-    // Atualiza estado local
-    Object.keys(numbers).forEach(k => {
-      if (numbers[k].pedidoId === pedidoId) numbers[k].status = 'paid';
-    });
-
+    Object.keys(numbers).forEach(k => { if (numbers[k].pedidoId === pedidoId) numbers[k].status = 'paid'; });
     renderBuyers(); updateStats(); renderHero();
-
-    // Abre WhatsApp após atualizar UI
     const entry = Object.values(numbers).find(n => n.pedidoId === pedidoId && n.status === 'paid');
-    if (entry) {
-      openWhatsAppConfirmation(pedidoId, entry.phone, entry.name);
-    } else {
-      showToast('✅ Pagamento confirmado!');
-    }
-
-    // Sync com o Sheets para garantir consistência
+    if (entry) openWhatsAppConfirmation(pedidoId, entry.phone, entry.name);
+    else showToast('✅ Pagamento confirmado!');
     setTimeout(() => syncNow(false), 1500);
-
-  } catch(e) {
-    showToast('Erro ao confirmar: ' + e.message, 'red');
-  }
+  } catch(e) { showToast('Erro ao confirmar: ' + e.message, 'red'); }
 }
 
 async function cancelarPedido(pedidoId) {
   if (!confirm('Cancelar este pedido? Os números voltarão a estar disponíveis.')) return;
   try {
     await apiPost({ action:'cancelPedido', pedidoId });
-    Object.keys(numbers).forEach(k => {
-      if (numbers[k].pedidoId === pedidoId) delete numbers[k];
-    });
+    Object.keys(numbers).forEach(k => { if (numbers[k].pedidoId === pedidoId) delete numbers[k]; });
     renderBuyers(); updateStats(); renderHero(); refreshGridClasses();
     showToast('Pedido cancelado e números liberados!');
   } catch(e) { showToast('Erro: ' + e.message, 'red'); }
@@ -1416,207 +1304,89 @@ async function cancelarPedido(pedidoId) {
 async function reverterPedido(pedidoId) {
   try {
     await apiPost({ action:'revertPedido', pedidoId });
-    Object.keys(numbers).forEach(k => {
-      if (numbers[k].pedidoId === pedidoId) numbers[k].status = 'pending';
-    });
+    Object.keys(numbers).forEach(k => { if (numbers[k].pedidoId === pedidoId) numbers[k].status = 'pending'; });
     renderBuyers(); updateStats(); renderHero();
     showToast('Pedido revertido para pendente.');
   } catch(e) { showToast('Erro: ' + e.message, 'red'); }
 }
 
 function openWhatsAppConfirmation(pedidoId, phone, name) {
-  const pad      = cfg.qty >= 100 ? 3 : 2;
-  const paidNums = Object.entries(numbers)
-    .filter(([,v]) => v.pedidoId === pedidoId && (v.status||'').toLowerCase() === 'paid')
-    .map(([k]) => String(parseInt(k)).padStart(pad,'0'))
-    .sort((a,b) => parseInt(a)-parseInt(b));
-  const total    = paidNums.length * cfg.price;
-  const dataSort = cfg.date ? fmtDate(cfg.date) : 'a definir';
-
-  const msg = [
-    '✅ *Pagamento Confirmado!*',
-    '',
-    'Olá, *' + name + '*! 🎉',
-    '',
-    'Seu pagamento foi confirmado com sucesso!',
-    '',
-    '🏆 *Rifa:* ' + cfg.title,
-    '🎟️ *Número(s):* ' + paidNums.join(', '),
-    '💰 *Valor pago:* R$ ' + fmt(total),
-    '📅 *Data do sorteio:* ' + dataSort,
-    '',
-    'Boa sorte! 🍀',
-    '_RifaFácil_'
-  ].join('\n');
-
-  const fone    = phone.replace(/\D/g,'');
-  const foneInt = fone.startsWith('55') ? fone : '55' + fone;
-  window.open('https://wa.me/' + foneInt + '?text=' + encodeURIComponent(msg), '_blank');
+  const pad = cfg.qty >= 100 ? 3 : 2;
+  const paidNums = Object.entries(numbers).filter(([,v]) => v.pedidoId === pedidoId && (v.status||'').toLowerCase() === 'paid').map(([k]) => String(parseInt(k)).padStart(pad,'0')).sort((a,b) => parseInt(a)-parseInt(b));
+  const total = paidNums.length * cfg.price;
+  const msg = ['✅ *Pagamento Confirmado!*','','Olá, *'+name+'*! 🎉','','Seu pagamento foi confirmado com sucesso!','','🏆 *Rifa:* '+cfg.title,'🎟️ *Número(s):* '+paidNums.join(', '),'💰 *Valor pago:* R$ '+fmt(total),'📅 *Data do sorteio:* '+(cfg.date?fmtDate(cfg.date):'a definir'),'','Boa sorte! 🍀','_RifaFácil_'].join('\n');
+  const fone = phone.replace(/\D/g,'');
+  window.open('https://wa.me/'+(fone.startsWith('55')?fone:'55'+fone)+'?text='+encodeURIComponent(msg),'_blank');
   showToast('✅ Pago! WhatsApp aberto para confirmação.');
 }
 
 async function confirmReset(){
-  if(!confirm('⚠️ Apagar TODOS os números. Tem certeza?')) return;
-  try{
-    await apiPost({action:'resetNumbers'});
-    numbers={};selected=[];myReservedNums=[];myPedidoId='';stopReservationTimer();
-    buildGrid();renderAll();renderBuyers();
-    showToast('Números zerados!');
-  }catch(e){showToast('Erro: '+e.message,'red');}
+  if(!confirm('⚠️ Apagar TODOS os números. Tem certeza?'))return;
+  try{await apiPost({action:'resetNumbers'});numbers={};selected=[];myReservedNums=[];myPedidoId='';stopReservationTimer();buildGrid();renderAll();renderBuyers();showToast('Zerado!');}catch(e){showToast('Erro: '+e.message,'red');}
 }
 
 function fmtDateTime(iso) {
   if (!iso) return '--';
   try {
-    const d = new Date(iso);
-    if (isNaN(d.getTime())) return '--';
-    return String(d.getDate()).padStart(2,'0') + '/' +
-           String(d.getMonth()+1).padStart(2,'0') + '/' +
-           d.getFullYear() + ' ' +
-           String(d.getHours()).padStart(2,'0') + ':' +
-           String(d.getMinutes()).padStart(2,'0');
+    const d = new Date(iso);if(isNaN(d.getTime()))return'--';
+    return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
   } catch { return '--'; }
 }
-
-// ══════════════════════════════════════════════════════
-// PAINEL DE COMPRADORES — duas seções separadas:
-//   1. ⏳ Confirmações Pendentes (reserved + pending)
-//   2. ✅ Compradores Confirmados (paid)
-// Agrupado por PEDIDO (pedidoId), não por telefone
-// ══════════════════════════════════════════════════════
 
 function renderBuyers() {
   const container = document.getElementById('buyersContainer');
   const entries   = Object.entries(numbers);
-
-  if (!entries.length) {
-    container.innerHTML = '<div class="empty-state">Nenhuma compra ainda.</div>';
-    return;
-  }
-
+  if (!entries.length) { container.innerHTML = '<div class="empty-state">Nenhuma compra ainda.</div>'; return; }
   const pad = cfg.qty >= 100 ? 3 : 2;
-
-  // Agrupa por pedidoId
   const pedidos = {};
   entries.forEach(([k, info]) => {
     const pid = info.pedidoId || ('sem-id-' + info.phone);
     const st  = (info.status || '').trim().toLowerCase();
-    if (!pedidos[pid]) {
-      pedidos[pid] = {
-        pedidoId: pid,
-        name:     info.name,
-        phone:    info.phone,
-        status:   st,
-        date:     info.date || '',
-        nums:     [],
-      };
-    }
+    if (!pedidos[pid]) pedidos[pid] = { pedidoId:pid, name:info.name, phone:info.phone, status:st, date:info.date||'', nums:[] };
     pedidos[pid].nums.push(parseInt(k));
-    // Status mais alto do pedido
     const pri = { paid:4, pending:3, reserved:2 };
     if ((pri[st]||0) > (pri[pedidos[pid].status]||0)) pedidos[pid].status = st;
     if (info.date && (!pedidos[pid].date || info.date > pedidos[pid].date)) pedidos[pid].date = info.date;
   });
+  const all = Object.values(pedidos).sort((a,b) => (b.date||'').localeCompare(a.date||''));
+  const pendentes   = all.filter(p => p.status === 'pending' || p.status === 'reserved');
+  const confirmados = all.filter(p => p.status === 'paid');
 
-  const allPedidos = Object.values(pedidos).sort((a,b) => (b.date||'').localeCompare(a.date||''));
-
-  // Separa em pendentes e confirmados
-  const pendentes   = allPedidos.filter(p => p.status === 'pending' || p.status === 'reserved');
-  const confirmados = allPedidos.filter(p => p.status === 'paid');
-
-  // Usa data-attributes nos botões para evitar problemas de escape de strings
   function buildRow(p) {
-    const nh = p.nums.sort((a,b)=>a-b).map(n => {
-      const st = (numbers[String(n)]?.status||'').toLowerCase();
-      return `<span class="num-sm${st==='reserved'?' res-num':''}">${String(n).padStart(pad,'0')}</span>`;
-    }).join('');
-
-    // Encode seguro para data-attributes HTML
-    const encPid   = encodeURIComponent(p.pedidoId);
-    const encPhone = encodeURIComponent(p.phone);
-    const encName  = encodeURIComponent(p.name);
-
+    const nh = p.nums.sort((a,b)=>a-b).map(n => { const st=(numbers[String(n)]?.status||'').toLowerCase(); return `<span class="num-sm${st==='reserved'?' res-num':''}">${String(n).padStart(pad,'0')}</span>`; }).join('');
+    const encPid=encodeURIComponent(p.pedidoId), encPhone=encodeURIComponent(p.phone), encName=encodeURIComponent(p.name);
     let statusBadge, actions;
-    if (p.status === 'reserved') {
-      statusBadge = '<span class="status-badge s-res">🔒 Reservado</span>';
-      actions = `<button class="btn-xs btn-xs-red pedido-btn" data-action="cancelar" data-pid="${encPid}">❌ Cancelar</button>`;
-    } else if (p.status === 'pending') {
-      statusBadge = '<span class="status-badge s-pend">⏳ Aguardando pagamento</span>';
-      actions = `
-        <button class="btn-xs btn-xs-green pedido-btn" data-action="confirmar" data-pid="${encPid}">✅ Confirmar Pago</button>
-        <button class="btn-xs btn-xs-red   pedido-btn" data-action="cancelar"  data-pid="${encPid}">❌ Cancelar</button>`;
+    if (p.status==='reserved') {
+      statusBadge='<span class="status-badge s-res">🔒 Reservado</span>';
+      actions=`<button class="btn-xs btn-xs-red pedido-btn" data-action="cancelar" data-pid="${encPid}">❌ Cancelar</button>`;
+    } else if (p.status==='pending') {
+      statusBadge='<span class="status-badge s-pend">⏳ Aguardando pagamento</span>';
+      actions=`<button class="btn-xs btn-xs-green pedido-btn" data-action="confirmar" data-pid="${encPid}">✅ Confirmar Pago</button>
+               <button class="btn-xs btn-xs-red pedido-btn" data-action="cancelar" data-pid="${encPid}">❌ Cancelar</button>`;
     } else {
-      statusBadge = '<span class="status-badge s-paid">✅ Pago</span>';
-      actions = `
-        <button class="btn-xs btn-xs-wa     pedido-btn" data-action="whatsapp" data-pid="${encPid}" data-phone="${encPhone}" data-name="${encName}">💬 WhatsApp</button>
-        <button class="btn-xs btn-xs-yellow pedido-btn" data-action="reverter" data-pid="${encPid}">↩ Reverter</button>`;
+      statusBadge='<span class="status-badge s-paid">✅ Pago</span>';
+      actions=`<button class="btn-xs btn-xs-wa pedido-btn" data-action="whatsapp" data-pid="${encPid}" data-phone="${encPhone}" data-name="${encName}">💬 WhatsApp</button>
+               <button class="btn-xs btn-xs-yellow pedido-btn" data-action="reverter" data-pid="${encPid}">↩ Reverter</button>`;
     }
-
-    return `<tr>
-      <td><b>${p.name}</b></td>
-      <td>${p.phone}</td>
-      <td><div class="num-list">${nh}</div></td>
-      <td>R$ ${fmt(p.nums.length * cfg.price)}</td>
-      <td style="white-space:nowrap;font-size:.68rem;color:var(--muted)">${fmtDateTime(p.date)}</td>
-      <td>${statusBadge}</td>
-      <td><div class="action-btns">${actions}</div></td>
-    </tr>`;
+    return `<tr><td><b>${p.name}</b></td><td>${p.phone}</td><td><div class="num-list">${nh}</div></td><td>R$ ${fmt(p.nums.length*cfg.price)}</td><td style="white-space:nowrap;font-size:.68rem;color:var(--muted)">${fmtDateTime(p.date)}</td><td>${statusBadge}</td><td><div class="action-btns">${actions}</div></td></tr>`;
   }
 
-  const tableHead = `<thead><tr>
-    <th>Nome</th><th>Telefone</th><th>Números</th>
-    <th>Total</th><th>Data/Hora</th><th>Status</th><th>Ações</th>
-  </tr></thead>`;
-
-  let html = '';
-
-  // ── Seção 1: Pendentes ──────────────────────────────────
-  html += `
-    <div class="buyers-section-header pending-header">
-      <span>⏳ Confirmações Pendentes</span>
-      <span class="buyers-section-count">${pendentes.length}</span>
-    </div>`;
-
-  if (pendentes.length === 0) {
-    html += '<div class="empty-state" style="padding:14px">Nenhum pedido pendente.</div>';
-  } else {
-    html += `<div style="overflow-x:auto"><table class="buyers-table">
-      ${tableHead}<tbody>${pendentes.map(buildRow).join('')}</tbody>
-    </table></div>`;
-  }
-
-  // ── Seção 2: Confirmados ────────────────────────────────
-  html += `
-    <div class="buyers-section-header paid-header" style="margin-top:18px">
-      <span>✅ Compradores Confirmados</span>
-      <span class="buyers-section-count">${confirmados.length}</span>
-    </div>`;
-
-  if (confirmados.length === 0) {
-    html += '<div class="empty-state" style="padding:14px">Nenhum pagamento confirmado ainda.</div>';
-  } else {
-    html += `<div style="overflow-x:auto"><table class="buyers-table">
-      ${tableHead}<tbody>${confirmados.map(buildRow).join('')}</tbody>
-    </table></div>`;
-  }
-
+  const thead=`<thead><tr><th>Nome</th><th>Telefone</th><th>Números</th><th>Total</th><th>Data/Hora</th><th>Status</th><th>Ações</th></tr></thead>`;
+  let html='';
+  html+=`<div class="buyers-section-header pending-header"><span>⏳ Confirmações Pendentes</span><span class="buyers-section-count">${pendentes.length}</span></div>`;
+  html+=pendentes.length?`<div style="overflow-x:auto"><table class="buyers-table">${thead}<tbody>${pendentes.map(buildRow).join('')}</tbody></table></div>`:`<div class="empty-state" style="padding:14px">Nenhum pedido pendente.</div>`;
+  html+=`<div class="buyers-section-header paid-header" style="margin-top:18px"><span>✅ Compradores Confirmados</span><span class="buyers-section-count">${confirmados.length}</span></div>`;
+  html+=confirmados.length?`<div style="overflow-x:auto"><table class="buyers-table">${thead}<tbody>${confirmados.map(buildRow).join('')}</tbody></table></div>`:`<div class="empty-state" style="padding:14px">Nenhum pagamento confirmado ainda.</div>`;
   container.innerHTML = html;
 }
+
 function drawWinner(){
   const sold=Object.entries(numbers).filter(([,v])=>{const s=(v.status||'').toLowerCase();return s==='paid'||s==='pending';}).map(([k])=>parseInt(k));
   if(!sold.length){showToast('Nenhum número vendido!','red');return;}
   const res=document.getElementById('drawResult'),ne=document.getElementById('drawNumber'),nm=document.getElementById('drawName');
   res.style.display='block';ne.textContent='🎲';nm.textContent='Sorteando...';
-  const pad=cfg.qty>=100?3:2;
-  let i=0;
-  const iv=setInterval(()=>{
-    ne.textContent=String(sold[Math.floor(Math.random()*sold.length)]).padStart(pad,'0');
-    if(++i>26){clearInterval(iv);
-      const w=sold[Math.floor(Math.random()*sold.length)];
-      ne.textContent=String(w).padStart(pad,'0');
-      nm.textContent='🏆 '+numbers[String(w)].name+' ('+numbers[String(w)].phone+')';
-      showToast('🎉 Ganhador sorteado!');}
-  },80);
+  const pad=cfg.qty>=100?3:2;let i=0;
+  const iv=setInterval(()=>{ne.textContent=String(sold[Math.floor(Math.random()*sold.length)]).padStart(pad,'0');if(++i>26){clearInterval(iv);const w=sold[Math.floor(Math.random()*sold.length)];ne.textContent=String(w).padStart(pad,'0');nm.textContent='🏆 '+numbers[String(w)].name+' ('+numbers[String(w)].phone+')';showToast('🎉 Ganhador sorteado!');}},80);
 }
 
 // ════════════════════════════════════════════════════
@@ -1625,41 +1395,17 @@ function drawWinner(){
 function fmt(n){return parseFloat(n||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
 let toastTimer;
 function showToast(msg,type='green'){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.style.background=type==='red'?'var(--red)':'var(--green)';
-  t.classList.add('show');clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>t.classList.remove('show'),3800);
+  const t=document.getElementById('toast');t.textContent=msg;t.style.background=type==='red'?'var(--red)':'var(--green)';
+  t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),3800);
 }
 
 // ════════════════════════════════════════════════════
-// SERVICE WORKER (PWA offline + instalável)
+// SERVICE WORKER
 // ════════════════════════════════════════════════════
 if('serviceWorker' in navigator){
-  const swCode=`
-const CACHE='rifafacil-v1';
-const ASSETS=['./'];
-self.addEventListener('install',e=>{
-  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));
-  self.skipWaiting();
-});
-self.addEventListener('activate',e=>{
-  e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));
-  self.clients.claim();
-});
-self.addEventListener('fetch',e=>{
-  if(e.request.url.includes('script.google.com')||e.request.url.includes('fonts.googleapis')){
-    e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)));
-    return;
-  }
-  e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(res=>{
-    const clone=res.clone();
-    caches.open(CACHE).then(c=>c.put(e.request,clone));
-    return res;
-  })));
-});`;
+  const swCode=`const CACHE='rifafacil-v1';const ASSETS=['./'];self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));self.skipWaiting();});self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});self.addEventListener('fetch',e=>{if(e.request.url.includes('script.google.com')||e.request.url.includes('fonts.googleapis')){e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)));return;}e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(res=>{const clone=res.clone();caches.open(CACHE).then(c=>c.put(e.request,clone));return res;})));});`;
   const blob=new Blob([swCode],{type:'application/javascript'});
-  const swUrl=URL.createObjectURL(blob);
-  navigator.serviceWorker.register(swUrl).catch(()=>{});
+  navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{});
 }
 </script>
 </body>
